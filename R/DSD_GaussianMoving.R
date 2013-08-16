@@ -50,9 +50,6 @@ Sigma <- lapply(1:nrow(sd_rho), FUN = function(i) rbind(
 sequence <- c(1,2,3)
 
 EMMsim_sequence <- rep(sequence, n)
-
-library("MASS")
-
 sequ <- c()
 ds <- data.frame()
 
@@ -61,7 +58,7 @@ for (jj in 1:t){
     mu[2,"x"] = mu[2,"x"] + 1/t
     mu[2,"y"] = mu[2,"y"] + 1/t 
     EMMsim <- t(sapply(EMMsim_sequence, FUN = function(i)
-		    mvrnorm(1, mu=mu[i,], Sigma=Sigma[[i]])))
+		    MASS::mvrnorm(1, mu=mu[i,], Sigma=Sigma[[i]])))
 
 
     sequ <- append(sequ, EMMsim_sequence)

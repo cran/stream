@@ -6,13 +6,13 @@
     }
 
 \usage{
-	DSC_Hierarchical(k, method = "complete", members = NULL)
+	DSC_Hierarchical(k=NULL, h=NULL, method = "complete")
 }
 
 \arguments{
-	\item{k}{The number of clusters returned by the \code{DSC}.}
+	\item{k}{The number of desired clusters.}
+  \item{h}{Height where to cut the dentrogram.}
 	\item{method}{the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "ward", "single", "complete", "average", "mcquitty", "median" or "centroid".}
-	\item{members}{\code{NULL} or a vector with length size of d.}
 }
 
 \details{
@@ -36,7 +36,7 @@ contains the following items:
 # Cassini dataset
 dsd <- DSD_mlbenchGenerator("cassini")
 
-hierarchical <- DSC_Hierarchical(3, "single")
+hierarchical <- DSC_Hierarchical(k=3, method="single")
 cluster(hierarchical, dsd, 500)
 plot(hierarchical, dsd)
 
@@ -44,7 +44,13 @@ plot(hierarchical, dsd)
 dsc <- DSC_DenStream()
 cluster(dsc, dsd, 500)
 
-recluster(hierarchical,dsc)
+# reclustering by specifying k
+hierarchical <- DSC_Hierarchical(k=3, method="single")
+recluster(hierarchical, dsc)
 plot(hierarchical, dsd)
 
+# reclustering by specifying height
+hierarchical <- DSC_Hierarchical(h=.01, method="single")
+recluster(hierarchical, dsc)
+plot(hierarchical, dsd)
 }

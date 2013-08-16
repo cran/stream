@@ -37,7 +37,7 @@ micro <- DSC_DenStream(initPoints=100)
 cluster(micro, dsd, 500)
 
 ### recluster using weighted k-means
-macro <- DSC_KmeansW(k=3)
+macro <- DSC_Kmeans(k=3)
 recluster(macro, micro)
 
 ### plot clustering

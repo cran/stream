@@ -39,7 +39,7 @@ DSD_GaussianStatic <- function(k=2, d=2, mu, sigma, p, noise = 0, noise_range) {
 
     # covariance matrix
     if (missing(sigma)) {
-	sigma <- replicate(k,genPositiveDefMat(
+	sigma <- replicate(k,clusterGeneration::genPositiveDefMat(
 			"unifcorrmat", 
 			rangeVar=c(0.001,0.01), 
 			dim=d)$Sigma,
@@ -90,7 +90,7 @@ get_points.DSD_GaussianStatic <- function(x, n=1, assignment = FALSE, ...) {
 	    prob=x$p)
 
     data <- t(sapply(clusterOrder, FUN = function(i)
-		    mvrnorm(1, mu=x$mu[i,], Sigma=x$sigma[[i]])))			
+		    MASS::mvrnorm(1, mu=x$mu[i,], Sigma=x$sigma[[i]])))			
 			
     ## Replace some points by random noise
     ## TODO: [0,1]^d might not be a good choice. Some clusters can have

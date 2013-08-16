@@ -18,64 +18,73 @@
 
 
 Sample <- setRefClass("Sample", 
-	fields = list(
-		k		= "integer",
-		stream_size	= "integer",
-
-		centers		= "data.frame"
-	), 
-
-	methods = list(
-		initialize = function(
-			k	= 100L
-			) {
-		    
-		    k		<<- k
-		    stream_size	<<- 0L 
-		    
-		    .self
-		}
-
-	),
+                      fields = list(
+                        k	= "integer",
+                        stream_size	= "integer",
+                        centers	= "data.frame"
+                      ), 
+                      
+                      methods = list(
+                        initialize = function(
+                          k	= 100L
+                        ) {
+                          
+                          k	<<- k
+                          stream_size	<<- 0L 
+                          
+                          .self
+                        }
+                        
+                      ),
 )
 
 ### Reservoir sampling: all values in the stream have the same prob. to
 ### be sampled
-Sample $methods(cluster = function(x, ...) {
-	    
-	    ### fill with first values
-	    if(nrow(centers) < k) {
-		centers <<- rbind(centers,x)
+Sample$methods(cluster = function(x, ...) {
+  
+  ### fast initialization
+  if(nrow(centers) == 0L && nrow(x) >= k) {
+    centers <<- x[sample(1:nrow(x), k),]
+    stream_size <<- nrow(x)
+  }else{
+    
+    ### reservoir sampling
+    for(i in 1:nrow(x)){
+      ### fill with first values
+      if(nrow(centers) < k) {
+        centers <<- rbind(centers,x[i,])
+        
+      }else{ ### replace values with decreasing probabilities
+        r <- as.integer(runif(1L, min=1L, max=stream_size+1L))
+        if(r <= k) centers[r, ] <<- x[i,]
+      }	 
+      
+      stream_size <<- stream_size + 1L
+    }
+  }
+}
+)
 
-	    }else{ ### replace values with decreasing probabilities
-		r <- as.integer(runif(1, min=1, max=stream_size+1))
-		if(r < k) centers[r, ] <<- x
-	    }	 
 
-	    stream_size <<- stream_size + 1L
-	}
-	)
-
-   
 DSC_Sample <- function(k = 100) {
-
-    sample <- Sample$new(k = as.integer(k))
-
-
-    l <- list(description = "Sample",
-	    RObj = sample)
-
-    class(l) <- c("DSC_Sample","DSC_Micro","DSC_R","DSC")
-    l
+  
+  sample <- Sample$new(k = as.integer(k))
+  
+  
+  l <- list(description = "Sample",
+            RObj = sample)
+  
+  class(l) <- c("DSC_Sample","DSC_Micro","DSC_R","DSC")
+  l
 }
 
 
 
 ### get centers
 get_microclusters.DSC_Sample <- function(x, ...) {
-    x$RObj$centers
+  x$RObj$centers
 }
 
 get_microweights.DSC_Sample <- function(x, ...) {
-    rep(1, nclusters(x))
+  rep(1, nclusters(x))
 }

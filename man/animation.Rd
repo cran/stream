@@ -37,6 +37,10 @@ useful to see the behavior of moving data sets. If no \code{outdir} is specified
 the function will animate the progress while clustering.
 }
 
+\seealso{
+  \code{\link{evaluate_cluster}} for stream evaluation without animation.
+}
+
 
 \examples{
 dsd <- DSD_GaussianMoving()

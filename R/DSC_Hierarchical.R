@@ -23,8 +23,8 @@ hierarchical <- setRefClass("hierarchical",
 		dataWeights = "numeric",
 		d	= "matrix",
 		method  = "character",
-		members	= "ANY",
-		k	= "integer",
+		k	= "ANY",
+    h = "ANY",
 		assignment = "numeric",
 		details = "ANY",
 		centers	= "data.frame",
@@ -33,18 +33,21 @@ hierarchical <- setRefClass("hierarchical",
 
 	methods = list(
 		initialize = function(
-			k,
-			method	= "complete",
-			members = NULL
+			k=NULL,
+      h=NULL,
+			method	= "complete"
 			) {
 		    
+        if(is.null(k) && is.null(h)) stop("Either h or k needs to be specified.") 
+        if(!is.null(k) && !is.null(h)) stop("Only h or k  can be specified.") 
+      
 		    data	<<- data.frame()
 		    dataWeights	<<- numeric()
 		    weights	<<- numeric()
 		    centers	<<- data.frame()
 		    method	<<- method 
-		    members	<<- members
-		    k		<<- k
+		    k	<<- k
+        h <<- h
 
 		    .self
 		}
@@ -61,20 +64,21 @@ hierarchical$methods(cluster = function(x,  weight = rep(1,nrow(x)), ...) {
 	    data <<- x
 	    
 	    if(nrow(data)>=2) {
-		hierarchical <-hclust(d=dist(x), method = method, 
-			members= members)
+		hierarchical <- hclust(d=dist(x), method = method)
 		
-		if(k < length(unlist(hierarchical['height'])))
-		    memb <- cutree(hierarchical, k = k)
+		if(is.null(k) || k < length(unlist(hierarchical['height'])))
+		    memb <- cutree(hierarchical, k = k, h = h)
 		else
 		    memb <- 1
 		
+    kfinal <- length(unique(memb))
+    
 		assignment <<- memb
 		details <<- hierarchical
 	    
-		centers <<- as.data.frame(t(sapply(1:k, FUN=
+		centers <<- as.data.frame(t(sapply(1:kfinal, FUN=
 			function(i) colMeans(data[assignment==i,]))))
-		weights <<- sapply(1:k, FUN =
+		weights <<- sapply(1:kfinal, FUN =
 			function(i) sum(dataWeights[assignment==i], na.rm=TRUE))
 
 	    }
@@ -82,10 +86,10 @@ hierarchical$methods(cluster = function(x,  weight = rep(1,nrow(x)), ...) {
 	)
 
 ### creator    
-DSC_Hierarchical <- function(k, method = "complete", members = NULL) {
+DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete") {
 
-    hierarchical <- hierarchical $new( 
-	    k=as.integer(k), method = method, members = members)
+    hierarchical <- hierarchical$new( 
+	    k=k, h=h, method = method)
 
     l <- list(description = paste("Hierarchical -", method),
 	    RObj = hierarchical)

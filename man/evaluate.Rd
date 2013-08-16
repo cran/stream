@@ -14,7 +14,7 @@
 	    type=c("auto", "micro", "macro"), assign="micro", ...)
     evaluate_cluster(dsc, dsd, macro=NULL, method, n = 1000,
 	    type=c("auto", "micro", "macro"), assign="micro",
-	    horizon=100, ...)
+	    horizon=100, verbose=FALSE, ...)
 }
 
 \arguments{
@@ -30,7 +30,8 @@
 	information on what micro-clusters constitute each macro-cluster.}
 	\item{macro}{A DSC_macro object for reclustering.}
 	\item{horizon}{Number of points after which evaluation is done (see detail section).}
-	\item{...}{Unused arguments are ignored.}
+	\item{verbose}{report progress?}
+  \item{...}{Unused arguments are ignored.}
 }
 
 \details{
@@ -41,7 +42,8 @@
 	the majority class and the class of all assigned points several 
 	evaluation measures are available:
 	\itemize{
-		\item	\code{"numClusters"} number of clusters, 
+		\item	\code{"numMicroClusters"} number of micro-clusters, 
+    \item \code{"numMacroClusters"} number of macro-clusters, 
 		\item	\code{"numClasses"} number of classes,
 		\item	\code{"precision"}, 
 		\item	\code{"recall"},
@@ -148,29 +150,31 @@ micro <- DSC_DenStream()
 cluster(micro, dsd, 500)
 # Evaluate micro-clusters 
 # Note: we use here only n=500 points for evaluation to speed up execution
-evaluate(micro, dsd, method=c("purity","crand"), n=500)
+evaluate(micro, dsd, method=c("numMicro","numMacro","purity","crand"), n=500)
 
-macro <- DSC_KmeansW(2)
+macro <- DSC_Kmeans(k=2)
 recluster(macro, micro)
 # Evaluate macro-clusters by assigning to micro-clusters
 evaluate(macro, dsd, method=c("purity","crand"), n=500)
 # Evaluate macro-clusters by assigning to macro-clusters
 # This gives a similar result as the micro-cluster assignment since
 # the real clusters are spherical (multidimensional Gaussians).
-evaluate(macro, dsd, method=c("purity","crand"), n=500, assign="macro")
+evaluate(macro, dsd, method=c("numMicro","numMacro","purity","crand"), 
+  n=500, assign="macro")
 
 
 # Evaluate an evolving data stream
 dsd <- DSD_GaussianMoving()
 micro <- DSC_DenStream(initPoints=100)
 evaluate_cluster(micro, dsd, method=c("purity","crand"), n=600, horizon= 100, 
-                 assign="micro")
+            assign="micro")
 
 reset_stream(dsd)
 micro <- DSC_tNN(r=.1, macro=FALSE, lambda=.01, decay_interval=100)
-macro <- DSC_KmeansW(3)
-evaluate_cluster(micro, dsd, macro, method=c("purity","crand"), n=600, 
-                 horizon=100, assign="micro")
+macro <- DSC_Kmeans(k=3)
+evaluate_cluster(micro, dsd, macro, 
+            method=c("numMicro","numMacro","purity","crand"), n=600, 
+            horizon=100, assign="micro")
 
 # visualize
 \dontrun{

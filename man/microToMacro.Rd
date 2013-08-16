@@ -33,7 +33,7 @@ dsd <- DSD_GaussianStatic(k=3, noise=0.05)
 micro <- DSC_CluStream()
 cluster(micro, dsd, 500)
 
-macro <- DSC_KmeansW(3)
+macro <- DSC_Kmeans(k=3)
 recluster(macro, micro)
 
 # translate all micro-cluster ids

@@ -19,39 +19,26 @@
 
 DBSCAN <- setRefClass("DBSCAN", 
 	fields = list(
-		data	    = "data.frame",
-		eps	    = "numeric",
+		eps	        = "numeric",
 		MinPts	    = "numeric",
-		scale	    = "logical",
-		method	    = "character",
-		seeds	    = "logical",
-		showplot    = "logical",
-		countmode   = "ANY",
+    weighted    = "logical",
 		assignment  = "numeric",
 		details	    = "ANY",
-		weights	    = "numeric",
+		data        = "data.frame",
+    weights	    = "numeric",
 		clusterCenters = "data.frame",
 		clusterWeights = "numeric"
 		), 
 
 	methods = list(
-		initialize = function(
-			MinPts	= 5,
-			scale	= FALSE,
-			method	= c("hybrid", "raw","dist"),
-			seeds	= TRUE,
-			showplot = FALSE,
-			countmode = NULL
-			) {
+		initialize = function(eps = .1, MinPts	= 5, weighted = TRUE) {
 
-		    data    <<- data.frame()
+        eps     <<- eps
+		    MinPts  <<- MinPts  
+        weighted <<- weighted
+        
+        data    <<- data.frame()
 		    weights <<- numeric()
-		    MinPts  <<- MinPts
-		    scale   <<- scale
-		    method  <<- method
-		    seeds   <<- seeds
-		    showplot <<- showplot
-		    countmode <<- countmode
 		    clusterWeights <<- numeric()
 		    clusterCenters <<- data.frame()
 
@@ -66,12 +53,16 @@ DBSCAN$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
 		warning("DBSCAN: Previous data is being overwritten")
 	    }
 
-	    weights <<- weight
+	    ### save micro-clusters
+      weights <<- weight
 	    data <<- x
 
-	    DBSCAN <- dbscan(data, eps, MinPts = 5, scale = FALSE, 
-		    method = c("hybrid", "raw", "dist"), seeds = TRUE, 
-		    showplot = FALSE, countmode = NULL)
+      if(!weighted) weight <- NULL
+      
+      ### internal dbscan uses weights
+	    DBSCAN <- .dbscan(data, eps, MinPts = MinPts, scale = FALSE, 
+		    method = "hybrid", seeds = TRUE, showplot = FALSE, countmode = NULL,
+        weight=weight)
 
 	    assignment <<- DBSCAN$cluster
 
@@ -99,16 +90,12 @@ DBSCAN$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
 	)
 
 ### creator    
-DSC_DBSCAN <- function(eps, MinPts = 5, scale = FALSE, method = c("hybrid", "raw",
-		"dist"), seeds = TRUE, showplot = FALSE, countmode = NULL) {
+DSC_DBSCAN <- function(eps, MinPts = 5, weighted = TRUE) {
 
-    DBSCAN <- DBSCAN$new(
-	    MinPts = MinPts, scale = scale,
-	    method = method,seeds=seeds,showplot=showplot,countmode=countmode)
+    DBSCAN <- DBSCAN$new(eps=eps, MinPts = MinPts, weighted = weighted)
 
-    DBSCAN$eps <- eps
-
-    l <- list(description = "DBSCAN",
+    if(weighted) desc <- "DBSCAN (weighted)" else desc <- "DBSCAN (unweighted)"
+    l <- list(description = desc,
 	    RObj = DBSCAN)
 
     class(l) <- c("DSC_DBSCAN","DSC_Macro","DSC_R","DSC")

@@ -1,37 +1,50 @@
 useDynLib(stream)
 
+import(methods)
 import(rJava)
-import(MASS)
+import(proxy)
+import(birch) 
+import(hash) 
+
+importFrom(mlbench, "mlbench.2dnormals","mlbench.cassini","mlbench.circle",
+    "mlbench.cuboids","mlbench.friedman1", "mlbench.friedman2",
+    "mlbench.friedman3","mlbench.hypercube", "mlbench.peak",
+    "mlbench.ringnorm", "mlbench.shapes","mlbench.simplex","mlbench.smiley",
+    "mlbench.spirals","mlbench.threenorm", "mlbench.twonorm",
+    "mlbench.waveform","mlbench.xor")
 
 export(
-	# DSC_MOA
-	DSC_DenStream,
+	# DSC
+	DSC_Static,
+  DSC_Sample,
+  DSC_BIRCH,
+	DSC_tNN,  
+  
+  DSC_DenStream,
 	DSC_CluStream,
 	DSC_ClusTree,
-	DSC_Kmeans,
-	DSC_KmeansW,
+	
+  DSC_Kmeans,
 	DSC_DBSCAN,
 	DSC_Hierarchical,
-	DSC_BIRCH,
-	DSC_Sample,
-	DSC_Static,
-	
-	# DSC_R
-	DSC_tNN,
-#	DSC_tNN_fast,
 	
 	# DSD
-	DSD_RandomRBFGeneratorEvents,
+	DSD_Wrapper,
+  DSD_ScaleStream,
+  DSD_ReadStream,
+  
+  DSD_mlbenchGenerator,
+	DSD_mlbenchData,
+  
+  DSD_RandomRBFGeneratorEvents,
 	DSD_GaussianStatic,
 	DSD_GaussianMoving,
+  DSD_Cubes,
 	DSD_UniformNoise,
-	DSD_ReadStream,
-	DSD_Wrapper,
 	DSD_Target,
-	DSD_mlbenchGenerator,
-	DSD_mlbenchData,
-	DSD_BarsAndGaussians,
-	
+  DSD_BarsAndGaussians,
+
+  # functions
 	# DSD
 	get_points,
 	write_stream,
@@ -50,6 +63,7 @@ export(
 #	merge_DSC,
 	prune_clusters,
 	microToMacro,	
+  serialize,
 	
 	evaluate,
 	evaluate_cluster,
@@ -72,15 +86,16 @@ S3method(get_points, DSD_MOA)
 S3method(get_points, DSD_ReadStream)
 S3method(get_points, DSD_Target)
 S3method(get_points, DSD_Wrapper)
+S3method(get_points, DSD_ScaleStream)
 
 S3method(reset_stream, DSD)
 S3method(reset_stream, DSD_Wrapper)
 S3method(reset_stream, DSD_ReadStream)
+S3method(reset_stream, DSD_ScaleStream)
 
 ### DSC Methods
 S3method(plot, DSC)
 S3method(plot, DSC_tNN)
-#S3method(plot, DSC_tNN_fast)
 S3method(print, DSC)
 S3method(get_assignment, DSC)
 S3method(nclusters, DSC)
@@ -95,10 +110,8 @@ S3method(recluster, DSC_Macro)
 
 S3method(microToMacro, DSC_Hierarchical)
 S3method(microToMacro, DSC_Kmeans)
-S3method(microToMacro, DSC_KmeansW)
 S3method(microToMacro, DSC_DBSCAN)
 S3method(microToMacro, DSC_tNN)
-#S3method(microToMacro, DSC_tNN_fast)
 
 S3method(get_copy, DSC_R)
 S3method(get_copy, DSC_MOA)

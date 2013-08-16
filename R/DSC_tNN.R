@@ -106,11 +106,8 @@ DSC_tNN <- function(r = 0.1, k=0, alpha = 0, minweight = 0, lambda = 1e-3,
 
     tNN <- tNN$new(r, k, lambda, as.integer(decay_interval), 
 	    minweight, noise, alpha, measure, macro)
-
     l <- list(description = "tNN", RObj = tNN)
-
     class(l) <- c("DSC_tNN", "DSC_Micro", "DSC_R", "DSC")
-
     l
 }
 
@@ -453,7 +450,8 @@ plot.DSC_tNN <- function(x, dsd = NULL, n = 1000,
 		    edges <- cbind(edges, 
 			    w=apply(edges, MARGIN=1, FUN=function(ij) s[ij[1], ij[2]]))
 
-		    edges <- cbind(edges, stream:::map(edges[,3], range=c(1,5)))
+		    #edges <- cbind(edges, stream:::map(edges[,3], range=c(1,5)))
+		    edges <- cbind(edges, map(edges[,3], range=c(1,5)))
 
 		    for(i in 1:nrow(edges)){
 			lines(rbind(p[edges[i,1],],p[edges[i,2],]),

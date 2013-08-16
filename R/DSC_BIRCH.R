@@ -43,7 +43,7 @@ BIRCH <- setRefClass("BIRCH",
 		},
 		finalize = function() {
 		    ### Seems to be not necessary!
-		    #    if(!is.null(BIRCH)) birch.killTree(BIRCH)
+		    #    if(!is.null(BIRCH)) birch::birch.killTree(BIRCH)
 		},
 
 		cluster = function(points,  weight = rep(1,nrow(points)), ...) {
@@ -53,12 +53,12 @@ BIRCH <- setRefClass("BIRCH",
 			data <<- rbind(data,points)
 			weights <<- c(weights,weight)
 			if(is.null(BIRCH)) {
-			    BIRCH <<- birch.getTree(birch(data.matrix(points), 
+			    BIRCH <<- birch::birch.getTree(birch::birch(data.matrix(points), 
 				    radius, compact=compact, keeptree=keeptree, 
 				    columns=columns))
 			} else {
-			    birch.addToTree(data.matrix(points), BIRCH)
-			    BIRCH <<- birch.getTree(BIRCH)
+			    birch::birch.addToTree(data.matrix(points), BIRCH)
+			    BIRCH <<- birch::birch.getTree(BIRCH)
 			}
 
 #			for(i in 1:length(BIRCH$members)) 

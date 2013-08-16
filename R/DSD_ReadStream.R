@@ -20,8 +20,7 @@
 # accepts an open connection
 DSD_ReadStream <- function(file, sep=",", k=NA, d=NA,
 	take=NULL, assignment=NULL, 
-	center=FALSE, scale=FALSE,
-	loop=FALSE, n=1000) {
+	loop=FALSE) {
 
     # if the user passes a string, create a new connection and open it
     if (is(file,"character")) {
@@ -51,14 +50,9 @@ DSD_ReadStream <- function(file, sep=",", k=NA, d=NA,
 	    sep = sep,
 	    take = take,
 	    assignment = assignment,
-	    center = FALSE,
-	    scale = FALSE,
 	    loop = loop)
     class(l) <- c("DSD_ReadStream","DSD_R","DSD")
     
-    l <- scale_stream(l, n=n, center=center, scale=scale,
-	    reset_stream=TRUE)
-
     l
 }
 
@@ -112,8 +106,6 @@ get_points.DSD_ReadStream <- function(x, n=1, assignment=FALSE, ...) {
     if(!is.null(x$take)) d <- d[,x$take, drop=FALSE]
 
 
-    # scale
-    d <- as.data.frame(scale(d, center= x$center, scale=x$scale))
     
     if(assignment) attr(d, "assignment") <-cl
     
@@ -129,22 +121,3 @@ close_stream <- function(dsd) {
 	stop("'dsd' is not of class 'DSD_ReadStream'")
     close(dsd$file)
 }
-
-scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE, 
-	reset_stream=FALSE) {
-    if(!is(dsd, "DSD_ReadStream")) 
-	stop("'dsd' is not of class 'DSD_ReadStream'")
-
-    sc <- scale(get_points(dsd, n=n), center=center, scale=scale)
-    dsd$center <- attr(sc, "scaled:center")
-    if(is.null(dsd$center)) dsd$center <- center
-    dsd$scale <- attr(sc, "scaled:scale")
-    
-    if(is.null(dsd$scale)) dsd$scale <- scale
-    else dsd$scale[dsd$scale==0] <- 1 # fix division by 0 if all values were the same
-
-    if(reset_stream) reset_stream(dsd)
-
-    dsd
-}
-

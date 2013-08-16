@@ -18,83 +18,91 @@
 
 
 kmeans_refClass <- setRefClass("kmeans", 
-	fields = list(
-		data	    = "data.frame",
-		k	    = "numeric",
-		iter.max    = "numeric",
-		nstart	    = "numeric",
-		algorithm   = "character",
-		assignment  = "numeric",
-		details	    = "ANY",
-		clusterCenters = "data.frame",
-		weights	    = "numeric",
-		clusterWeights = "numeric"
-	), 
-
-	methods = list(
-		initialize = function(
-			iter.max    = 10,
-			k	    = 3,
-			nstart	    = 1,
-			algorithm   = c("Hartigan-Wong", "Lloyd", 
-				"Forgy","MacQueen")
-			) {
-
-		    iter.max	<<- iter.max 
-		    k		<<- k 
-		    nstart	<<- nstart
-		    algorithm   <<- match.arg(algorithm)
-		    assignment	<<- numeric() 
-		    weights	<<- numeric() 
-		    clusterWeights <<- numeric() 
-		    clusterCenters <<- data.frame()
-		    data	<<- data.frame()
-		    
-		    .self
-		}
-
-	),
+                               fields = list(
+                                 k	    = "numeric",
+                                 weighted = "logical",
+                                 iter.max    = "numeric",
+                                 nstart	    = "numeric",
+                                 algorithm   = "character",
+                                 assignment  = "numeric",
+                                 data      = "data.frame",
+                                 weights	    = "numeric",
+                                 clusterCenters = "data.frame",
+                                 clusterWeights = "numeric",
+                                 details      = "ANY"
+                               ), 
+                               
+                               methods = list(
+                                 initialize = function(
+                                   k      = 3,
+                                   weighted = TRUE,
+                                   iter.max    = 10,
+                                   nstart	    = 1,
+                                   algorithm   = c("Hartigan-Wong", "Lloyd", 
+                                                   "Forgy","MacQueen")
+                                 ) {
+                                   
+                                   k  	<<- k 
+                                   weighted <<- weighted
+                                   iter.max	<<- iter.max 
+                                   nstart	<<- nstart
+                                   algorithm   <<- match.arg(algorithm)
+                                   assignment	<<- numeric() 
+                                   weights	<<- numeric() 
+                                   clusterWeights <<- numeric() 
+                                   clusterCenters <<- data.frame()
+                                   data	<<- data.frame()
+                                   
+                                   .self
+                                 }
+                                 
+                               ),
 )
 
 kmeans_refClass$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
-	    if(length(data)>0) {
-		warning("Kmeans: Previous data is being overwritten")
-	    }
-
-	    weights <<- weight
-	    data <<- x
-	    if(nrow(data)>k) {
-		km <- kmeans(x=data, centers=k, 
-			iter.max = iter.max, nstart = nstart,
-			algorithm = algorithm)
-
-		assignment <<- km$cluster
-		clusterCenters <<- data.frame(km$centers)
-		details <<- km
-	    } else {
-		assignment <<- 1:nrow(data)
-		clusterCenters <<- x
-		details <<- NULL
-	    }
-
-	    clusterWeights <<- sapply(1:k, FUN =
-		    function(i) sum(assignment==i))
-
-	}
-	)
+  if(length(data)>0) {
+    warning("Kmeans: Previous data is being overwritten")
+  }
+  
+  weights <<- weight
+  data <<- x
+  if(nrow(data)>k) {
+    if(weighted) km <- kmeansW(x=data, weight=weights, centers=k, 
+                      iter.max = iter.max, nstart = nstart)
+    else km <- kmeans(x=data, centers=k, 
+                      iter.max = iter.max, nstart = nstart,
+                      algorithm = algorithm)
+    
+    assignment <<- km$cluster
+    clusterCenters <<- data.frame(km$centers)
+    details <<- km
+  } else {
+    assignment <<- 1:nrow(data)
+    clusterCenters <<- x
+    details <<- NULL
+  }
+  
+  clusterWeights <<- sapply(1:k, FUN =
+                              function(i) sum(weights[assignment==i]))
+  
+}
+)
 
 ### creator    
-DSC_Kmeans <- function(k, iter.max = 10, nstart = 1,
-	algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
-		"MacQueen")) {
-    
-    algorithm <- match.arg(algorithm)
-
-    structure(list(description = "k-Means",
-		    RObj = kmeans_refClass$new(
-			    iter.max = iter.max, k=k, nstart = nstart,
-			    algorithm = algorithm)),
-	    class = c("DSC_Kmeans","DSC_Macro","DSC_R","DSC"))
+DSC_Kmeans <- function(k, weighted = TRUE, iter.max = 10, nstart = 1,
+                       algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
+                                     "MacQueen")) {
+  
+  algorithm <- match.arg(algorithm)
+  if(weighted) desc <- "weighted k-Means"
+  else desc <-"k-Means"
+  
+  
+  structure(list(description = desc,
+                 RObj = kmeans_refClass$new(
+                   k=k, weighted=weighted, iter.max = iter.max, nstart = nstart,
+                   algorithm = algorithm)),
+            class = c("DSC_Kmeans","DSC_Macro","DSC_R","DSC"))
 }
 
 get_macroclusters.DSC_Kmeans <- function(x) x$RObj$clusterCenters
@@ -104,7 +112,7 @@ get_microclusters.DSC_Kmeans <- function(x) x$RObj$data
 get_microweights.DSC_Kmeans <- function(x) x$RObj$weights
 
 microToMacro.DSC_Kmeans <- function(x, micro=NULL){ 
-    if(is.null(micro)) micro <- 1:nclusters(x, type="micro")
-    structure(x$RObj$assignment[micro], names=micro)
+  if(is.null(micro)) micro <- 1:nclusters(x, type="micro")
+  structure(x$RObj$assignment[micro], names=micro)
 }  
 

@@ -127,6 +127,12 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
 
     ## method can be pairs, plot or pc (projection with PCA)
     k <- nclusters(x, type=type)
+    
+    if(k<1) {
+      warning("No clusters, no plot produced!")
+      return()
+    }
+    
     centers <- get_centers(x, type=type)
     if(weights) cex_clusters <- get_weights(x, type=type, scale=scale)
     else cex_clusters <- rep(cex, k)
@@ -136,10 +142,12 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
     ### prepend data if given
     if(!is.null(dsd)) {
 	d <- get_points(dsd, n, assignment = TRUE)
-	names(d) <- names(centers)
-
-	centers <- rbind(d, centers)
-	col <- c(rep(col_points,n)[1:n], col)
+  #	names(d) <- names(centers)
+	# fix center names
+  names(centers) <- names(d)
+  centers <- rbind(d, centers)
+  
+  col <- c(rep(col_points,n)[1:n], col)
 	cex_clusters <- c(rep(cex, n), cex_clusters)
 	mpch <- c(attr(d, "assignment"), mpch)
 	

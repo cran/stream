@@ -7,29 +7,20 @@
 }
 
 \usage{
-	DSC_DBSCAN(eps, MinPts = 5, scale = FALSE, method = c("hybrid", "raw", "dist"), seeds = TRUE, showplot = FALSE, countmode = NULL)
+	DSC_DBSCAN(eps, MinPts = 5, weighted = TRUE)
 }
 
 \arguments{
 	\item{eps}{Reachability Distance.}
 	\item{MinPts}{Reachability minimum no. of points.}
-	\item{scale}{scale the data}
-	\item{method}{"dist" treats data as distance matrix (relatively fast
-	but memory expensive), "raw" treats data as raw data and avoids
-	calculating a distance matrix (saves memory but may be slow), "hybrid"
-	expects also raw data, but calculates partial distance matrices (very
-	fast with moderate memory requirements ).}
-	\item{seeds}{FALSE to not include the seed-vector in the
-	DBSCAN-object.}
-	\item{showplot}{0 = no plot, 1 = plot per iteration, 2 = plot per
-	sub-iteration.}
-	\item{countmode}{NULL or vector of point numbers at which to report
-	progress.}
+  \item{weighted}{logical indicating if a weighted version of DBSCAN should be used. }
 }
 
 \details{
-Please refer to package \code{DBSCAN} for more details on the behavior of
-\code{DBSCAN}.
+DBSCAN is a weighted extended version of the inplementation in \pkg{fpc} where
+each micro-cluster center considered a pseudo point. For weighting we use
+in the MinPts comparison the sum of weights of the micro-cluster instead of the 
+number.
 }
 
 \value{
@@ -50,12 +41,12 @@ dsd <- DSD_GaussianStatic(k=3, noise=0.05)
 dsc <- DSC_ClusTree()
 cluster(dsc, dsd, 500)
 
-DBSCAN <- DSC_DBSCAN(eps = .02)
+DBSCAN <- DSC_DBSCAN(eps = .05)
 recluster(DBSCAN,dsc)
 plot(DBSCAN, dsd)
 
 # cluster some data with DBSCAN directly
-DBSCAN <- DSC_DBSCAN(eps = .02)
+DBSCAN <- DSC_DBSCAN(eps = .05)
 cluster(DBSCAN, dsd, 500)
 plot(DBSCAN, dsd)
 }

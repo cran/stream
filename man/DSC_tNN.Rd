@@ -1,13 +1,14 @@
 \name{DSC_tNN}
 \alias{DSC_tNN}
+\alias{serialize}
 \title{Threshold Nearest Neighbor (tNN) Data Stream Clustering Algorithm}
 \description{
     Implements the tNN (threshold Nearest Neighbor) data stream algorithm.}
 
 \usage{
-    DSC_tNN(r = 0.1, k = 0, alpha = 0, minweight = 0, 
-	lambda = 0.001, decay_interval = 1000L, noise = 0.01, 
-	measure = "Euclidean", macro = TRUE)
+    DSC_tNN(r = 0.1, k = 0, alpha = 0, minweight = 0, lambda = 0.001, 
+	decay_interval = 1000L, noise = 0.01, measure = "Euclidean", 
+	macro = TRUE)
 }
 
 \arguments{
@@ -23,7 +24,7 @@
 	\item{noise}{The amount of noise that should be removed while clustering.}
 	\item{measure}{The measure used to calculate cluster proximity 
 	(see package \pkg{proxy}).}
-	\item{macro}{A flag that indicates if the macro clusters should be computed.}
+  \item{macro}{A flag that indicates if the macro clusters should be computed.}
 }
 
 \details{

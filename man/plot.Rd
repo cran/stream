@@ -62,7 +62,7 @@ plot(micro)
 plot(micro, dsd)
 
 ## create and plot macro-clusters
-macro <- DSC_KmeansW(k=3)
+macro <- DSC_Kmeans(k=3)
 recluster(macro, micro)
 plot(macro, dsd)
 }

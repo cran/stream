@@ -6,7 +6,7 @@
     }
 
 \usage{
-    DSC_Kmeans(k, iter.max = 10, nstart = 1,
+    DSC_Kmeans(k, weighted = TRUE, iter.max = 10, nstart = 1,
 	    algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"))
 }
 
@@ -14,7 +14,8 @@
 	\item{k}{either the number of clusters, say k, or a set of initial
 	(distinct) cluster centers. If a number, a random set of (distinct)
 	rows in x is chosen as the initial centers.}
-	\item{iter.max}{the maximum number of iterations allowed.}
+	\item{weighted}{use a weighted k-means (algorithm is ignored).}
+  \item{iter.max}{the maximum number of iterations allowed.}
 	\item{nstart}{if centers is a number, how many random sets should be
 	chosen?}
 	\item{algorithm}{character: may be abbreviated.}
@@ -32,8 +33,7 @@ on the algorithm.
 
 \seealso{
 	\code{\link{DSC}},
-	\code{\link{DSC_Macro}},
-	\code{\link{DSC_KmeansW}} for a weighted version of k-means.
+	\code{\link{DSC_Macro}}
 }
 
 \examples{
@@ -44,13 +44,13 @@ dsc <- DSC_BIRCH(radius=0.01)
 cluster(dsc, dsd, 500)
 
 # recluster micro-clusters
-kmeans <- DSC_Kmeans(3)
+kmeans <- DSC_Kmeans(k=3)
 recluster(kmeans, dsc)
 plot(kmeans, dsd)
 
 # Kmeans can also directly cluster data (original data are considered 
 # micro-cluster centers)
-kmeans <- DSC_Kmeans(3)
+kmeans <- DSC_Kmeans(k=3)
 cluster(kmeans, dsd, 500)
 plot(kmeans, dsd)
 }

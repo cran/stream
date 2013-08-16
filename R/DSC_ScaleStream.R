@@ -1,0 +1,80 @@
+#######################################################################
+# stream -  Infrastructure for Data Stream Mining
+# Copyright (C) 2013 Michael Hahsler, Matthew Bolanos, John Forrest 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+# accepts an open connection
+DSD_ScaleStream <- function(dsd,  
+                           center=TRUE, scale=TRUE,
+                           n=1000) {
+  
+  
+  
+  
+  # creating the DSD object
+  l <- list(description = "Scale Data Stream",
+            dsd = dsd,
+            center = FALSE,
+            scale = FALSE)
+  class(l) <- c("DSD_ScaleStream","DSD_R","DSD")
+  
+  l <- scale_stream(l, n=n, center=center, scale=scale)
+  
+  l
+}
+
+## it is important that the connection is OPEN
+get_points.DSD_ScaleStream <- function(x, n=1, assignment=FALSE, ...) {
+  
+  d <- get_points(x$dsd, n, assignment)
+  
+  if(assignment) cl <- attr(d,"assignment")
+  
+  # scale
+  d <- as.data.frame(scale(d, center= x$center, scale=x$scale))
+  
+  if(assignment) attr(d, "assignment") <-cl
+  
+  d
+}
+
+reset_stream.DSD_ScaleStream <- function(dsd) {
+  reset_stream(dsd$dsd)
+}
+
+scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE) {
+  
+  sc <- scale(get_points(dsd, n=n), center=center, scale=scale)
+  dsd$center <- attr(sc, "scaled:center")
+  if(is.null(dsd$center)) dsd$center <- center
+  dsd$scale <- attr(sc, "scaled:scale")
+  
+  if(is.null(dsd$scale)) dsd$scale <- scale
+  else dsd$scale[dsd$scale==0] <- 1 # fix division by 0 if all values were the same
+  
+  tryCatch ({
+    reset_stream(dsd)
+  }, warning = function(w) {
+    
+  }, error = function(e) {
+    
+  }, finally = {
+    
+  })
+  
+  dsd
+}

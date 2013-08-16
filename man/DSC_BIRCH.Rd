@@ -46,7 +46,7 @@ dsc
 plot(dsc, dsd)
 
 # reclustering
-kmeans <- DSC_KmeansW(3)
+kmeans <- DSC_Kmeans(k=3)
 recluster(kmeans,dsc)
 plot(kmeans,dsd)
 }
