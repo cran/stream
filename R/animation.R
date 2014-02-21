@@ -41,7 +41,7 @@ animate_data <- function(dsd, n=1000,
     cluster.ani(NULL, dsd, NULL, n, interval, pointInterval, 
                 horizon, NULL, save=FALSE,...)
   } else {
-      animation::aveMovie(cluster.ani(NULL, dsd, NULL, n, interval, pointInterval, 
+      animation::saveMovie(cluster.ani(NULL, dsd, NULL, n, interval, pointInterval, 
                           horizon, NULL, save=TRUE,...), 
               interval = interval, outdir = outdir)
   }

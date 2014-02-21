@@ -40,6 +40,9 @@ cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) {
     
     
     d <- get_points(dsd, 1)
+    ## TODO: Check incoming data
+    
+    
     x <- .jcast(
       .jnew("weka/core/DenseInstance", 1.0, .jarray(as.double(d))),
       "weka/core/Instance"
@@ -60,7 +63,8 @@ cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) {
                            block=100000L, ...) {
   ### dsc contains an RObj which is  a reference object with a cluster method
   
-  
+  ### TODO: Check data
+
   for(bl in .make_block(n, block)) {
     dsc$RObj$cluster(get_points(dsd, bl), ...)
     if(verbose) cat("Processed", bl, "points -",
