@@ -7,11 +7,11 @@
 
 \usage{
     \method{plot}{DSD}(x, n = 500, col= NULL, 
-	    pch= NULL, ..., method="pairs")
+	    pch= NULL, ..., method="pairs", dim = NULL)
     \method{plot}{DSC}(x, dsd = NULL, n = 500,
-	    col_points="gray", col_clusters="red",
+	    col_points="gray", col_clusters=c("red", "blue"),
 	    weights=TRUE, scale=c(1,5), cex=1, pch=NULL, ..., method="pairs", 
-	    type = c("auto", "micro", "macro"))
+	    dim = NULL, type = c("auto", "micro", "macro", "both"))
 }
 
 \arguments{
@@ -30,6 +30,9 @@
 	    "pairs" (pairs plot), 
 	    "plot" (plot first two dimensions) or 
 	    "pc" (plot first 2 principal components).}
+	\item{dim}{an integer vector with the dimensions to plot. If \code{NULL} 
+      then for methods \code{"pairs"} and \code{"pc"} all dimensions are used 
+      and for \code{"plot"} the first two dimensions are plotted.}
 	\item{type}{Plot micro- or macro-clusters. Auto
 	        used the class of dsc to decide.}
 	\item{\dots}{further arguments are passed on to
@@ -48,21 +51,24 @@
 }
 
 \examples{
-dsd <- DSD_GaussianStatic(k=3)
+set.seed(1000)
+dsd <- DSD_Gaussians(k=3, d=3)
 
 ## plot data
 plot(dsd, n=500)
+plot(dsd, method="pc", n=500)
+plot(dsd, method="plot", dim=c(1,3), n=500)
+
 
 ## create and plot micro-clusters
-micro <- DSC_DenStream(initPoints=100)
-cluster(micro, dsd, 500)
-plot(micro)
+dstream <- DSC_DStream(gridsize=0.1)
+cluster(dstream, dsd, 500)
+plot(dstream)
 
 ## plot on data
-plot(micro, dsd)
+plot(dstream, dsd)
+plot(dstream, dsd, method="pc")
 
-## create and plot macro-clusters
-macro <- DSC_Kmeans(k=3)
-recluster(macro, micro)
-plot(macro, dsd)
+## plot micro and macro-clusters
+plot(dstream, dsd, type="both")
 }

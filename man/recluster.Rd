@@ -30,16 +30,18 @@ The object macro is altered and contains the clustering.
 %}
 
 \examples{
+set.seed(0)
 ### create a data stream and a micro-clustering
-dsd <- DSD_GaussianStatic(k=3, d=3)
+dsd <- DSD_Gaussians(k=3, d=3)
 
-micro <- DSC_DenStream(initPoints=100)
+micro <- DSC_Sample(k=50)
 cluster(micro, dsd, 500)
-
-### recluster using weighted k-means
-macro <- DSC_Kmeans(k=3)
-recluster(macro, micro)
+micro
+  
+### recluster using k-means
+kmeans <- DSC_Kmeans(k=3)
+recluster(kmeans, micro)
 
 ### plot clustering
-plot(macro,dsd, main="Macro-clusters (DenStream + weighted k-means)")
+plot(kmeans, dsd, main="Macro-clusters (Sampling + k-means)")
 }

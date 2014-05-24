@@ -20,19 +20,18 @@
 # accepts an open connection
 DSD_ScaleStream <- function(dsd,  
                            center=TRUE, scale=TRUE,
-                           n=1000) {
-  
-  
-  
+                           n=1000, reset=TRUE) {
   
   # creating the DSD object
-  l <- list(description = "Scale Data Stream",
+  l <- list(description = paste("Scale Data Stream -", dsd$description),
             dsd = dsd,
+            d = dsd$d,
+            k = dsd$k,
             center = FALSE,
             scale = FALSE)
   class(l) <- c("DSD_ScaleStream","DSD_R","DSD")
   
-  l <- scale_stream(l, n=n, center=center, scale=scale)
+  l <- scale_stream(l, n=n, center=center, scale=scale, reset=reset)
   
   l
 }
@@ -52,11 +51,11 @@ get_points.DSD_ScaleStream <- function(x, n=1, assignment=FALSE, ...) {
   d
 }
 
-reset_stream.DSD_ScaleStream <- function(dsd) {
-  reset_stream(dsd$dsd)
+reset_stream.DSD_ScaleStream <- function(dsd, pos=1) {
+  reset_stream(dsd$dsd, pos=pos)
 }
 
-scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE) {
+scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE, reset=TRUE) {
   
   sc <- scale(get_points(dsd, n=n), center=center, scale=scale)
   dsd$center <- attr(sc, "scaled:center")
@@ -66,15 +65,7 @@ scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE) {
   if(is.null(dsd$scale)) dsd$scale <- scale
   else dsd$scale[dsd$scale==0] <- 1 # fix division by 0 if all values were the same
   
-  tryCatch ({
-    reset_stream(dsd)
-  }, warning = function(w) {
-    
-  }, error = function(e) {
-    
-  }, finally = {
-    
-  })
+  if(reset) try(reset_stream(dsd), silent=TRUE)
   
   dsd
 }

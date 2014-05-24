@@ -3,15 +3,18 @@
 \title{Reset a Data Stream to its Beginning}
 
 \description{
-Resets the counter in a DSD object to the beginning.
+Resets the counter in a DSD object to the beginning or any other position in
+the stream.
 }
 
 \usage{
-	reset_stream(dsd)
+	reset_stream(dsd, pos = 1)
 }
 
 \arguments{
-	\item{dsd}{Either a \code{DSD_ReadStream} or \code{DSD_Wrapper} object.}
+	\item{dsd}{An object of class \code{DSD_ReadStream}, \code{DSD_Wrapper}
+  \code{DSD_ScaleStream} or \code{DSD_MG}.}
+	\item{pos}{Position in the stream (the begining of the stream is position 1).}
 }
 
 \details{
@@ -23,18 +26,25 @@ environment variable is moved back to 1.
 
 \seealso{
 	\code{\link{DSD_ReadStream}},
+	\code{\link{DSD_MG}},
+	\code{\link{DSD_ScaleStream}},
 	\code{\link{DSD_Wrapper}}
 }
 
 \examples{
 # initializing the objects
-dsd <- DSD_GaussianStatic(k=3, d=2)
-replayer <- DSD_Wrapper(get_points(dsd, 100), k=3)
+dsd <- DSD_Gaussians(k=3, d=2)
+replayer <- DSD_Wrapper(dsd, 100)
 replayer
 
 p <- get_points(replayer, 50)
 replayer
 
-reset_stream(replayer) # resetting the dsd to its original state
+# resetting the dsd to the begining of the stream
+reset_stream(replayer) 
+replayer
+  
+# set the dsd to position 21
+reset_stream(replayer, pos=21)  
 replayer
 }

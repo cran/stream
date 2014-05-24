@@ -1,9 +1,8 @@
 useDynLib(stream)
 
 import(methods)
-import(rJava)
 import(proxy)
-import(birch) 
+#import(birch) 
 import(hash) 
 
 importFrom(mlbench, "mlbench.2dnormals","mlbench.cassini","mlbench.circle",
@@ -15,18 +14,17 @@ importFrom(mlbench, "mlbench.2dnormals","mlbench.cassini","mlbench.circle",
 
 export(
 	# DSC
-	DSC_Static,
   DSC_Sample,
-  DSC_BIRCH,
-	DSC_tNN,  
+#  DSC_BIRCH,
+	DSC_tNN, 
+  DSC_DStream,
+
+  DSC_Static,
   
-  DSC_DenStream,
-	DSC_CluStream,
-	DSC_ClusTree,
-	
   DSC_Kmeans,
 	DSC_DBSCAN,
 	DSC_Hierarchical,
+  DSC_Reachability,
 	
 	# DSD
 	DSD_Wrapper,
@@ -36,13 +34,22 @@ export(
   DSD_mlbenchGenerator,
 	DSD_mlbenchData,
   
-  DSD_RandomRBFGeneratorEvents,
-	DSD_GaussianStatic,
-	DSD_GaussianMoving,
+	DSD_Gaussians,
   DSD_Cubes,
 	DSD_UniformNoise,
 	DSD_Target,
   DSD_BarsAndGaussians,
+  DSD_Benchmark,
+
+  # MGCs
+  DSD_MG,
+  MGC_Linear,
+  MGC_Function,
+  MGC_Random,
+  MGC_Noise,
+  MGC_Static,
+  MGC_Shape_Gaussian,
+  MGC_Shape_Block,
 
   # functions
 	# DSD
@@ -51,6 +58,14 @@ export(
 	reset_stream,
 	close_stream,
 	scale_stream,
+
+  add_keyframe,
+  keyframe,
+  remove_keyframe,
+  get_keyframes,
+  add_cluster,
+  get_clusters,
+  remove_cluster,
 	
 	# DSC
 	cluster,
@@ -63,13 +78,24 @@ export(
 #	merge_DSC,
 	prune_clusters,
 	microToMacro,	
-  serialize,
 	
 	evaluate,
 	evaluate_cluster,
 	
 	animate_cluster,
-	animate_data
+	animate_data,
+  
+  ### DSC_tNN
+  get_shared_density,
+  ### DSC_DStream
+  get_attraction,
+  
+  ### generics internally used
+  get_microclusters,
+  get_microweights,
+  get_macroclusters,
+  get_macroweights,
+  .cluster
       )
 
 ### DSD Methods
@@ -78,11 +104,9 @@ S3method(print, DSD_Wrapper)
 S3method(plot, DSD)
 S3method(write_stream, DSD)
 
-S3method(get_points, DSD_GaussianStatic)
-##S3method(get_points, DSD_GaussianMoving)
+S3method(get_points, DSD_Gaussians)
 S3method(get_points, DSD_mlbenchGenerator)
 S3method(get_points, DSD_BarsAndGaussians)
-S3method(get_points, DSD_MOA)
 S3method(get_points, DSD_ReadStream)
 S3method(get_points, DSD_Target)
 S3method(get_points, DSD_Wrapper)
@@ -96,6 +120,8 @@ S3method(reset_stream, DSD_ScaleStream)
 ### DSC Methods
 S3method(plot, DSC)
 S3method(plot, DSC_tNN)
+S3method(plot, DSC_DStream)
+
 S3method(print, DSC)
 S3method(get_assignment, DSC)
 S3method(nclusters, DSC)
@@ -112,9 +138,21 @@ S3method(microToMacro, DSC_Hierarchical)
 S3method(microToMacro, DSC_Kmeans)
 S3method(microToMacro, DSC_DBSCAN)
 S3method(microToMacro, DSC_tNN)
+S3method(microToMacro, DSC_DStream)
 
 S3method(get_copy, DSC_R)
-S3method(get_copy, DSC_MOA)
 
-### other
 S3method(print, stream_eval)
+
+### DSD_MGC
+S3method(add_cluster, DSD_MG)
+S3method(reset_stream, DSD_MG)
+S3method(get_points, DSD_MG)
+S3method(get_clusters, DSD_MG)
+S3method(print, DSD_MG)
+S3method(remove_cluster, DSD_MG)
+S3method(print, MGC)
+S3method(print, MGC_Linear)
+S3method(add_keyframe, MGC_Linear)
+S3method(get_keyframes, MGC_Linear)
+S3method(remove_keyframe, MGC_Linear)

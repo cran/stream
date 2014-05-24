@@ -33,7 +33,6 @@ The updated DSC object is returned invisibly for reassignment
 clustering result, call \code{get_centers()} on the DSC object.
 }
 
-
 \seealso{
 	\code{\link{DSC}},
 	\code{\link{DSD}},
@@ -41,8 +40,9 @@ clustering result, call \code{get_centers()} on the DSC object.
 }
 
 \examples{
-dsc <- DSC_CluStream()
-dsd <- DSD_GaussianStatic()
+dsd <- DSD_Gaussians(k=3)
+dsc <- DSC_DStream(gridsize=.05)  
+
 cluster(dsc, dsd, 500)
 plot(dsc, dsd)
 }

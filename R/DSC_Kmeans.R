@@ -29,7 +29,8 @@ kmeans_refClass <- setRefClass("kmeans",
                                  weights	    = "numeric",
                                  clusterCenters = "data.frame",
                                  clusterWeights = "numeric",
-                                 details      = "ANY"
+                                 details      = "ANY",
+                                 min_weight   = "numeric"
                                ), 
                                
                                methods = list(
@@ -39,7 +40,8 @@ kmeans_refClass <- setRefClass("kmeans",
                                    iter.max    = 10,
                                    nstart	    = 1,
                                    algorithm   = c("Hartigan-Wong", "Lloyd", 
-                                                   "Forgy","MacQueen")
+                                                   "Forgy","MacQueen"),
+                                   min_weight = NULL
                                  ) {
                                    
                                    k  	<<- k 
@@ -53,19 +55,30 @@ kmeans_refClass <- setRefClass("kmeans",
                                    clusterCenters <<- data.frame()
                                    data	<<- data.frame()
                                    
+                                   if(is.null(min_weight)) min_weight <<- 0
+                                   else min_weight <<- min_weight
+                                   
                                    .self
                                  }
                                  
                                ),
 )
 
-kmeans_refClass$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
-  if(length(data)>0) {
+kmeans_refClass$methods(cluster = function(x, weight = rep(1,nrow(x)), ..., overwrite=FALSE) {
+  
+  if(length(data)>0 && !overwrite) 
     warning("Kmeans: Previous data is being overwritten")
+  
+  ### filter weak clusters
+  if(min_weight>0) {
+    x <- x[weight>min_weight,]
+    weight <- weight[weight>min_weight]
   }
+  
   
   weights <<- weight
   data <<- x
+  
   if(nrow(data)>k) {
     if(weighted) km <- kmeansW(x=data, weight=weights, centers=k, 
                       iter.max = iter.max, nstart = nstart)
@@ -91,7 +104,8 @@ kmeans_refClass$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
 ### creator    
 DSC_Kmeans <- function(k, weighted = TRUE, iter.max = 10, nstart = 1,
                        algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
-                                     "MacQueen")) {
+                                     "MacQueen"), 
+                        min_weight = NULL) {
   
   algorithm <- match.arg(algorithm)
   if(weighted) desc <- "weighted k-Means"
@@ -101,7 +115,7 @@ DSC_Kmeans <- function(k, weighted = TRUE, iter.max = 10, nstart = 1,
   structure(list(description = desc,
                  RObj = kmeans_refClass$new(
                    k=k, weighted=weighted, iter.max = iter.max, nstart = nstart,
-                   algorithm = algorithm)),
+                   algorithm = algorithm, min_weight=min_weight)),
             class = c("DSC_Kmeans","DSC_Macro","DSC_R","DSC"))
 }
 

@@ -33,15 +33,15 @@ Returns an object of class
 
 \examples{
 # 3 clusters with 10% noise
-dsd <- DSD_GaussianStatic(k=3, noise=0.1)
+dsd <- DSD_Gaussians(k=3, noise=0.1)
 
-birch <- DSC_BIRCH(r=0.01)
-cluster(birch, dsd, 500)
-birch
-plot(birch, dsd)
+dsc <- DSC_tNN(r=0.1)
+cluster(dsc, dsd, 500)
+dsc
+plot(dsc, dsd)
 
-# prune 10% of the cluster weight
-static <- prune_clusters(birch, threshold=0.1)
+# prune lightest micro-clusters for 10% of the weight of the clustering
+static <- prune_clusters(dsc, threshold=0.1)
 static
 plot(static, dsd)
 }

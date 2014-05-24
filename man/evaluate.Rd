@@ -29,18 +29,25 @@
 	assignments are translated to macro-cluster assignments using 
 	information on what micro-clusters constitute each macro-cluster.}
 	\item{macro}{A DSC_macro object for reclustering.}
-	\item{horizon}{Number of points after which evaluation is done (see detail section).}
+	\item{horizon}{Evaluation is done using horizon many previouse points
+    (see detail section).}
 	\item{verbose}{report progress?}
   \item{...}{Unused arguments are ignored.}
 }
 
 \details{
-	For evaluation, each data points are assigned
-	to its nearest cluster (using Euclidean distance to the cluster
-	centers). Then
-	for each cluster the majority class is determined. Based on 
-	the majority class and the class of all assigned points several 
-	evaluation measures are available:
+	For evaluation each data points are assigned
+	to its nearest cluster using Euclidean distance to the cluster
+	centers. Then for each cluster the majority class is determined. Based on 
+  the majority class several 
+	evaluation measures can be computed.
+  
+  For \code{evaluate_cluster} the most commonly used method introduced 
+  by Aggarwal et al (2003)
+  is applied. The data points used for evaluation are taken from the previously 
+  clustered horizon.
+  
+  The following evaluation measures are available:  
 	\itemize{
 		\item	\code{"numMicroClusters"} number of micro-clusters, 
     \item \code{"numMacroClusters"} number of macro-clusters, 
@@ -100,11 +107,14 @@ the clustering algorithm was able to adapt to the changing stream.
     \code{evaluate} returns an object of class \code{stream_eval}
     which is a numeric vector of the values of the requested measures
     and two attribures, \code{"type"} and
-    \code{"assign"}, to see at what level the evaluation was done.
-    
+    \code{"assign"}, to see at what level the evaluation was done. 
 }
 
 \references{
+C. C. Aggarwal, J. Han, J. Wang, P. S. Yu (2003). A Framework for 
+Clustering Evolving Data Streams. Proceedings of the 29th International 
+Conference on Very Large Data Bases - Volume 29. 
+
 E. Dimitriadou, A. Weingessel and K. Hornik (2002).  A combination
 scheme for fuzzy clustering.  International Journal of Pattern
 Recognition and Artificial Intelligence, 16, 901-912.
@@ -140,47 +150,45 @@ Clustering of Data Streams at Multiple Resolutions, 3(3).
             \code{\link{animate_cluster}},
             \code{\link[clue]{cl_agreement}} in \pkg{clue}.
 }
-
+ 
 
 \examples{
 # Create stream
-dsd <- DSD_GaussianStatic(k=3, d=2)
+set.seed(0)
+dsd <- DSD_Gaussians(k=3, d=2)
 
-micro <- DSC_DenStream()
-cluster(micro, dsd, 500)
+dstream <- DSC_DStream(gridsize=0.1)
+cluster(dstream, dsd, 500)
+plot(dstream, dsd)
 # Evaluate micro-clusters 
 # Note: we use here only n=500 points for evaluation to speed up execution
-evaluate(micro, dsd, method=c("numMicro","numMacro","purity","crand"), n=500)
+evaluate(dstream, dsd, method=c("numMicro","numMacro","purity","crand"), n=500)
 
-macro <- DSC_Kmeans(k=2)
-recluster(macro, micro)
-# Evaluate macro-clusters by assigning to micro-clusters
-evaluate(macro, dsd, method=c("purity","crand"), n=500)
-# Evaluate macro-clusters by assigning to macro-clusters
-# This gives a similar result as the micro-cluster assignment since
-# the real clusters are spherical (multidimensional Gaussians).
-evaluate(macro, dsd, method=c("numMicro","numMacro","purity","crand"), 
-  n=500, assign="macro")
+# DStream also provides macro clusters. Evaluate macro clusters with type="macro"
+plot(dstream, dsd, type="macro")
+evaluate(dstream, dsd, type ="macro", 
+  method=c("numMicro","numMacro","purity","crand"), n=500)
 
+# Points are by default assigned to the closest micro clusters for evalution. 
+# However, points can also be assigned to the closest macro-cluster using
+# assign="macro".
+evaluate(dstream, dsd, type ="macro", assign="macro",
+  method=c("numMicro","numMacro","purity","crand"), n=500)
 
 # Evaluate an evolving data stream
-dsd <- DSD_GaussianMoving()
-micro <- DSC_DenStream(initPoints=100)
-evaluate_cluster(micro, dsd, method=c("purity","crand"), n=600, horizon= 100, 
-            assign="micro")
+dsd <- DSD_Benchmark(1)
+dstream <- DSC_DStream(gridsize=0.05, lambda=0.1)
+evaluate_cluster(dstream, dsd, type="macro", assign="micro",
+  method=c("numMicro","numMacro","purity","crand"), 
+  n=600, horizon=100)
 
-reset_stream(dsd)
-micro <- DSC_tNN(r=.1, macro=FALSE, lambda=.01, decay_interval=100)
-macro <- DSC_Kmeans(k=3)
-evaluate_cluster(micro, dsd, macro, 
-            method=c("numMicro","numMacro","purity","crand"), n=600, 
-            horizon=100, assign="micro")
-
-# visualize
 \dontrun{
+# animate the clustering process
 reset_stream(dsd)
-micro <- DSC_tNN(r=.1, macro=FALSE, lambda=.1, decay_interval=20)
-animate_cluster(micro, dsd, macro, n=600,
-	evaluationMethod=c("purity"), pointInterval=20, 
-	xlim=c(-.2,1.2), ylim=c(-.2,1.2))}
+dstream <- DSC_DStream(gridsize=0.1, lambda=0.1)
+animate_cluster(dstream, dsd, 
+  n=1200, pointInterval=20, 
+  evaluationMethod=c("crand"), evaluationType="macro", evaluationAssign="micro",
+  type="both", xlim=c(-.2,1.2), ylim=c(-.2,1.2))
+}
 }

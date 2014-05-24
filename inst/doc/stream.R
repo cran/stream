@@ -2,99 +2,137 @@
 ### Encoding: UTF-8
 
 ###################################################
-### code chunk number 1: stream.Rnw:938-943
+### code chunk number 1: stream.Rnw:951-952
 ###################################################
-library("stream") 
 set.seed(1000) 
 
-dsd <- DSD_GaussianStatic(k=3, d=2, noise=0.05) 
+
+###################################################
+### code chunk number 2: stream.Rnw:954-958
+###################################################
+library("stream")
+
+dsd <- DSD_Gaussians(k=3, d=3, noise=0.05) 
 dsd 
 
 
 ###################################################
-### code chunk number 2: stream.Rnw:962-964
+### code chunk number 3: stream.Rnw:977-979
 ###################################################
 p <- get_points(dsd, n=5) 
 p 
 
 
 ###################################################
-### code chunk number 3: stream.Rnw:975-977
+### code chunk number 4: stream.Rnw:990-992
 ###################################################
 p <- get_points(dsd, n=100, assignment=TRUE) 
 attr(p, "assignment") 
 
 
 ###################################################
-### code chunk number 4: static
+### code chunk number 5: static
 ###################################################
 plot(dsd, n=500)
 
 
 ###################################################
-### code chunk number 5: moa1
+### code chunk number 6: static_pc
+###################################################
+plot(dsd, n=500, method="pc")
+
+
+###################################################
+### code chunk number 7: stream.Rnw:1036-1037
 ###################################################
 set.seed(1000) 
-dsd <- DSD_RandomRBFGeneratorEvents(k=3, d=2) 
+
+
+###################################################
+### code chunk number 8: moa1
+###################################################
+dsd <- DSD_Benchmark(1)
 dsd
 
 
 ###################################################
-### code chunk number 6: stream.Rnw:1016-1020 (eval = FALSE)
+### code chunk number 9: stream.Rnw:1050-1057 (eval = FALSE)
 ###################################################
-## plot(dsd, 500)
-## plot(dsd, 500)
-## plot(dsd, 500)
-## plot(dsd, 500)
+## plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+## tmp <- get_points(dsd, n=1300)
+## plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+## tmp <- get_points(dsd, n=1300)
+## plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+## tmp <- get_points(dsd, n=1300)
+## plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
 
 
 ###################################################
-### code chunk number 7: moa1
+### code chunk number 10: moa1
 ###################################################
-plot(get_points(dsd, 500)) 
+plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+tmp <- get_points(dsd, n=1300)
 
 
 ###################################################
-### code chunk number 8: moa2
+### code chunk number 11: moa2
 ###################################################
-plot(get_points(dsd, 500)) 
+plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+tmp <- get_points(dsd, n=1300)
 
 
 ###################################################
-### code chunk number 9: moa3
+### code chunk number 12: moa3
 ###################################################
-plot(get_points(dsd, 500)) 
+plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
+tmp <- get_points(dsd, n=1300)
 
 
 ###################################################
-### code chunk number 10: moa4
+### code chunk number 13: moa4
 ###################################################
-plot(get_points(dsd, 500)) 
+plot(dsd, 200, xlim=c(0,1), ylim=c(0,1))
 
 
 ###################################################
-### code chunk number 11: stream.Rnw:1059-1060 (eval = FALSE)
+### code chunk number 14: stream.Rnw:1099-1101 (eval = FALSE)
 ###################################################
-## data_animation(dsd, 5000)
+## reset_stream(dsd)
+## animate_data(dsd, n=10000, pointInterval=100, xlim=c(0,1), ylim=c(0,1))
 
 
 ###################################################
-### code chunk number 12: stream.Rnw:1078-1082
+### code chunk number 15: stream.Rnw:1109-1114 (eval = FALSE)
+###################################################
+## library(animation)
+## animation::ani.options(interval=.1)
+## ani.replay()
+## saveHTML(ani.replay())
+## saveGIF(ani.replay())
+
+
+###################################################
+### code chunk number 16: stream.Rnw:1135-1137
 ###################################################
 library("stream") 
 set.seed(1000) 
-dsd <- DSD_GaussianStatic(k=3, d=5) 
+
+
+###################################################
+### code chunk number 17: stream.Rnw:1139-1141
+###################################################
+dsd <- DSD_Gaussians(k=3, d=5) 
 dsd
 
 
 ###################################################
-### code chunk number 13: stream.Rnw:1087-1088
+### code chunk number 18: stream.Rnw:1146-1147 (eval = FALSE)
 ###################################################
-write_stream(dsd, "data.csv", n=100, sep=",") 
+## write_stream(dsd, "data.csv", n=100, sep=",") 
 
 
 ###################################################
-### code chunk number 14: stream.Rnw:1112-1116
+### code chunk number 19: stream.Rnw:1175-1179
 ###################################################
 file <- system.file("examples", "kddcup10000.data.gz", package="stream")
 dsd_file <- DSD_ReadStream(gzfile(file),take=c(1, 5, 6, 8:11, 13:20, 23:41), 
@@ -103,235 +141,209 @@ dsd_file
 
 
 ###################################################
-### code chunk number 15: stream.Rnw:1122-1123
+### code chunk number 20: stream.Rnw:1191-1192
 ###################################################
 get_points(dsd_file,5)
 
 
 ###################################################
-### code chunk number 16: stream.Rnw:1151-1156
+### code chunk number 21: stream.Rnw:1221-1223
 ###################################################
 library("stream") 
 set.seed(1000) 
-dsd <- DSD_GaussianStatic(k=3, d=2) 
+
+
+###################################################
+### code chunk number 22: stream.Rnw:1225-1228
+###################################################
+dsd <- DSD_Gaussians(k=3, d=2) 
 p <- get_points(dsd, 100)
 head(p)
 
 
 ###################################################
-### code chunk number 17: stream.Rnw:1162-1164
+### code chunk number 23: stream.Rnw:1234-1236
 ###################################################
-replayer <- DSD_Wrapper(p) 
+replayer <- DSD_Wrapper(p, k=3) 
 replayer 
 
 
 ###################################################
-### code chunk number 18: stream.Rnw:1170-1172
+### code chunk number 24: stream.Rnw:1242-1244
 ###################################################
 get_points(replayer, n=5)
 replayer
 
 
 ###################################################
-### code chunk number 19: stream.Rnw:1179-1180 (eval = FALSE)
+### code chunk number 25: stream.Rnw:1252-1253 (eval = FALSE)
 ###################################################
-## get_points(replayer,n = 1000)
+## get_points(replayer, n = 1000)
 
 
 ###################################################
-### code chunk number 20: stream.Rnw:1190-1192
+### code chunk number 26: stream.Rnw:1255-1257
+###################################################
+err <- try(get_points(replayer, n = 1000))
+cat(err)
+
+
+###################################################
+### code chunk number 27: stream.Rnw:1267-1269
 ###################################################
 reset_stream(replayer)
 replayer
 
 
 ###################################################
-### code chunk number 21: stream.Rnw:1201-1205
+### code chunk number 28: stream.Rnw:1278-1280
 ###################################################
 library("stream") 
 set.seed(1000) 
-dsd <- DSD_GaussianStatic(k=3, d=2, noise=0.05)
+
+
+###################################################
+### code chunk number 29: stream.Rnw:1282-1284
+###################################################
+dsd <- DSD_Gaussians(k=3, d=2, noise=0.05)
 dsd
 
 
 ###################################################
-### code chunk number 22: stream.Rnw:1212-1214
+### code chunk number 30: stream.Rnw:1291-1293
 ###################################################
-birch <- DSC_BIRCH(radius=0.01) 
-birch
+dstream <- DSC_DStream(gridsize=0.1) 
+dstream
 
 
 ###################################################
-### code chunk number 23: stream.Rnw:1222-1224
+### code chunk number 31: stream.Rnw:1301-1303
 ###################################################
-cluster(birch, dsd, 500) 
-birch
+cluster(dstream, dsd, 500) 
+dstream
 
 
 ###################################################
-### code chunk number 24: stream.Rnw:1230-1231
+### code chunk number 32: stream.Rnw:1312-1313
 ###################################################
-head(get_centers(birch))
+head(get_centers(dstream))
 
 
 ###################################################
-### code chunk number 25: cluster
+### code chunk number 33: cluster
 ###################################################
-plot(birch, dsd)
+plot(dstream, dsd)
 
 
 ###################################################
-### code chunk number 26: stream.Rnw:1258-1265
+### code chunk number 34: stream.Rnw:1343-1344
+###################################################
+evaluate(dstream, dsd, n = 500)
+
+
+###################################################
+### code chunk number 35: stream.Rnw:1351-1352
+###################################################
+evaluate(dstream, dsd, method = c("purity", "crand"), n = 500)
+
+
+###################################################
+### code chunk number 36: stream.Rnw:1370-1371
+###################################################
+set.seed(1000)
+
+
+###################################################
+### code chunk number 37: stream.Rnw:1373-1378
+###################################################
+dsd <- DSD_Benchmark(1)
+micro <- DSC_DStream(gridsize=.05, lambda=.01)
+ev <- evaluate_cluster(micro, dsd, method=c("numMicroClusters","purity"), 
+  n=5000, horizon=100)
+head(ev)
+
+
+###################################################
+### code chunk number 38: evaluation
+###################################################
+plot(ev[,"points"], ev[,"purity"], type="l", 
+  ylim=c(0,1), ylab="Avg. Purity", xlab="Points")
+
+
+###################################################
+### code chunk number 39: stream.Rnw:1404-1409 (eval = FALSE)
+###################################################
+## reset_stream(dsd)
+## micro <- DSC_DStream(gridsize=.05, lambda=.01)
+## r <- animate_cluster(micro, dsd, evaluationMethod="purity", n=5000, 
+##     horizon=100, pointInterval=100,
+##     xlim=c(0,1), ylim=c(0,1))
+
+
+###################################################
+### code chunk number 40: stream.Rnw:1423-1427 (eval = FALSE)
+###################################################
+## library(animation)
+## animation::ani.options(interval=.1)
+## ani.replay()
+## saveHTML(ani.replay())
+
+
+###################################################
+### code chunk number 41: stream.Rnw:1436-1438
 ###################################################
 library("stream")
-dsd <- DSD_GaussianStatic(k=3, d=2, mu=rbind(c(1.5,1.3),c(1,1),c(1.2,1)))
-
-tnn <- DSC_tNN(, r=.1, macro=FALSE)
-cluster(tnn, dsd, 500)
-
-evaluate(tnn, dsd, n = 500)
+set.seed(1000) 
 
 
 ###################################################
-### code chunk number 27: stream.Rnw:1269-1270
+### code chunk number 42: stream.Rnw:1441-1446
 ###################################################
-evaluate(tnn, dsd, method = c("purity", "crand"), n = 500)
+dsd <- DSD_Gaussians(k=3, d=2, noise=0.05)
+dstream <- DSC_DStream(gridsize=.1)
 
-
-###################################################
-### code chunk number 28: stream.Rnw:1285-1289
-###################################################
-dsd <- DSD_GaussianMoving()
-micro <- DSC_DenStream(initPoints=100)
-evaluate_cluster(micro, dsd, method=c("purity","crand"), n=600, horizon= 100, 
-                 assign="micro")
+cluster(dstream, dsd, 1000)
+dstream
 
 
 ###################################################
-### code chunk number 29: stream.Rnw:1292-1297
+### code chunk number 43: recluster
 ###################################################
-reset_stream(dsd)
-micro <- DSC_DenStream(initPoints=100)
-macro <- DSC_Kmeans(k=3)
-evaluate_cluster(micro, dsd, macro, method=c("purity","crand"), n=600, 
-                 horizon=100, assign="micro")
-
-
-###################################################
-### code chunk number 30: stream.Rnw:1307-1314
-###################################################
-library("stream")
-
-dsd <- DSD_GaussianStatic(k=3, d=2, mu=rbind(c(1.5,1.3),c(1,1),c(1.2,1)))
-
-tnn <- DSC_tNN(r=.04, macro=FALSE)
-cluster(tnn, dsd, 1000)
-tnn
-
-
-###################################################
-### code chunk number 31: stream.Rnw:1323-1326
-###################################################
-km <- DSC_Kmeans(k=3)
-recluster(km, tnn)
+km <- DSC_Kmeans(k=3, weighted=TRUE)
+recluster(km, dstream)
 km
-
-
-###################################################
-### code chunk number 32: stream.Rnw:1331-1332
-###################################################
-evaluate(km, dsd,"purity")
-
-
-###################################################
-### code chunk number 33: recluster
-###################################################
 plot(km, dsd) 
 
 
 ###################################################
-### code chunk number 34: stream.Rnw:1365-1370
+### code chunk number 44: recluster2
 ###################################################
-library("stream") 
-set.seed(1000) 
-d <- get_points(DSD_GaussianStatic(k=3, d=2, noise=0.01), n=1000,
-assignment=TRUE) 
-head(d)
+plot(km, dsd, type="both") 
 
 
 ###################################################
-### code chunk number 35: stream.Rnw:1373-1375
+### code chunk number 45: stream.Rnw:1493-1494
 ###################################################
-dsd <- DSD_Wrapper(d, k=3) 
-dsd
+evaluate(km, dsd, method=c("purity", "crand", "SSQ"), n=500)
 
 
 ###################################################
-### code chunk number 36: stream.Rnw:1383-1385
+### code chunk number 46: stream.Rnw:1499-1500
 ###################################################
-denstream <- DSC_DenStream() 
-clustream <- DSC_CluStream() 
+evaluate(km, dsd, c(method="purity", "crand", "SSQ"), n=500, assign="macro")
 
 
 ###################################################
-### code chunk number 37: stream.Rnw:1388-1391
+### code chunk number 47: stream.Rnw:1754-1763 (eval = FALSE)
 ###################################################
-cluster(denstream, dsd, 1000) 
-reset_stream(dsd) 
-cluster(clustream, dsd, 1000)
-
-
-###################################################
-### code chunk number 38: stream.Rnw:1394-1396
-###################################################
-denstream
-clustream
-
-
-###################################################
-### code chunk number 39: denstream
-###################################################
-reset_stream(dsd) 
-plot(denstream,dsd) 
-
-
-###################################################
-### code chunk number 40: clustream
-###################################################
-reset_stream(dsd) 
-plot(clustream,dsd) 
-
-
-###################################################
-### code chunk number 41: stream.Rnw:1431-1435
-###################################################
-km_denstream <- DSC_Kmeans(k=3)
-recluster(km_denstream, denstream)
-km_clustream <- DSC_Kmeans(k=3)
-recluster(km_clustream, clustream)
-
-
-###################################################
-### code chunk number 42: denstreamkmeans
-###################################################
-reset_stream(dsd) 
-plot(km_denstream,dsd) 
-
-
-###################################################
-### code chunk number 43: clustreamkmeans
-###################################################
-reset_stream(dsd) 
-plot(km_clustream, dsd) 
-
-
-###################################################
-### code chunk number 44: stream.Rnw:1468-1473
-###################################################
-sapply(list(DenStream=km_denstream, CluStream=km_clustream), 
-FUN=function(x){
-    reset_stream(dsd)
-    evaluate(x, dsd, c("purity","rand", "crand"))
-})
+## DSD_UniformNoise <- function(d=2)  
+##     structure(list(description = "Uniform Noise Data Stream", d = d),
+##               class=c("DSD_UniformNoise","DSD_R","DSD"))
+## 
+## get_points.DSD_UniformNoise <- function(x, n=1, assignment = FALSE, ...) {
+##     data <- as.data.frame(t(replicate(n, runif(x$d))))
+##     if(assignment) attr(data, "assignment") <- rep(NA, n)
+##     data
+## }
 
 

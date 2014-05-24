@@ -114,6 +114,6 @@ print.DSD_Wrapper <- function(x, ...) {
 		    '- loop is', x$loop, '\n'))
 }
 
-reset_stream.DSD_Wrapper <- function(dsd) {
-    dsd$state$counter <- 1
+reset_stream.DSD_Wrapper <- function(dsd, pos=1) {
+    dsd$state$counter <- pos
 }

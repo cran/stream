@@ -36,7 +36,7 @@ on Mathematical Software, 11(1), 37-57.
 
 \examples{
 # 3 clusters with 5% noise
-dsd <- DSD_GaussianStatic(k=3, noise=0.05)
+dsd <- DSD_Gaussians(k=3, noise=0.05)
 
 dsc <- DSC_Sample(20)
 cluster(dsc, dsd, 500)

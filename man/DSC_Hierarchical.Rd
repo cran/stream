@@ -6,13 +6,17 @@
     }
 
 \usage{
-	DSC_Hierarchical(k=NULL, h=NULL, method = "complete")
+	DSC_Hierarchical(k=NULL, h=NULL, method = "complete", min_weight=NULL)
 }
 
 \arguments{
 	\item{k}{The number of desired clusters.}
   \item{h}{Height where to cut the dentrogram.}
-	\item{method}{the agglomeration method to be used. This should be (an unambiguous abbreviation of) one of "ward", "single", "complete", "average", "mcquitty", "median" or "centroid".}
+	\item{method}{the agglomeration method to be used. This should be (an unambiguous
+    abbreviation of) one of "ward", "single", "complete", "average", "mcquitty", "median"
+    or "centroid".}
+  \item{min_weight}{micro-clusters with a weight less than this will be 
+    ignored for reclustering.}
 }
 
 \details{
@@ -41,16 +45,18 @@ cluster(hierarchical, dsd, 500)
 plot(hierarchical, dsd)
 
 # Hierarchical can also recluster micro-clusters
-dsc <- DSC_DenStream()
+dsc <- DSC_tNN(r=.2)
 cluster(dsc, dsd, 500)
 
 # reclustering by specifying k
 hierarchical <- DSC_Hierarchical(k=3, method="single")
 recluster(hierarchical, dsc)
-plot(hierarchical, dsd)
+hierarchical
+plot(hierarchical, dsd, type="both")
 
 # reclustering by specifying height
-hierarchical <- DSC_Hierarchical(h=.01, method="single")
+hierarchical <- DSC_Hierarchical(h=.4, method="single")
 recluster(hierarchical, dsc)
-plot(hierarchical, dsd)
+hierarchical
+plot(hierarchical, dsd, type="both")
 }

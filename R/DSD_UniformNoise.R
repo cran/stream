@@ -17,12 +17,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-DSD_UniformNoise <- function(d=2) { 
-
-    l <- list(description = "Unoform Noise Data Stream", d = d)
-    class(l) <- c("DSD_UniformNoise","DSD_R","DSD")
-    l
-}
+DSD_UniformNoise <- function(d=2) 
+    structure(list(description = "Uniform Noise Data Stream", d = d),
+	      class=c("DSD_UniformNoise","DSD_R","DSD"))
 
 get_points.DSD_UniformNoise <- function(x, n=1, assignment = FALSE, ...) {
 

@@ -33,6 +33,6 @@ Returns a matrix of \code{x$d} columns and \code{n} rows.
 }
 
 \examples{
-dsd <- DSD_GaussianStatic()
+dsd <- DSD_Gaussians()
 get_points(dsd, 100)
 }

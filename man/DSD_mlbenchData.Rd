@@ -5,7 +5,7 @@
 Provides a convenient wrapper for data sets from the mlbench package.
 }
 
-\usage{DSD_mlbenchData(data, loop = FALSE, random = FALSE, scale = FALSE)}
+\usage{DSD_mlbenchData(data=NULL, loop = FALSE, random = FALSE, scale = FALSE)}
 
 \arguments{
 	\item{data}{The name of the dataset from mlbench. If missing then

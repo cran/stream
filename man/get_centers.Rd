@@ -30,7 +30,7 @@ A data.frame with the micro- or macro-cluster centers as rows.
 
 \examples{
 # setting up the objects
-dsd <- DSD_GaussianStatic(k=3)
+dsd <- DSD_Gaussians(k=3)
 dsc <- DSC_Kmeans(k=3)
 cluster(dsc, dsd, 500)
 

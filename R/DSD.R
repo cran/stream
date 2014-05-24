@@ -30,15 +30,15 @@
 
 get_points <- function(x, n=1, ...) UseMethod("get_points")
 get_points.default <- function(x, n=1, ...) {
-    stop(gettextf("get_points not implemented for class '%s'.",
-		    paste(class(x), collapse=", ")))
+  stop(gettextf("get_points not implemented for class '%s'.",
+    paste(class(x), collapse=", ")))
 }
 
 ### in case the stream can be reset (e.g., a stream from a file)
-reset_stream <- function(dsd) UseMethod("reset_stream")
-reset_stream.DSD <- function(dsd) {
-    stop(gettextf("reset_stream not implemented for class '%s'.",
-		    paste(class(dsd), collapse=", ")))
+reset_stream <- function(dsd, pos=1) UseMethod("reset_stream")
+reset_stream.DSD <- function(dsd, pos=1) {
+  stop(gettextf("reset_stream not implemented for class '%s'.",
+    paste(class(dsd), collapse=", ")))
 }
 
 
@@ -46,37 +46,39 @@ reset_stream.DSD <- function(dsd) {
 #############################################################
 ### helper
 print.DSD <- function(x, ...) {
-    cat(paste(x$description, " (", paste(class(x), collapse=", "), ")", 
-		    '\n', sep=""))
-    cat(paste('With', x$k, 'clusters', 'in', x$d, 'dimensions', '\n'))
+  cat(paste(x$description, " (", paste(class(x), collapse=", "), ")", 
+    '\n', sep=""))
+  cat(paste('With', x$k, 'clusters', 'in', x$d, 'dimensions', '\n'))
 }
 
 plot.DSD <- function(x, n = 500, col= NULL, pch= NULL, 
-	..., method="pairs") {
-    ## method can be pairs, plot or pc (projection with PCA)
-    d <- get_points(x, n, assignment = TRUE)
-   
-    ### make sure to plot noise
-    assignment <- attr(d,"assignment")
-   
-    if(is.null(col)) {
-	col <- as.integer(assignment)
-	col[assignment==0 | is.na(assignment)] <-  which(palette()=="gray")
-    } 
- 
-    if(is.null(pch)) {
-	pch <- rep(1, n)
-	pch[assignment==0 | is.na(assignment)] <- 3L
-    }
-    
-    if(ncol(d)>2 && method=="pairs") {
-   		pairs(d, col=col, pch=pch, ...)
-    }
-    else if(ncol(d)>2 && method=="pc") {
-		## we assume Euclidean here
-		p <- prcomp(d)
-		plot(p$x, col=col, pch=pch, ...)
-    } else {
-		plot(d[,1:2],col=col, pch=pch, ...)
-    }
+  ..., method="pairs", dim=NULL) {
+  ## method can be pairs, plot or pc (projection with PCA)
+  d <- get_points(x, n, assignment = TRUE)
+  
+  ### make sure to plot noise
+  assignment <- attr(d,"assignment")
+  
+  if(is.null(col)) {
+    col <- as.integer(assignment)
+    col[assignment==0 | is.na(assignment)] <-  which(palette()=="gray")
+  } 
+  
+  if(is.null(pch)) {
+    pch <- rep(1, n)
+    pch[assignment==0 | is.na(assignment)] <- 3L
+  }
+  
+  if(!is.null(dim)) d <- d[,dim]
+  
+  if(ncol(d)>2 && method=="pairs") {
+    pairs(d, col=col, pch=pch, ...)
+  } else if(ncol(d)>2 && method=="pc") {
+    ## we assume Euclidean here
+    p <- prcomp(d)
+    plot(p$x, col=col, pch=pch, ...)
+  } else {
+    if(ncol(d)>2) d <- d[,1:2]
+    plot(d, col=col, pch=pch, ...)
+  }
 }

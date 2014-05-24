@@ -3,20 +3,21 @@
 \title{Scale a Stream from a DSD}
 
 \description{
-  A DSD class that wraps a DSD and scales it.
+  Make an unscaled data stream into a scaled data stream.
 }
 
 \usage{
-  DSD_ScaleStream(dsd,  
-                  center=TRUE, scale=TRUE,
-                  n=1000)
+  DSD_ScaleStream(dsd, center=TRUE, scale=TRUE, n=1000, reset=TRUE)
 }
 
 \arguments{
   \item{dsd}{A object of class \code{DSD} that will be scaled.}
   \item{center, scale}{logical or a numeric vector of length equal to
-                       the number of columns used for centering/scaling }
+    the number of columns used for centering/scaling 
+    (see function \code{scale}).}
   \item{n}{The number of points used to creating the centering/scaling }
+  \item{reset}{Try to reset the stream to its begining after taking \code{n} 
+    points for scaling.}
 }
 
 \details{
@@ -27,7 +28,7 @@
 
 \value{
   An object of class \code{DSD_ScaleStream} (subclass of \code{DSD_R},
-                                            \code{DSD}).
+    \code{DSD}).
 }
 
 \seealso{
@@ -38,18 +39,10 @@
 }
 
 \examples{
-  # creating data and writing it to disk
-  dsd <- DSD_GaussianStatic(k=3, d=5)
-  write_stream(dsd, "data.txt", n=100, sep=",")
+  dsd <- DSD_Gaussians(k=3, d=3)
+  plot(dsd)
   
-  # reading the same data back (as a loop)
-  dsd2 <- DSD_ReadStream("data.txt", sep=",", loop=TRUE)
-  plot(dsd2)
-  
-  dsd3 <- DSD_ScaleStream(dsd2)
-  plot(dsd3)
-  
-  # clean up
-  close_stream(dsd2)
-  file.remove("data.txt")
+  # scale stream using 100 points
+  dsd_scaled <- DSD_ScaleStream(dsd, n=100)
+  plot(dsd_scaled)
 }

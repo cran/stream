@@ -46,15 +46,34 @@ Static$methods(cluster = function(newdata, ...) {
 	}
 	)
 
-DSC_Static <- function(x, type=c("auto", "micro", "macro")) {
+DSC_Static <- function(x, type=c("auto", "micro", "macro"), 
+  k_largest=NULL, min_weight=NULL) {
     
     ### figure out type
     type <- get_type(x, type)
     if(type=="macro") macro <- TRUE
     else macro <- FALSE
 
-    static <- Static$new(get_centers(x, type), get_weights(x, type), 
-	macro=macro)
+    centers <- get_centers(x, type)
+    weights <- get_weights(x, type)
+  
+    if(!is.null(k_largest)) {
+      if(k_largest>nclusters(x)) {
+        warning("Less clusters than k. Using all clusters.")
+      }else{
+        o <- head(order(weights, decreasing=TRUE), n=k_largest)
+        centers <- centers[o,]
+        weights <- weights[o]
+      }
+    }
+  
+    if(!is.null(min_weight)) {
+      take <- weights>=min_weight
+      centers <- centers[take,]
+      weights <- weights[take]
+    }
+  
+    static <- Static$new(centers, weights, macro=macro)
 
     l <- list(description = "Static", RObj = static)
     

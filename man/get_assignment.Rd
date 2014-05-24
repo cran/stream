@@ -5,7 +5,8 @@
 (nearest-neighbor).}
 
 \usage{
-	get_assignment(dsc, points, type=c("auto", "micro", "macro"), ...)
+get_assignment(dsc, points, type=c("auto", "micro", "macro"), 
+  method="Euclidean", ...)
 }
 
 \arguments{
@@ -13,11 +14,14 @@
 	\item{points}{The points to be assigned as a data.frame.}
 	\item{type}{Use micro- or macro-clusters in DSC for assignment. Auto
 	used the class of dsc to decide.}
+	\item{method}{Distance measure used for nearest-neighbor assignment 
+  (see \code{dist} in \pkg{proxy} for available measures).}
 	\item{...}{Additional arguments are passed on.}
 }
 
 \details{
-Each data point is assigned to its nearest cluster using Euclidean distance.
+Each data point is assigned to its nearest cluster using the specified
+distance measure.
 }
 
 

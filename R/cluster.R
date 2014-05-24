@@ -23,6 +23,9 @@ cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) {
   if (n < 1)
     stop("numPoints must be >= 1")
   
+  # set new data flag
+  if(!is.null(dsc$macro)) dsc$macro$newdata <- TRUE
+
   # looping through the stream, feeding the new datapoints into 
   # the algorithm
   .cluster(dsc, dsd, n, verbose, ...)
@@ -32,29 +35,8 @@ cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) {
 }
 
 ### Workers
-.cluster <- function(dsc, x, n, verbose=FALSE, ...) UseMethod(".cluster")
+.cluster <- function(dsc, dsd, n, verbose=FALSE, ...) UseMethod(".cluster")
 
-.cluster.DSC_MOA <- function(dsc, dsd, n, verbose=FALSE, ...) {
-  ## data has to be all doubles for MOA clusterers!
-  for (i in 1:n) {
-    
-    
-    d <- get_points(dsd, 1)
-    ## TODO: Check incoming data
-    
-    
-    x <- .jcast(
-      .jnew("weka/core/DenseInstance", 1.0, .jarray(as.double(d))),
-      "weka/core/Instance"
-    )
-    
-    .jcall(dsc$javaObj, "V", "trainOnInstanceImpl", x)
-    
-    if(verbose && !i%%1000) cat("Processed", i, "points -",
-                                nclusters(dsc), "clusters\n")
-    
-  }	
-}
 
 ### geting a block of data improves performance the R implementation
 ### needs to make sure that points are processed sequencially

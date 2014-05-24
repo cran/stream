@@ -1,5 +1,9 @@
 \name{DSC}
 \alias{DSC}
+\alias{get_microclusters}
+\alias{get_microweights}
+\alias{get_macroclusters}
+\alias{get_macroweights}
 \title{Data Stream Clusterer Base Class}
 \description{Abstract base class for all DSC (Data Stream
 Clusterer) classes.}

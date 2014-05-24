@@ -17,77 +17,81 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-DSD_BarsAndGaussians <- function(noise = 0) {
-    # creating the DSD object
-    l <- list(description = "Bars and Gaussians",
-	    d = 2,
-	    k = 4,
-	    noise = noise)
-    class(l) <- c("DSD_BarsAndGaussians","DSD_R","DSD")
-    l
+DSD_BarsAndGaussians <- function(angle = NULL, noise = 0) {
+  
+  if(is.null(angle)) angle <- runif(1, 1, 360)
+  
+  rad <- angle/360 * 2*pi
+  rotation <- rbind(c(cos(rad),-sin(rad)),c(sin(rad),cos(rad)))
+  
+  # creating the DSD object
+  l <- list(description = "Bars and Gaussians",
+    d = 2,
+    k = 4,
+    angle = angle,
+    rotation = rotation,
+    noise = noise)
+  class(l) <- c("DSD_BarsAndGaussians","DSD_R","DSD")
+  l
 }
 
 get_points.DSD_BarsAndGaussians <- function(x, n=1, assignment = FALSE,...) {
-    ### gaussians at (3,2.5) and (3,-2.5)
-### bars at (-3,2.8) and (-3,-2.8)
+  ### gaussians at (3,2.5) and (3,-2.5)
+  ### bars at (-3,2.8) and (-3,-2.8)
+  
+  a <- sample(c(NA_integer_, 1:4), n, 
+    prob=c(x$noise, 3/8*(1-x$noise), 1/8*(1-x$noise), 
+      3/8*(1-x$noise), 1/8*(1-x$noise)), replace=TRUE)
+  
+  dat <- sapply(a, FUN=function(type) {
+    ### noise  
+    if(is.na(type)) p <- c(NA, NA)
+    else {
+      ### Gaussian 1
+      if(type==1) {
+        cen <- c(3,2)
+        p <- rnorm(2) + cen
+      }
+      
+      ### Gaussian 2
+      if(type==2) {
+        cen <- c(3,-2)
+        p <- rnorm(2) + cen
+      }
+      
+      ### bar 1
+      if(type==3) {
+        cen <- c(-3, 1.3)
+        hight <- 2
+        width <- 5
+        p <- c(runif(1, -width/2, width/2), runif(1, -hight/2, hight/2)) + cen
+      }
+      
+      ### bar 2
+      if(type==4) {
+        cen <- c(-3, -1.3)
+        hight <- 2
+        width <- 5
+        p <- c(runif(1, -width/2 , width/2), runif(1, -hight/2, hight/2)) + cen
+      }
+    }
+    
+    p
+  })
+  
+  ### note: dat is already transposed!
+  dat <- x$rotation %*% dat
+  
+  
+  dat <- as.data.frame(t(dat))
 
-	
-	df <- data.frame()
-        a <- numeric()
-
-	for(i in 1:n) {
-	
-	type <- sample(0:4, 1, prob=c(x$noise,.5*(1-x$noise),.25*(1-x$noise),.5*(1-x$noise),.25*(1-x$noise)))
-	
-	if(type==0) {
-		p <- runif(2, -6,6)
-	}
-	
-	if(type==1) {
-		### gaussian
-		cen <- c(3,2.5)
-		p <- rnorm(2)
-		p <- p+cen
-	}
-	
-	if(type==2) {
-		### gaussian
-		cen <- c(3,-2.5)
-		p <- rnorm(2)
-		p <- p+cen
-	}
-	
-	if(type==3) {
-		### bar
-		cen <- c(-3, 2.8)
-		hight <- 5
-		p <- c(runif(1, -1,1), runif(1, -hight/2, hight/2))
-		p <- p+cen
-	}
-	
-	if(type==4) {
-		### bar
-		cen <- c(-3, -2.8)
-		hight <- 5
-		p <- c(runif(1, -1,1), runif(1, -hight/2, hight/2))
-		p <- p+cen
-	}
-	
-	if(assignment) {
-		if(type==0) a <- c(a,as.integer(NA))
-		else a <- c(a,type)
-	}
-	
-	df <- rbind(df,p)
-	
-	}
-	
-	
-	if(assignment) {
-		attr(df,"assignment")<-a
-	}
-	
-	names(df) <- c("x","y")
-	
-	df
+  ### add noise
+  n <- which(is.na(a))
+  if(length(n)) dat[n,] <- matrix(runif(2L*length(n), -8, 8), ncol=2L)
+  
+  if(assignment) attr(dat, "assignment") <- a
+  
+  names(dat) <- c("x","y")
+  
+  dat
 }

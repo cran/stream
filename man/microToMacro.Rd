@@ -27,23 +27,22 @@ A vector of the same length as \code{micro} with the macro-cluster ids.
 }
 \examples{
 # 3 clusters with 5% noise
-dsd <- DSD_GaussianStatic(k=3, noise=0.05)
+dsd <- DSD_Gaussians(k=3, noise=0.05)
 
 # recluster a micro-clusters
-micro <- DSC_CluStream()
+micro <- DSC_DStream(gridsize=0.05)
 cluster(micro, dsd, 500)
 
 macro <- DSC_Kmeans(k=3)
 recluster(macro, micro)
 
 # translate all micro-cluster ids
-ids <- 1:nclusters(macro, type="micro")
-microToMacro(macro, ids)
+microToMacro(macro)
 
 # plot some data points in grey
 plot(dsd, col="grey", cex=.5)
 # add micro-clusters and use the macro-cluster ids as color
-points(get_centers(macro, type="micro"), col=microToMacro(macro, ids))
+points(get_centers(macro, type="micro"), col=microToMacro(macro))
 # add macro-cluster centers
 points(get_centers(macro, type="macro"), pch=3, cex=4, ,lwd=2, col=1:3)
 }

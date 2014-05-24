@@ -112,8 +112,8 @@ get_points.DSD_ReadStream <- function(x, n=1, assignment=FALSE, ...) {
     d
 }
 
-reset_stream.DSD_ReadStream <- function(dsd) {
-    invisible(seek(dsd$file, where=0))
+reset_stream.DSD_ReadStream <- function(dsd, pos=1) {
+    invisible(seek(dsd$file, where=pos-1))
 }
 
 close_stream <- function(dsd) {

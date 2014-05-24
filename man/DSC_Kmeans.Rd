@@ -7,7 +7,8 @@
 
 \usage{
     DSC_Kmeans(k, weighted = TRUE, iter.max = 10, nstart = 1,
-	    algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"))
+	    algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"),
+      min_weight = NULL)
 }
 
 \arguments{
@@ -19,6 +20,8 @@
 	\item{nstart}{if centers is a number, how many random sets should be
 	chosen?}
 	\item{algorithm}{character: may be abbreviated.}
+  \item{min_weight}{micro-clusters with a weight less than this will be 
+    ignored for reclustering.}
 }
 
 \details{
@@ -38,15 +41,15 @@ on the algorithm.
 
 \examples{
 # 3 clusters with 5% noise
-dsd <- DSD_GaussianStatic(k=3, noise=0)
+dsd <- DSD_Gaussians(k=3, noise=0)
 
-dsc <- DSC_BIRCH(radius=0.01)
+dsc <- DSC_Sample(k=50)
 cluster(dsc, dsd, 500)
 
 # recluster micro-clusters
 kmeans <- DSC_Kmeans(k=3)
 recluster(kmeans, dsc)
-plot(kmeans, dsd)
+plot(kmeans, dsd, type="both")
 
 # Kmeans can also directly cluster data (original data are considered 
 # micro-cluster centers)

@@ -36,7 +36,7 @@ There is no value returned from this operation.
 
 \examples{
 # creating data and writing it to disk
-dsd <- DSD_GaussianStatic(k=3, d=5)
+dsd <- DSD_Gaussians(k=3, d=5)
 write_stream(dsd, file="data.txt", n=100)
 
 # clean up

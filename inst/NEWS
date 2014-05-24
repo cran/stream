@@ -1,4 +1,18 @@
-Changes in version 0.2-0
+Changes in version 1.0-0 (5/24/14)
+    * added D-Stream (with attraction)
+    * improved support for creating animations
+    * tnn: new decay models, tNN without shared density now reclusters 
+        using density reachability
+    * plot gained the type "both" that plots micro and macro-clusters
+    * DSC_Hierarchical and DSC_Kmeans gained min_weight to filter low weight
+        micro-clusters before reculstering
+    * removed default radius, etc. for most clustering algorithms
+    * Added DSD_MG for simulating treams with concept drift
+    * moved MOA related code to streamMOA
+    * suspended DSC_BIRCH because of memory issues
+    * reset_stream gained a pos argument
+
+Changes in version 0.2-0 (2/21/14)
     * major restructuring
 
 Initial version 0.1-1 (8/16/13)
