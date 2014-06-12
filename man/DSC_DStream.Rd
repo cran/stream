@@ -25,7 +25,7 @@ get_attraction(x, dist=FALSE, relative=FALSE)
     authors use denote the decay factor as lambda, while here the decay factor
     will be computed from lambda using \eqn{2^-lambda}).}
 	\item{gaptime}{sporadic grids are removed every
-    gaptime points.}
+    gaptime number of points.}
 	\item{Cm}{threshold used to detect dense grids (as a proportion of the 
 	    average expected density).}
 	\item{Cl}{threshold to detect transitional and sporadic grids (0 > Cl > 1).}
@@ -35,7 +35,8 @@ get_attraction(x, dist=FALSE, relative=FALSE)
   \item{epsilon}{overlap parameter for attraction as a proportion of 
     \code{gridsize}.}
   \item{Cm2}{threshold on attraction to join two dense grid cells (as a 
-    proportion on the average expected attraction).}
+    proportion on the average expected attraction). In the original algorithm 
+    \code{Cm2} is equal to \code{Cm}.}
   \item{k}{alternative to Cm2 (not in the original algorithm). 
     Create k clusters based on attraction. In case 
     of more than k unconnected components, closer groups of MCs are joined.}
@@ -47,18 +48,30 @@ get_attraction(x, dist=FALSE, relative=FALSE)
 
 \details{
 D-Stream creates an equally spaced grid and estimates the density in each 
-  grid cell using the count of points falling in the cells. 
-  The density is faded after every new point by a factor of \eqn{2^-lambda}.
+  grid cell using the count of points falling in the cells. Grid cells are 
+  classified based on density into dense, transitional and sporadic cells.
+  The density is faded after every new point by a factor of \eqn{2^{-lambda}}.
   Every gaptime number of points sporadic grid cells are removed.
   
-  For reclustering D-Stream (2007 version) creates grid groups of reachable 
-  dense grid cells.
-  This can be implemented using \code{DSC_hierarchical} with single-linkage
-  and h of just above gridsize (see Examples section below).
+  For reclustering D-Stream (2007 version) merges adjacent dense grids to
+  form macro-clusters and then assigns adjacent transitional grids to 
+  macro-clusters. This behavior is implemented as \code{attraction=FALSE}. 
   
   The 2009 version of the algorithm adds the concept of attraction between 
-  grids cells. If \code{attraction=TRUE} is used then the algorithm also
-  produces macro-clusters and weights.
+  grids cells. If \code{attraction=TRUE} is used then the algorithm
+  produces macro-clusters based on attraction between dense adjacent grids 
+  (uses \code{Cm2} which in the original algorithm is equal to \code{Cm}).
+
+  For many functions (e.g., \code{get_centers()}, \code{plot()}), 
+  D-Stream adds a parameter \code{grid_type} with possible 
+  values of \code{"dense"}, \code{"transitional"}, \code{"sparse"}, 
+  \code{"all"} and \code{"used"}. This only returns the selected type
+  of grid cells. \code{"used"} includes dense and adjacent transitional cells 
+  which are used in D-Stream for reclustering.
+
+  For plot D-Stream also provides extra parameters \code{"grid"} and 
+  \code{"grid_type"} to show micro-clusters as grid cells
+  (density represented by gray values). 
 }
 
 \value{
@@ -77,39 +90,44 @@ Li Tu and Yixin Chen. 2009. Stream data clustering based on grid density and att
 }
 
 \examples{
-set.seed(0)
-dsd <- DSD_Gaussians(k=3, noise=0.05)
+dsd <- DSD_BarsAndGaussians(noise=.05)
+plot(dsd)
 
-dstream <- DSC_DStream(gridsize=.05)
-cluster(dstream, dsd, 500)
-dstream
+# we set Cm=.8 to pick up the lower density clusters
+dstream1 <- DSC_DStream(gridsize=1, Cm=3)
+cluster(dstream1, dsd, 1000)
+dstream1
 
-# see micro-clusters
-nclusters(dstream)
-head(get_centers(dstream))
+# micro-clusters (these are "used" grid cells)
+nclusters(dstream1)
+head(get_centers(dstream1))
 
-# plot (DStream provides additional type="grid")
-plot(dstream, dsd)
-plot(dstream, type="grid")
-plot(dstream, dsd, type="grid")
+# plot (DStream provides additional grid visualization)
+plot(dstream1, dsd)
+plot(dstream1, dsd, grid=TRUE)
 
+# look only at dense grids
+nclusters(dstream1, grid_type="dense")
+plot(dstream1, dsd, grid=TRUE, grid_type="dense")
+
+# look at transitional and sparse cells
+plot(dstream1, dsd, grid=TRUE, grid_type="transitional")
+plot(dstream1, dsd, grid=TRUE, grid_type="sparse")
+
+### Macro-clusters
 # standard D-Stream uses reachability
-nclusters(dstream, type="macro")
-get_centers(dstream, type="macro")
-plot(dstream, type="both")
+nclusters(dstream1, type="macro")
+get_centers(dstream1, type="macro")
+plot(dstream1, dsd, type="both", grid=TRUE)
+evaluate(dstream1, dsd, measure="crand", type="macro")
 
-# use image and add centers
-plot(dstream, type="grid")
-points(get_centers(dstream, type="macro"), col="blue", pch=3, lwd=2, 
-  cex=get_weights(dstream, type="macro", scale=c(1,5)))
 
 # use attraction for reclustering
-set.seed(0)
-dsd <- DSD_Gaussians(k=3, noise=0.05)
+dstream2 <- DSC_DStream(gridsize=1, attraction=TRUE, Cm=3)
+cluster(dstream2, dsd, 1000)
+dstream2
 
-dstream <- DSC_DStream(gridsize=.05, attraction=TRUE, epsilon=.15)
-cluster(dstream, dsd, 500)
-dstream
-
-plot(dstream, type="both", dsd)
+plot(dstream2, dsd, type="both", grid=TRUE)
+evaluate(dstream2, dsd, measure="crand", type="macro")
 }
+

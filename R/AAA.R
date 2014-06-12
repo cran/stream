@@ -16,8 +16,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-### helper for doing things in blocks
 
+
+### noise symbol and color
+noise_pch <- 20L 
+noise_col <-  which(palette()=="gray")
+
+### helper for doing things in blocks
 .make_block <- function(n, block) {
     if(n<block) return(n)
     
@@ -25,3 +30,10 @@
     if(n%%block) b<- c(b, n%%block)
     b
 }
+
+### line break helper
+.line_break <- function(x, width=options("width")) {
+  form <- paste('(.{1,', width,'})(\\s|$)', sep='')
+  gsub(form, '\\1\n', x)
+}
+  

@@ -35,8 +35,8 @@ clustering result, call \code{get_centers()} on the DSC object.
 
 \seealso{
 	\code{\link{DSC}},
-	\code{\link{DSD}},
-	\code{\link{animation}}
+	\code{\link{DSD}}, and
+	\code{\link{animation}} for producing an animation of the clustering process.
 }
 
 \examples{

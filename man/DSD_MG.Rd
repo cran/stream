@@ -12,9 +12,9 @@
 }
 
 \usage{
-DSD_MG(dimension = 2, ...)
+DSD_MG(dimension = 2, ..., labels=NULL, description=NULL)
 
-add_cluster(x, c)
+add_cluster(x, c, label=NULL)
 get_clusters(x) 
 remove_cluster(x, i)
 }
@@ -25,6 +25,10 @@ remove_cluster(x, i)
   \item{x}{A \code{DSD_MG} object.}
   \item{c}{The cluster that should be added to the \code{DSD_MG} object.}
   \item{i}{The index of the cluster that should be removed from the \code{DSD_MG} object.}
+  \item{label, labels}{integer representing the cluster label. \code{NA} represents noise.
+    If labels are not specified, then each new cluster gets a new label.}
+  \item{description}{ An optional string used by \code{print} to describe the 
+    data generator. }
 }
 
 \details{
@@ -45,35 +49,49 @@ dsd
 ### add two clusters
 c1 <- MGC_Random(density=50, center=c(50,50), parameter=1)
 add_cluster(dsd, c1)
-
+dsd
+  
 c2 <- MGC_Noise(density=1, range=rbind(c(-20,120), c(-20,120)))
 add_cluster(dsd, c2)
-    
+dsd
+  
 get_clusters(dsd)
 plot(dsd, xlim=c(-20,120), ylim=c(-20,120))
     
 \dontrun{
 animate_data(dsd, n=5000, xlim=c(-20,120), ylim=c(-20,120))
 }
-  
-  
+    
 ### remove cluster 1
 remove_cluster(dsd,1)
     
 get_clusters(dsd)
 plot(dsd, xlim=c(-20,120), ylim=c(-20,120))
-    
+
+### create a more complicated cluster structure (using 2 clusters with the same
+### label to form an L shape)
+dsd <- DSD_MG(dim=2,
+  MGC_Static(density=10, center=c(.5,.2), par=c(.4,.2), shape=MGC_Shape_Block),
+  MGC_Static(density=10, center=c(.6,.5), par=c(.2,.4), shape=MGC_Shape_Block),
+  MGC_Static(density=5, center=c(.39,.53), par=c(.16,.35), shape=MGC_Shape_Block),
+  MGC_Noise(density=1, range=rbind(c(0,1), c(0,1))),
+  labels= c(1, 1, 2, NA)
+  )
+   
+plot(dsd, xlim=c(0,1), ylim=c(0,1))
+  
+  
 ### simulate the clustering of a splitting cluster  
 c1 <- MGC_Linear(dim = 2, keyframelist = list(
-  keyframe(time = 1,  dens = 10, center = c(0,0),   param = 10, cluster=1),
-  keyframe(time = 50, dens = 10, center = c(50,50), param = 10, cluster=1),
-  keyframe(time = 100,dens = 10, center = c(50,100),param = 10, cluster=1)
+  keyframe(time = 1,  dens = 20, center = c(0,0),   param = 10),
+  keyframe(time = 50, dens = 10, center = c(50,50), param = 10),
+  keyframe(time = 100,dens = 10, center = c(50,100),param = 10)
 ))
-  
+
+### Note: Second cluster appearch at time=50
 c2 <- MGC_Linear(dim = 2, keyframelist = list(
-  keyframe(time = 1,  dens = 10, center = c(0,0),   param = 10, cluster=1),
-  keyframe(time = 50, dens = 10, center = c(50,50), param = 10, cluster=2),
-  keyframe(time = 100,dens = 10, center = c(100,50),param = 10, cluster=2)
+  keyframe(time = 50, dens = 10, center = c(50,50), param = 10),
+  keyframe(time = 100,dens = 10, center = c(100,50),param = 10)
 ))
 
 dsd <- DSD_MG(dim = 2, c1, c2)
@@ -83,6 +101,6 @@ tnn <- DSC_tNN(r=10, lambda=0.1)
   
 \dontrun{
 tnnPurity <- animate_cluster(tnn, dsd, n=2500, type="both", 
-  xlim=c(-10,120), ylim=c(-10,120), evaluationMethod="purity", pointInterval=50)
+  xlim=c(-10,120), ylim=c(-10,120), evaluationMethod="purity", horizon=100)
 }
 }

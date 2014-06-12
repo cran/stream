@@ -9,7 +9,7 @@
 
 \usage{
 DSC_tNN(r, lambda = 0.001, gap_time = 1000L, 
-  noise = 0.01, measure = "Euclidean", 
+  noise = 0.1, measure = "Euclidean", 
 	shared_density = FALSE, alpha=0.1, k=0, minweight = 0)
 get_shared_density(x, matrix=FALSE)  
 }
@@ -45,6 +45,9 @@ the new data point.
 Note: Although DSC_tNN is a micro clustering algorithm, macro clusters
 and weights are available.
 
+\code{plot()} for DSC_tNN has two extra logical parameters called \code{assignment}
+  and \code{shared_density} which show the assignment area and
+  the shared density graph, rexpectively.
 }
 
 \value{
@@ -68,9 +71,9 @@ Stream Clustering in R, Journal of Statistical Software, 35(5), 1-31, URL \url{h
 set.seed(0)
 dsd <- DSD_Gaussians(k=3, noise=0.05)
 
-# tNN with reachability (you can increase noise to reduce the micro-clusters
+# tNN with reachability (increase noise parameter to reduce the micro-clusters
 # at the fringes of the Gaussians)
-tnn <- DSC_tNN(r=.05, noise=0.1)
+tnn <- DSC_tNN(r=.1, noise=0.1)
 cluster(tnn, dsd, 500)
 tnn
 
@@ -82,16 +85,20 @@ plot(tnn, dsd)
 # plot macro-clusters
 plot(tnn, dsd, type="both")
 
+# plot micro-clusters with assignment area
+plot(tnn, dsd, type="micro", assignment=TRUE)
+
 
 # tNN with shared density 
-# Note: for shared density we can use larger micro-clusters 
-tnn <- DSC_tNN(r=.1, noise=0.1, shared_density=TRUE, alpha=0.39)
+tnn <- DSC_tNN(r=.1, noise=0.1, shared_density=TRUE)
 cluster(tnn, dsd, 500)
 tnn
 plot(tnn, dsd, type="both")
 
 # plot the shared density graph
-plot(tnn, dsd, type="shared_density")
+plot(tnn, dsd, type="micro", shared_density=TRUE)
+plot(tnn, dsd, type="micro", shared_density=TRUE, assignment=TRUE)
+plot(tnn, dsd, type="none", shared_density=TRUE, assignment=TRUE)
 
 # see how micro and macro-clusters relate
 # each microcluster has an entry with the macro-cluster id
@@ -100,8 +107,7 @@ microToMacro(tnn)
 
 # evaluate first using macro and then using micro-clusters
 \dontrun{
-evaluate(tnn, dsd, method="purity")
-evaluate(tnn, dsd, method="cRand", type="macro")
-evaluate(tnn, dsd, method="cRand", type="macro", assign="macro")
+evaluate(tnn, dsd, measure="purity")
+evaluate(tnn, dsd, measure="cRand", type="macro")
 }
 }

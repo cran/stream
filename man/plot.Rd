@@ -28,11 +28,11 @@
 	\item{pch}{symbol type.}
 	\item{method}{method used for plotting: 
 	    "pairs" (pairs plot), 
-	    "plot" (plot first two dimensions) or 
+	    "scatter" (scatter plot) or 
 	    "pc" (plot first 2 principal components).}
 	\item{dim}{an integer vector with the dimensions to plot. If \code{NULL} 
       then for methods \code{"pairs"} and \code{"pc"} all dimensions are used 
-      and for \code{"plot"} the first two dimensions are plotted.}
+      and for \code{"scatter"} the first two dimensions are plotted.}
 	\item{type}{Plot micro- or macro-clusters. Auto
 	        used the class of dsc to decide.}
 	\item{\dots}{further arguments are passed on to
@@ -57,7 +57,7 @@ dsd <- DSD_Gaussians(k=3, d=3)
 ## plot data
 plot(dsd, n=500)
 plot(dsd, method="pc", n=500)
-plot(dsd, method="plot", dim=c(1,3), n=500)
+plot(dsd, method="scatter", dim=c(1,3), n=500)
 
 
 ## create and plot micro-clusters

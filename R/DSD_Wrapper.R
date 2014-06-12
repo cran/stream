@@ -17,103 +17,103 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-DSD_Wrapper <- function(x, n, k=NA, loop=FALSE, assignment = NULL) {
-
-    if(is(x, "DSD")) {
-	if(is.na(k) && !is.null(x$k)) k <- x$k
-	p <- get_points(x, n, assignment = TRUE)
-	assignment <- attr(p, "assignment")
-	x <- p
-    }else{
-	x <- as.data.frame(x)
-    }
-
-    state <- new.env()
-    assign("counter", 1L, envir = state)
-
-    if(is.null(assignment)) assignment <-attr(x, "assignment")
-
-    # creating the DSD object
-    l <- list(description = "Data Frame/Matrix Stream Wrapper",
-	    strm = x,
-	    state = state,
-	    d = ncol(x),
-	    k = k,
-	    loop = loop,
-	    assignment = assignment)
-    class(l) <- c("DSD_Wrapper","DSD_R","DSD")
-    l
+DSD_Wrapper <- function(x, n, k=NA, loop=FALSE, assignment = NULL, 
+  description=NULL) {
+  
+  if(is(x, "DSD")) {
+    if(is.na(k) && !is.null(x$k)) k <- x$k
+    x <- get_points(x, n, assignment = TRUE)
+    x$assignment <- attr(x, "assignment")
+    assignment <- ncol(x) 
+  }else if(is.null(ncol)) stop("x needs to be a matrix-like object!") 
+  
+  if(length(assignment) == nrow(x)) {
+    x <- cbind(x, assignment)
+    assignment <- ncol(x)
+  }
+  
+  if(is.null(assignment)) d <- ncol(x) else d <- ncol(x)-1L
+  
+  state <- new.env()
+  assign("counter", 1L, envir = state)
+  
+  if(is.null(description)) description <- "Data Frame Stream Wrapper"
+  
+  # creating the DSD object
+  structure(list(
+    description = description,
+    strm = x,
+    state = state,
+    d = d,
+    k = k,
+    loop = loop,
+    assignment = assignment
+    ), class = c("DSD_Wrapper","DSD_R","DSD"))
 }
 
 get_points.DSD_Wrapper <- function(x, n=1, assignment = FALSE,...) {
-    n <- as.integer(n)
-   
-    if(x$state$counter > nrow(x$strm)) {
-	if(x$loop) x$state$counter <- 1L
-	else stop("The stream is at its end!")
-    }
-
-    n_left <- nrow(x$strm) - x$state$counter + 1L
+  n <- as.integer(n)
+  
+  if(x$state$counter > nrow(x$strm)) {
+    if(x$loop) x$state$counter <- 1L
+    else stop("The stream is at its end!")
+  }
+  
+  n_left <- nrow(x$strm) - x$state$counter + 1L
+  
+  if(n_left < n && !x$loop) stop("Not enought data points left in stream!")
+  
+  if(n_left >= n) {
+    ### regular case
+    d <- x$strm[x$state$counter:(x$state$counter + n -1L),,drop=FALSE]
+    x$state$counter <- x$state$counter + n
+  }else{
+    ### we need to loop!
     
-    if(n_left < n && !x$loop) stop("Not enought data points left in stream!")
-
-    if(n_left >= n) {
-	### regular case
-	d <- x$strm[x$state$counter:(x$state$counter + n -1L),]
-	if(assignment) {
-	    a <- x$assignment[x$state$counter:(x$state$counter + n -1L)]
-	}
-	x$state$counter <- x$state$counter + n
-    }else{
-	### we need to loop!
-
-
-	# take what is left and reset counter
-	d <- x$strm[x$state$counter:nrow(x$strm),] 
-	if(assignment) a <- x$assignment[x$state$counter:nrow(x$strm)]
-	togo <- n-n_left
-	x$state$counter <- 1L
-
-	while(togo > 0L) {
-	    n_left <- nrow(x$strm) - x$state$counter + 1L
-
-	    if(n_left < togo) {
-		# take the whole stream
-		d <- rbind(d, x$strm)
-		if(assignment) a <- append(a, x$assignment)
-		togo <- togo - n_left
-	    }else{
-		# take the rest
-		d <- rbind(d, x$strm[1:(x$state$counter+togo-1),])
-		if(assignment) {
-		    a <- append(a, x$assignment[1:(x$state$counter+togo-1)])
-		}
-		x$state$counter <- x$state$counter + togo
-		togo <- 0L
-	    }
-	}
-    }
     
-	d <- data.frame(d)
-	
-	if(assignment)
-		attr(d,"assignment") <- as.numeric(a)
-	else
-		attr(d,"assignment") <- as.numeric(NA)
-	
-	d
+    # take what is left and reset counter
+    d <- x$strm[x$state$counter:nrow(x$strm),,drop=FALSE] 
+    togo <- n-n_left
+    x$state$counter <- 1L
+    
+    while(togo > 0L) {
+      n_left <- nrow(x$strm) - x$state$counter + 1L
+      
+      if(n_left < togo) {
+        # take the whole stream
+        d <- rbind(d, x$strm)
+        togo <- togo - n_left
+      }else{
+        # take the rest
+        d <- rbind(d, x$strm[1:(x$state$counter+togo-1),])
+        x$state$counter <- x$state$counter + togo
+        togo <- 0L
+      }
+    }
+  }
+
+  if(!is.null(x$assignment)) {
+    a <- d[, x$assignment]
+    d <- d[,-x$assignment]
+  }else a <- rep.int(1L, times=nrow(d))
+  
+  d <- data.frame(d)
+  
+  if(assignment) attr(d, "assignment") <- a
+  
+  d
 }
 
 print.DSD_Wrapper <- function(x, ...) {
-    NextMethod() # calling the super classes print()
-    pos <- x$state$counter
-    if (pos>nrow(x$strm)) 
-	if (!x$loop) pos <- "'end'" else pos <- 1
-    cat(paste('Contains', nrow(x$strm), 
-		    'data points - currently at position', pos, 
-		    '- loop is', x$loop, '\n'))
+  NextMethod() # calling the super classes print()
+  pos <- x$state$counter
+  if (pos>nrow(x$strm)) 
+    if (!x$loop) pos <- "'end'" else pos <- 1
+  cat(paste('Contains', nrow(x$strm), 
+    'data points - currently at position', pos, 
+    '- loop is', x$loop, '\n'))
 }
 
 reset_stream.DSD_Wrapper <- function(dsd, pos=1) {
-    dsd$state$counter <- pos
+  dsd$state$counter <- pos
 }

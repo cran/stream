@@ -16,7 +16,7 @@
     the number of columns used for centering/scaling 
     (see function \code{scale}).}
   \item{n}{The number of points used to creating the centering/scaling }
-  \item{reset}{Try to reset the stream to its begining after taking \code{n} 
+  \item{reset}{Try to reset the stream to its beginning after taking \code{n} 
     points for scaling.}
 }
 

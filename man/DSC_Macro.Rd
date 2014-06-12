@@ -3,8 +3,10 @@
 \title{Abstract Class for Macro Clusterers}
 \description{Abstract class for all DSC Macro Clusterers.}
 
-%\details{
-%}
+\details{
+\code{DSC_Macro} cannot be instantiated. Calling \code{DSC_Macro()}
+results in an error.
+}
 
 \seealso{
 	\code{\link{DSC}}

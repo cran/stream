@@ -35,10 +35,12 @@ MGC_Noise_refClass <- setRefClass("MGC_Noise",
 )
 
 MGC_Noise_refClass$methods(
-  get_attributes = function(time) {
-    c(cluster=0,density=density)
+  get_attributes = function(time, attributes=NULL) {
+    att <- list(density = density, range=range)
+    if(!is.null(attributes)) att <- att[attributes]
+    att
   },
-  
+
   get_points = function(time) {
     apply(range, 1, function(x) runif(1, x[1], x[2]))
   }

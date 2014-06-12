@@ -21,7 +21,7 @@ DSD_Target <- function(center_sd =.05, center_weight=.5,
 	ring_r=.2, ring_sd=0.02, noise=0) {
 
     # creating the DSD object
-    l <- list(description = "Target Shape",
+    l <- list(description = "Target (ball in circle) data generator",
 	    d = 2,
 	    k = 2,
 	    center_sd = center_sd,

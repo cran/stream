@@ -16,99 +16,103 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+### creator    
+DSC_DBSCAN <- function(eps, MinPts = 5, weighted = TRUE, description=NULL) {
+  
+  DBSCAN <- DBSCAN$new(eps=eps, MinPts = MinPts, weighted = weighted)
+  if(!is.null(description)) desc <- description
+  else if(weighted) desc <- "DBSCAN (weighted)" else desc <- "DBSCAN (unweighted)"
+  
+  l <- list(description = desc, RObj = DBSCAN)
+  class(l) <- c("DSC_DBSCAN","DSC_Macro","DSC_R","DSC")
+  l
+}
+
 
 DBSCAN <- setRefClass("DBSCAN", 
-	fields = list(
-		eps	        = "numeric",
-		MinPts	    = "numeric",
+  fields = list(
+    eps	        = "numeric",
+    MinPts	    = "numeric",
     weighted    = "logical",
-		assignment  = "numeric",
-		details	    = "ANY",
-		data        = "data.frame",
+    assignment  = "numeric",
+    details	    = "ANY",
+    data        = "data.frame",
     weights	    = "numeric",
-		clusterCenters = "data.frame",
-		clusterWeights = "numeric"
-		), 
-
-	methods = list(
-		initialize = function(eps = .1, MinPts	= 5, weighted = TRUE) {
-
-        eps     <<- eps
-		    MinPts  <<- MinPts  
-        weighted <<- weighted
-        
-        data    <<- data.frame()
-		    weights <<- numeric()
-		    clusterWeights <<- numeric()
-		    clusterCenters <<- data.frame()
-
-		    .self
-		}
-
-		),
-	)
-
-DBSCAN$methods(cluster = function(x, weight = rep(1,nrow(x)), ...) {
-	    if(length(data)>0) {
-		warning("DBSCAN: Previous data is being overwritten")
-	    }
-
-	    ### save micro-clusters
-      weights <<- weight
-	    data <<- x
-
-      if(!weighted) weight <- NULL
+    clusterCenters = "data.frame",
+    clusterWeights = "numeric"
+  ), 
+  
+  methods = list(
+    initialize = function(eps = .1, MinPts	= 5, weighted = TRUE) {
       
-      ### internal dbscan uses weights
-	    DBSCAN <- .dbscan(data, eps, MinPts = MinPts, scale = FALSE, 
-		    method = "hybrid", seeds = TRUE, showplot = FALSE, countmode = NULL,
-        weight=weight)
+      eps     <<- eps
+      MinPts  <<- MinPts  
+      weighted <<- weighted
+      
+      data    <<- data.frame()
+      weights <<- numeric()
+      clusterWeights <<- numeric()
+      clusterCenters <<- data.frame()
+      
+      .self
+    }
+    
+  ),
+)
 
-	    assignment <<- DBSCAN$cluster
+DBSCAN$methods(
+  cluster = function(x, weight = NULL, ...) {
+    if(length(data)>0) {
+      warning("DBSCAN: Previous data is being overwritten")
+    }
+    
+    
+    if(is.null(weight)) weights <<- rep(1,nrow(x))
+    else {
+      if(length(weight)!=nrow(x)) stop("number of weights does not match number of points")
+      weights <<- weight
+    }
+    
+    data <<- x
+    
+    if(!weighted) weight <- NULL
+    
+    ### internal dbscan uses weights
+    DBSCAN <- .dbscan(data, eps, MinPts = MinPts, scale = FALSE, 
+      method = "hybrid", seeds = TRUE, showplot = FALSE, countmode = NULL,
+      weight=weight)
+    
+    assignment <<- DBSCAN$cluster
+    
+    ### FIXME: we currently remove unassigned data!
+    row_sub <- unlist(lapply(assignment, function(x) all(x !=0 )))
+    data <<- data[row_sub,]
+    assignment <<- assignment[row_sub]
+    details <<- DBSCAN
+    
+    
+    if(length(assignment>0)) {
+      k <- max(assignment)
+      clusterCenters <<- as.data.frame(t(sapply(1:k, FUN=
+          function(i) colMeans(data[assignment==i,]))))
+      clusterWeights <<- sapply(1:k, FUN =
+          function(i) sum(weights[assignment==i], na.rm=TRUE))
+    }else{ ### no clusters found
+      k <- 0
+      clusterCenters <<- data.frame()
+      clusterWeights <<- numeric(0)
+    }
+  },
+  
+  get_microclusters = function(...) { data },
+  get_microweights = function(...) { weights },
 
-	    ### FIXME: we currently remove unassigned data!
-	    row_sub <- unlist(lapply(assignment, function(x) all(x !=0 )))
-	    data <<- data[row_sub,]
-	    assignment <<- assignment[row_sub]
-	    details <<- DBSCAN
+  get_macroclusters = function(...) { clusterCenters },
+  get_macroweights = function(...) { clusterWeights },
+  
+  microToMacro = function(micro=NULL, ...){
+    if(is.null(micro)) micro <- 1:nrow(data)
+    structure(assignment[micro], names=micro)
+  }
+)
 
-
-	    if(length(assignment>0)) {
-		k <- max(assignment)
-		clusterCenters <<- as.data.frame(t(sapply(1:k, FUN=
-					function(i) colMeans(data[assignment==i,]))))
-		clusterWeights <<- sapply(1:k, FUN =
-			function(i) sum(weights[assignment==i], na.rm=TRUE))
-	    }else{ ### no clusters found
-		k <- 0
-		clusterCenters <<- data.frame()
-		clusterWeights <<- numeric(0)
-	    }
-
-
-	}
-	)
-
-### creator    
-DSC_DBSCAN <- function(eps, MinPts = 5, weighted = TRUE) {
-
-    DBSCAN <- DBSCAN$new(eps=eps, MinPts = MinPts, weighted = weighted)
-
-    if(weighted) desc <- "DBSCAN (weighted)" else desc <- "DBSCAN (unweighted)"
-    l <- list(description = desc,
-	    RObj = DBSCAN)
-
-    class(l) <- c("DSC_DBSCAN","DSC_Macro","DSC_R","DSC")
-    l
-}
-
-get_macroclusters.DSC_DBSCAN <- function(x) x$RObj$clusterCenters
-get_macroweights.DSC_DBSCAN <- function(x) x$RObj$clusterWeights
-
-get_microclusters.DSC_DBSCAN <- function(x) x$RObj$data
-get_microweights.DSC_DBSCAN <- function(x) x$RObj$weights
-
-microToMacro.DSC_DBSCAN <- function(x, micro=NULL){
-    if(is.null(micro)) micro <- 1:nclusters(x, type="micro")
-    structure(x$RObj$assignment[micro], names=micro)
-}

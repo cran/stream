@@ -2,14 +2,14 @@
 \alias{DSD_mlbenchGenerator}
 \title{mlbench Data Stream Generator}
 \description{
-A data stream generator class that wraps data generators found in mlbench. 
+A data stream generator class that interfaces data generators found in mlbench. 
 }
 
 \usage{DSD_mlbenchGenerator(method, ...)}
 
 \arguments{
-	\item{method}{The name of the mlbench datagen.}
-	\item{...}{Parameters for the mlbench datagen.}
+	\item{method}{The name of the mlbench data generator.}
+	\item{...}{Parameters for the mlbench data generator.}
 }
 
 \details{

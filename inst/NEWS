@@ -1,3 +1,13 @@
+Changes in version 1.0-1 (6/12/14)
+    * Improved documentation
+    * Improved DSD_MG
+    * plot gained a dim argument to plot only selected dimensions
+    * get_assignment gained a threshold argument
+    * DSC_Window added
+    * DSC_Sample gained a biased argument for biased sampling
+    * DSC_Wrapper can now wrap matrix-like objects (e.g., from package ff and
+        bigmemory)
+
 Changes in version 1.0-0 (5/24/14)
     * added D-Stream (with attraction)
     * improved support for creating animations
@@ -5,9 +15,9 @@ Changes in version 1.0-0 (5/24/14)
         using density reachability
     * plot gained the type "both" that plots micro and macro-clusters
     * DSC_Hierarchical and DSC_Kmeans gained min_weight to filter low weight
-        micro-clusters before reculstering
+        micro-clusters before reclustering
     * removed default radius, etc. for most clustering algorithms
-    * Added DSD_MG for simulating treams with concept drift
+    * Added DSD_MG for simulating streams with concept drift
     * moved MOA related code to streamMOA
     * suspended DSC_BIRCH because of memory issues
     * reset_stream gained a pos argument

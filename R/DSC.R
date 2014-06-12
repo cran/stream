@@ -19,6 +19,9 @@
 
 ### DSC - Data Stream Clusterer interface
 
+DSC <- function(...) stop("DSC is an abstract class and cannot be instantiated!")
+
+
 ### all DSC classes have these interface methods
 
 get_centers <- function(x, type = c("auto", "micro", "macro"), ...) 
@@ -80,39 +83,22 @@ get_macroweights.DSC <- function(x, ...) {
 ### derived functions, plot and print
 nclusters <- function(x, type=c("auto", "micro", "macro"), ...) 
   UseMethod("nclusters")
+
 nclusters.DSC <- function(x, type=c("auto", "micro", "macro"), ...) {
   nrow(get_centers(x, type=type, ...))
 }
 
-get_assignment <- function(dsc, points, type=c("auto", "micro", "macro"), 
-  method="Euclidean", ...) 
-  UseMethod("get_assignment")
-get_assignment.DSC <- function(dsc, points, type=c("auto", "micro", "macro"), 
-  method="Euclidean", ...) {
-  d <- points
-  
-  c <- get_centers(dsc, type=type, ...)
-  
-  if(nrow(c)>0) {
-    dist <- dist(d, c, method=method)
-    #Find the minimum distance and save the class
-    predict <- apply(dist, 1, which.min)
-  } else {
-    warning("There are no clusters!")
-    predict <- rep(1L, nrow(d))
-  }
-  predict	
-}
 
 print.DSC <- function(x, ...) {
-  cat(paste(x$description, " (", paste(class(x), collapse=", "), ")", 
-    '\n', sep=""))
+  cat(.line_break(paste(x$description)))
+  #cat("Class:", paste(class(x), collapse=", "), "\n") 
   if(!is(nc <- try(nclusters(x, type="micro"), silent=TRUE), "try-error")) 
     cat(paste('Number of micro-clusters:', nc, '\n'))
   if(!is(nc <- try(nclusters(x, type="macro"), silent=TRUE), "try-error")) 
     cat(paste('Number of macro-clusters:', nc, '\n'))
 }
 
+summary.DSC <- function(object, ...) print(object)
 
 #plot.DSC will call super question.
 plot.DSC <- function(x, dsd = NULL, n = 500, 
@@ -130,7 +116,7 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
   
   if(type !="both") { 
     if(type =="auto") type <- get_type(x)
-    ## method can be pairs, plot or pc (projection with PCA)
+    ## method can be pairs, scatter or pc (projection with PCA)
     centers <- get_centers(x, type=type)
     k <- nrow(centers)
     
@@ -192,8 +178,9 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
     
     ### handle noise
     noise <- is.na(mpch)
-    mpch[noise] <- 20
-    cex_clusters[noise] <- cex_clusters[noise]*.5
+    mpch[noise] <- noise_pch
+    col[noise] <- noise_col
+    #cex_clusters[noise] <- cex_clusters[noise]*.5
     
   }
   

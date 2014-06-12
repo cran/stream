@@ -17,88 +17,96 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-Static <- setRefClass("Static", 
-	fields = list(
-		centers		    = "data.frame",
-		weights		    = "numeric",
-		macro		    = "logical"
-		), 
-
-	methods = list(
-		initialize = function(
-			centers	    = data.frame(),
-			weights	    = numeric(),
-			macro	    = FALSE
-			) {
-
-		    centers	    <<- centers 
-		    weights	    <<- weights
-		    macro	    <<- macro
-
-		    .self
-		}
-
-		),
-	)
-
-Static$methods(cluster = function(newdata, ...) {
-	    stop("DSC_Static: cluster not implemented!")
-	}
-	)
-
 DSC_Static <- function(x, type=c("auto", "micro", "macro"), 
   k_largest=NULL, min_weight=NULL) {
-    
-    ### figure out type
-    type <- get_type(x, type)
-    if(type=="macro") macro <- TRUE
-    else macro <- FALSE
-
-    centers <- get_centers(x, type)
-    weights <- get_weights(x, type)
   
-    if(!is.null(k_largest)) {
-      if(k_largest>nclusters(x)) {
-        warning("Less clusters than k. Using all clusters.")
-      }else{
-        o <- head(order(weights, decreasing=TRUE), n=k_largest)
-        centers <- centers[o,]
-        weights <- weights[o]
-      }
+  ### figure out type
+  type <- get_type(x, type)
+  if(type=="macro") macro <- TRUE
+  else macro <- FALSE
+  
+  centers <- get_centers(x, type)
+  weights <- get_weights(x, type)
+  
+  if(!is.null(k_largest)) {
+    if(k_largest>nclusters(x)) {
+      warning("Less clusters than k. Using all clusters.")
+    }else{
+      o <- head(order(weights, decreasing=TRUE), n=k_largest)
+      centers <- centers[o,]
+      weights <- weights[o]
     }
+  }
   
-    if(!is.null(min_weight)) {
-      take <- weights>=min_weight
-      centers <- centers[take,]
-      weights <- weights[take]
+  if(!is.null(min_weight)) {
+    take <- weights>=min_weight
+    centers <- centers[take,]
+    weights <- weights[take]
+  }
+  
+  static <- Static$new(centers, weights, macro=macro)
+  
+  l <- list(description = "Static clustering", RObj = static)
+  
+  if(macro) micromacro <- "DSC_Macro"
+  else micromacro <- "DSC_Micro"
+  
+  class(l) <- c("DSC_Static", micromacro, "DSC_R","DSC")
+  
+  l
+}
+
+
+Static <- setRefClass("Static", 
+  fields = list(
+    centers		    = "data.frame",
+    weights		    = "numeric",
+    macro		    = "logical"
+  ), 
+  
+  methods = list(
+    initialize = function(
+      centers	    = data.frame(),
+      weights	    = numeric(),
+      macro	    = FALSE
+    ) {
+      
+      centers	    <<- centers 
+      weights	    <<- weights
+      macro	    <<- macro
+      
+      .self
     }
-  
-    static <- Static$new(centers, weights, macro=macro)
-
-    l <- list(description = "Static", RObj = static)
     
-    if(macro) micromacro <- "DSC_Macro"
-    else micromacro <- "DSC_Micro"
+  ),
+)
 
-    class(l) <- c("DSC_Static", micromacro, "DSC_R","DSC")
+Static$methods(
+  cluster = function(newdata, ...) {
+    stop("DSC_Static: cluster not implemented!")
+  },
+  
+  get_macroweights = function(...) {
+    if(!macro) stop("This is a micro-clustering!")
+    weights
+  },
+  
+  get_macroclusters = function(...) {
+    if(!macro) stop("This is a micro-clustering!")
+    centers
+  },
+  
+  get_microweights = function(...) {
+    if(macro) stop("This is a macro-clustering!")
+    weights
+  },
+  
+  get_microclusters = function(...) {
+    if(macro) stop("This is a macro-clustering!")
+    centers
+  }
+)
 
-    l
-}
 
 
-get_macroweights.DSC_Static <- function(x) {
-    if(!x$RObj$macro) stop("This is a micro-clustering!")
-    x$RObj$weights
-}
-get_macroclusters.DSC_Static <- function(x) {
-    if(!x$RObj$macro) stop("This is a micro-clustering!")
-    x$RObj$centers
-}
-get_microweights.DSC_Static <- function(x) {
-    if(x$RObj$macro) stop("This is a macro-clustering!")
-    x$RObj$weights
-}
-get_microclusters.DSC_Static <- function(x) {
-    if(x$RObj$macro) stop("This is a macro-clustering!")
-    x$RObj$centers
-}
+

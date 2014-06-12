@@ -1,8 +1,8 @@
 \name{DSD_mlbenchData}
 \alias{DSD_mlbenchData}
-\title{A Wrapper for Data Sets from mlbench}
+\title{Stream Interface for Data Sets From mlbench}
 \description{
-Provides a convenient wrapper for data sets from the mlbench package.
+Provides a convenient stream interface for data sets from the mlbench package.
 }
 
 \usage{DSD_mlbenchData(data=NULL, loop = FALSE, random = FALSE, scale = FALSE)}

@@ -14,8 +14,9 @@ DSD_Benchmark(i=1)
     \item{i}{number of the benchmark.}
 }
 
-%\details{
-%}
+\details{
+Currently available benchmarks are 1 and 2.
+}
 
 \value{
 Returns a \code{DSD} object.
@@ -28,6 +29,6 @@ Returns a \code{DSD} object.
 \examples{
 dsd <- DSD_Benchmark(i=1)
 \dontrun{
-animate_data(dsd, n=2000, horizon=100, xlim=c(-.2,1.2), ylim=c(-.2,1.2)) 
+animate_data(dsd, n=10000, horizon=100, xlim=c(0,1), ylim=c(0,1)) 
 }
 }

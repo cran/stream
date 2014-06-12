@@ -16,24 +16,43 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-add_cluster <- function(x, c) 
-  UseMethod("add_cluster")
-get_clusters <- function(x) 
-  UseMethod("get_clusters")
-remove_cluster <- function(x, i) 
-  UseMethod("remove_cluster")
+### creator    
+DSD_MG<- function(dimension = 2, ..., labels=NULL, description=NULL) {
+  
+  if(is.null(description)) description <- "Moving Data Generator"
+  
+  x <- structure(list(description = description,
+    RObj = dsd_MG_refClass$new(d = dimension)),
+    class = c("DSD_MG","DSD_R","DSD"))
+  
+  l <- list(...)
+  if(length(l) > 0) {
+    for(i in 1:length(l)) {
+      add_cluster(x, l[[i]], labels[i])
+    }
+  } 
+  
+  x
+}
+
+
+add_cluster <- function(x, c, label=NULL) UseMethod("add_cluster")
+get_clusters <- function(x) UseMethod("get_clusters")
+remove_cluster <- function(x, i) UseMethod("remove_cluster")
 
 dsd_MG_refClass <- setRefClass("dsd_MG", 
   fields = list(
     t = "numeric",
     dimension = "numeric",
     clusters = "list",
-    numberPerStep = "numeric"
+    labels = "integer"
   ),
   methods = list(
     initialize = function(d) {
-      dimension  <<- d
       t <<- 1
+      dimension  <<- d
+      clusters <<- list()
+      labels <<- integer(0)
       .self
     }
     
@@ -41,10 +60,16 @@ dsd_MG_refClass <- setRefClass("dsd_MG",
 )
 
 dsd_MG_refClass$methods(
-  add_cluster = function(c) {
+  add_cluster = function(c, label=NULL) {
     if(c$RObj$dimension != dimension) stop("Cluster dimensions do not match!")
     clusters <<- append(clusters, list(c))
-  },
+    
+    if(is.null(label)) {
+      if(length(labels) == 0) label <- 1L
+      else label <- max(labels, na.rm=TRUE) + 1L
+      } else label <- as.integer(label)
+    labels <<- append(labels, label)
+    },
   
   get_points = function(n, assignment = FALSE) {
     if(length(clusters)==0) stop("DSD_MG does not contain any clusters!")
@@ -54,10 +79,9 @@ dsd_MG_refClass$methods(
     
     j <- 0L
     while(j < n) {
-      attributes <- as.matrix(sapply(clusters, function(x) x$RObj$get_attributes(t)))
       
-      cluster <- attributes["cluster",]
-      density <- attributes["density",]
+      density <- unlist(sapply(clusters, 
+        function(x) x$RObj$get_attributes(t, "density")))
       
       density[is.na(density)] <- 0
       if(all(density==0)) stop("No MGC is producing points for this time point.")
@@ -84,9 +108,7 @@ dsd_MG_refClass$methods(
         }))
         
         if(assignment) {
-          cl <- cluster[clusterOrder]
-          cl[is.na(cl)] <- clusterOrder[is.na(cl)]
-          a[(j+1):(j+k)] <- cl
+          a[(j+1):(j+k)] <- labels[clusterOrder]
         }
       }
       
@@ -102,26 +124,16 @@ dsd_MG_refClass$methods(
   }
 )
 
-### creator    
-DSD_MG<- function(dimension = 2, ...) {
-  
-  desc <- "Moving Data Generator"
-  
-  x <- structure(list(description = desc,
-                 RObj = dsd_MG_refClass$new(d = dimension)),
-            class = c("DSD_MG","DSD_R","DSD"))
-  
-  lapply(list(...), function(c) add_cluster(x, c))
-  
-  x
-}
+
 
 get_points.DSD_MG <- function(x, n=1, assignment = FALSE,...) {
   x$RObj$get_points(n,assignment)
 }
 
-add_cluster.DSD_MG <- function(x, c) {
-  x$RObj$add_cluster(c)
+add_cluster.DSD_MG <- function(x, c, label=NULL) {
+  ### name noise NA unless specified otherwise
+  if(is.null(label) && is(c, "MGC_Noise")) label <- NA
+  x$RObj$add_cluster(c, label)
 }
 
 reset_stream.DSD_MG <- function(dsd, pos=1) {
@@ -129,9 +141,9 @@ reset_stream.DSD_MG <- function(dsd, pos=1) {
 }
 
 print.DSD_MG <- function(x, ...) {
-  cat(paste(x$description, " (", paste(class(x), collapse=", "), ")", 
-    '\n', sep=""))
-  cat(paste('With', length(x$RObj$clusters), 'clusters', 'in', 
+  cat(.line_break(paste(x$description)))
+  #cat("Class:", paste(class(x), collapse=", "), "\n")
+  cat(paste('With', length(na.omit(unique(x$RObj$labels))), 'clusters', 'in', 
     x$RObj$dimension, 'dimensions. Time is', round(x$RObj$t, 3), '\n'))
 }
 
@@ -141,4 +153,5 @@ get_clusters.DSD_MG <- function(x) {
 
 remove_cluster.DSD_MG  <- function(x,i) {
   x$RObj$clusters[[i]] <- NULL
+  x$RObj$labels <- x$RObj$labels[-i] 
 }

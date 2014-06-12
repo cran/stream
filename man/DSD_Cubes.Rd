@@ -14,7 +14,7 @@ DSD_Cubes(k=2, d=2, center, size, p, noise = 0, noise_range)
   \item{k}{Determines the number of clusters.}
   \item{d}{Determines the number of dimensions.}
   \item{center}{A matrix of means for each dimension of each cluster.}
-  \item{size}{A \code{k} times \code{d} matrix with the cube dimenstions.}
+  \item{size}{A \code{k} times \code{d} matrix with the cube dimensions.}
   \item{p}{A vector of probabilities that determines the likelihood of
 		   generated a data point from a particular cluster.}
   \item{noise}{Noise probability between 0 and 1.

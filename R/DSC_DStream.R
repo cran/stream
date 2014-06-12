@@ -16,6 +16,26 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+DSC_DStream <- function(gridsize, d=NA_integer_, lambda = 1e-3, 
+  gaptime=1000L, Cm=3, Cl=.8, attraction=FALSE, epsilon=.3, 
+  Cm2=Cm, k=NULL) {
+  
+  dstream <- DStream$new(gridsize, as.integer(d), lambda, 
+    as.integer(gaptime), Cm, Cl, as.logical(attraction), epsilon, Cm2, k)
+  
+  l <- list(
+    description = "D-Stream", 
+    RObj = dstream,
+    macro = new.env()
+  )
+  
+  l$macro$macro <- list(centers=data.frame(), 
+    weights=numeric(0), microToMacro=integer(0))
+  l$macro$newdata <- FALSE
+  
+  class(l) <- c("DSC_DStream", "DSC_Micro", "DSC_R", "DSC")
+  l
+}
 
 DStream <- setRefClass("DStream",
   fields = list(
@@ -87,26 +107,7 @@ DStream <- setRefClass("DStream",
 )
 
 
-DSC_DStream <- function(gridsize, d=NA_integer_, lambda = 1e-3, 
-  gaptime=1000L, Cm=3, Cl=.8, attraction=FALSE, epsilon=.3, 
-  Cm2=Cm, k=NULL) {
-  
-  dstream <- DStream$new(gridsize, as.integer(d), lambda, 
-    as.integer(gaptime), Cm, Cl, as.logical(attraction), epsilon, Cm2, k)
-  
-  l <- list(
-    description = "DStream", 
-    RObj = dstream,
-    macro = new.env()
-    )
-  
-  l$macro$macro <- list(centers=data.frame(), 
-    weights=numeric(0), microToMacro=integer(0))
-  l$macro$newdata <- FALSE
-  
-  class(l) <- c("DSC_DStream", "DSC_Micro", "DSC_R", "DSC")
-  l
-}
+
 
 DStream$methods(list(
   cluster = function(newdata, debug = FALSE) {
@@ -218,36 +219,38 @@ DStream$methods(list(
     }
   },
   
-  ### This is for plotting images. Could be toArray!
-  #  toMatrix = function(grid_type=c("transitional", "dense", "all")) {
-  toMatrix = function(grid_type=c("dense", "transitional", "all")) {
-    grid_type <- match.arg(grid_type)
+  ### This is for plotting images.
+  toMatrix = function(grid_type="used", dim=NULL) {
     
-    coords <- get_micro(weight=TRUE, translate=FALSE, grid_type=grid_type)
+    coords <- get_micro(weight=TRUE, translate=FALSE, grid_type=grid_type) 
+    weights <- attr(coords, "weight")
+    
+    if(!is.null(dim)) coords <- coords[, dim]
+    else coords <- coords[, 1:2]
     
     ns <- (maxs-mins)+1L
     mat <- matrix(0, nrow=ns[1], ncol=ns[2])
-
+    
     ### coords can be negative!
     coords[,1] <- coords[,1] - mins[1]+1L
     coords[,2] <- coords[,2] - mins[2]+1L
     
     for(i in 1:nrow(coords)) {
-      mat[coords[i,1], coords[i,2]] <- coords[["weight"]][i]
+      mat[coords[i,1], coords[i,2]] <- weights[i]
     }
     
     rownames(mat) <- (mins[1]:maxs[1]) * gridsize[1]+gridsize[1]/2
     colnames(mat) <- (mins[2]:maxs[2]) * gridsize[2]+gridsize[2]/2
+    attr(mat, "varnames") <- colnames(coords)    
+    
     mat
   },
   
-  
-  get_attraction = function(relative=FALSE, 
-    #    grid_type="transitional") {
-    grid_type="dense") {
+  get_attraction = function(relative=FALSE, grid_type="dense") {
     
     if(!attraction) stop("No attraction values stored. Create the DSC_DStream with attraction=TRUE.")
     mc_ids <- get_micro(translate=FALSE, grid_type=grid_type)
+    
     n <- nrow(mc_ids)
     attr_matrix <- matrix(0, ncol=n, nrow=n)
     
@@ -295,32 +298,30 @@ DStream$methods(list(
     }
     
     if(relative) {
-      w <- get_micro(weight=TRUE)[["weight"]]
+      w <- attr(get_micro(weight=TRUE), "weight")
       attr_matrix <- attr_matrix/w
     }
     
     attr_matrix  
   },
   
-  get_micro = function(weight=FALSE, translate=TRUE, 
-    #   grid_type=c("transitional","dense", "all")) {
-    grid_type=c("dense", "transitional", "all")) {
+  get_micro = function(weight=FALSE, cluster_type=FALSE, translate=TRUE, 
+    grid_type=c("used", "dense", "transitional", "sparse", "all")) {
+    
     grid_type <- match.arg(grid_type)
     
     if(length(grid)<1) {
-      if(weight) return(data.frame(weight=numeric(0)))
-      else return(data.frame())
+      ret <- data.frame()
+      if(weight) attr(ret, "weight") <- numeric(0)
+      if(cluster_type) attr(ret, "cluster_type") <- factor(levels = 
+          c("dense", "transitional", "sparse"))
+      else return(ret)
     }
     
-    if(translate) {
-      coords <- as.data.frame(t(sapply(keys(grid), 
-        FUN=function(y) as.numeric(unlist(strsplit(y, ':'))), 
-        USE.NAMES=FALSE)*gridsize+gridsize/2))
-    }else{
-      coords <- as.data.frame(t(sapply(keys(grid), 
-        FUN=function(y) as.numeric(unlist(strsplit(y, ':'))),
-        USE.NAMES=FALSE)))
-    }
+    ### raw coordinates
+    coords <- as.data.frame(t(sapply(keys(grid), 
+      FUN=function(y) as.numeric(unlist(strsplit(y, ':'))),
+      USE.NAMES=FALSE)))
     
     N <- prod(maxs-mins+1L)
     gv <- values(grid, simplify=FALSE)
@@ -330,85 +331,59 @@ DStream$methods(list(
       g[["weight"]] * decay_factor ^ (npoints - g[["t"]])
     }) 
     
-    if(grid_type=="transitional") {
-      ### sparse grid threshold 0<Cl<1 -> Dl = Cl/(N*(1-decay_factor))
-      #take <- ws > Cl/N/(1-decay_factor)
-      ### for small t we use the exact total weight!
-      take <- ws > Cl/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)
-      coords <- coords[take,]
-      ws <- ws[take]
-    } else if(grid_type=="dense") {
-      ### dense grid threshold Cm > 1 -> Dm = Cm/(N*(1-decay_factor))
-      ### for small t we use the exact total weight!
-      #take <- ws > Cm/N/(1-decay_factor)
-      take <- ws > Cm/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)
-      coords <- coords[take,]
-      ws <- ws[take]
-    }
+    c_type <- factor(rep.int("sparse", times=length(ws)), 
+      levels=c("dense", "transitional", "sparse"))
+    c_type[ws > Cl/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)] <- "transitional"
+    c_type[ws > Cm/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)] <- "dense"
     
-    if(weight) coords[["weight"]] <- ws
+    if(grid_type=="used") {
+      # dense + adjacent transitional
+      dense <- c_type=="dense"
+      trans <- c_type=="transitional"
+      used <- dense
+      
+      if(any(dense) && any(trans)) {
+        take <- dist(coords[trans,], coords[dense,], method="Manhattan") <= 1
+        take <- apply(take, 1L, any)
+        used[which(trans)[take]] <- TRUE
+      }
+      
+      coords <- coords[used,]
+      ws <- ws[used]
+      c_type <- c_type[used]
+      
+    } else if(grid_type=="all") {
+      #nothing to do
+    } else {
+      take <- c_type==grid_type
+      coords <- coords[take,]
+      ws <- ws[take]
+      c_type <- c_type[take]
+    } 
+    
+    ### translate coordinates?
+    if(translate && nrow(coords)>0) coords <- coords * gridsize+gridsize/2
+    
+    if(weight) attr(coords, "weight") <- ws
+    if(cluster_type) attr(coords, "cluster_type") <- c_type 
     rownames(coords) <- NULL
     coords
   },
   
-  microToMacro = function(micro=NULL, grid_type="dense") {
-    
-    mcs <- get_micro()
-    if(nrow(mcs) < 1) return(integer(0)) ### no mcs
-    
-    if(nrow(mcs) == 1) { ### single mc
-      assignment <- 1L
-      names(assignment) <- rownames(mcs)
-    } else{ 
-      
-      if(attraction) { ### use attraction
-        
-        if(k > 0L)  { ### use k?
-          a <- get_attraction(grid_type=grid_type)
-          d_attr <- as.dist(-a-t(a))
-          
-          hc <- hclust(d_attr, method="single")
-          ### find unconnected components
-          assignment <- cutree(hc, h=0-1e-9)
-          
-          maxk <- min(k, nrow(mcs))
-          ### not enought components?
-          if(length(unique(assignment)) < maxk) assignment <- cutree(hc, k=maxk)
-          
-          ### FIXME: If k>number of connected components then components would
-          ###  be merged randomly! So we add for these the regular distance!      
-          
-          #d_dist <- dist(mcs) 
-          #unconnected <- d_attr==0 ### an attraction count of 0!
-          #d_attr[unconnected] <- d_attr[unconnected] + d_dist[unconnected]
-          #assignment <- cutree(hclust(d_attr, method="single"), k=k)
-          
-        }else{ ### use Cm2 
-          a <- get_attraction(grid_type=grid_type)
-          d_attr <- as.dist(-a-t(a))
-          
-          P <- 2*sum(maxs-mins) ### number of possible attraction values
-          ### actually we should check each direction independently
-          assignment <- cutree(hclust(d_attr, method="single"), 
-            h=-2*Cm2/P/(1+decay_factor))
-        }
-      }else{ ### use adjacency 
-        mcs <- get_micro(grid_type=grid_type)
-        d_pos <- dist(mcs)
-        assignment <- cutree(hclust(d_pos, method="single"), 
-          h=gridsize[1]+gridsize[1]*1e-9)
-      }
-    }
-    
-    if(!is.null(micro)) assignment <- assignment[micro]
-    else micro <- 1:length(assignment)
-    
-    structure(assignment, names=micro)
+  get_microclusters = function(...) {  
+    get_micro(...)
   },
   
-  get_macro_clustering = function() {
+  get_microweights = function(...){ 
+    attr(get_micro(weight=TRUE, ...), "weight")
+  },
+  
+  get_macro_clustering = function(...) {
     
-    mcs <- get_micro(weight=TRUE)
+    mcs <- get_micro(grid_type="used", translate=FALSE,
+      weight=TRUE, cluster_type=TRUE)
+    w <- attr(mcs, "weight")    
+    c_type <- attr(mcs, "cluster_type")    
     
     ### no mcs
     if(nrow(mcs) < 1)
@@ -416,15 +391,71 @@ DStream$methods(list(
     
     ### single mc
     if(nrow(mcs) == 1)
-      return(centers=mcs, weights=mcs[,-ncol(mcs)], microToMacro=structure(1L, names="1"))
+      return(centers=mcs, weights=w, microToMacro=structure(1L, names="1"))
     
-    ### general case
-    mc <- mcs[,-ncol(mcs)]
-    w <- mcs[,ncol(mcs)]
-    m2m <- microToMacro(grid_type="dense")
+    denseID <- c_type=="dense"
+    dense <- mcs[denseID,]
+    transID <- c_type=="transitional"
+    trans <- mcs[transID,]
+    
+    
+    if(attraction) { ### use attraction
+      a <- get_attraction(grid_type="dense")
+      d_attr <- as.dist(-a-t(a))
+      
+      ### FIXME: transitional grids!
+      if(k > 0L)  { ### use k?
+        
+        hc <- hclust(d_attr, method="single")
+        ### find unconnected components
+        assignment <- cutree(hc, h=0-1e-9)
+        
+        maxk <- min(k, nrow(mcs))
+        ### not enought components?
+        if(length(unique(assignment)) < maxk) assignment <- cutree(hc, k=maxk)
+        
+        ### FIXME: If k>number of connected components then components would
+        ###  be merged randomly! So we add for these the regular distance!      
+        
+        #d_dist <- dist(mcs) 
+        #unconnected <- d_attr==0 ### an attraction count of 0!
+        #d_attr[unconnected] <- d_attr[unconnected] + d_dist[unconnected]
+        #assignment <- cutree(hclust(d_attr, method="single"), k=k)
+        
+      }else{ ### use Cm2 
+        
+        P <- 2*sum(maxs-mins) ### number of possible attraction values
+        ### actually we should check each direction independently
+        assignment <- cutree(hclust(d_attr, method="single"), 
+          h=-2*Cm2/P/(1+decay_factor))
+      }
+    }else{ ### use adjacency 
+      ### FIXME: use dense and then assign transitional
+      d_pos <- dist(dense)
+      assignment <- cutree(hclust(d_pos, method="single"), 
+        h=1.1) ### anything less than 2^.5 is fine
+      
+    }
+    
+    ### assign transitional grids
+    if(nrow(trans)>0) {
+      ass <- rep.int(NA_integer_, length(c_type))
+      ass[denseID] <- assignment
+      
+      # this assigns it to one of the neighboring macro clusters
+      take <- dist(trans, dense, method="Manhattan") <= 1
+      take <- apply(take, 1L, FUN=function(x) which(x)[1])
+      ass[transID] <- assignment[take]
+      assignment <- ass
+    }
+    
+    ### translate mcs
+    mcs <- mcs*gridsize+gridsize/2
+    
+    m2m <-  structure(assignment, names=1:length(assignment))
     
     ### find centroids
-    macro <- .centroids(mc, w, m2m)
+    macro <- .centroids(mcs, w, m2m)
     macro$microToMacro <- m2m 
     
     macro
@@ -432,33 +463,30 @@ DStream$methods(list(
 )
 )
 
-get_microclusters.DSC_DStream <- function(x, ...)  
-  x$RObj$get_micro(weight=FALSE, ...)
 
-get_microweights.DSC_DStream <- function(x, ...) 
-  x$RObj$get_micro(weight=TRUE, ...)[["weight"]]
+
 
 get_attraction <- function(x, dist=FALSE, relative=FALSE) 
   x$RObj$get_attraction(dist=dist, relative=relative)
 
-get_macroclusters.DSC_DStream <- function(x, ...){
+get_macroclusters.DSC_DStream <- function(x,...){
   if(x$macro$newdata) {
-    x$macro$macro <- x$RObj$get_macro_clustering()
+    x$macro$macro <- x$RObj$get_macro_clustering(...)
     x$macro$newdata <- FALSE
   }
   
   x$macro$macro$centers
 }
-  
+
 get_macroweights.DSC_DStream <- function(x, ...) {
   if(x$macro$newdata) {
-    x$macro$macro <- x$RObj$get_macro_clustering()
+    x$macro$macro <- x$RObj$get_macro_clustering(...)
     x$macro$newdata <- FALSE
   }
   
   x$macro$macro$weights
 }
-  
+
 microToMacro.DSC_DStream <- function(x, micro=NULL, ...) {
   if(x$macro$newdata) {
     x$macro$macro <- x$RObj$get_macro_clustering()
@@ -471,38 +499,85 @@ microToMacro.DSC_DStream <- function(x, micro=NULL, ...) {
 }
 
 ### add plot as a grid
-plot.DSC_DStream <- function(x, dsd=NULL, n=500, ...) {
+plot.DSC_DStream <- function(x, dsd=NULL, n=500, 
+  type=c("micro", "macro", "both"), grid=FALSE, grid_type="used",
+  ...) {
   ### find type
-  type <- list(...)$type
+  dim <- list(...)$dim
   
-  if(is.null(type) || !pmatch(tolower(type), "grid", nomatch=0)) 
-    return(plot.DSC(x, dsd=dsd, n=n, ...))
-
+  type <- match.arg(type)
+  
+  ### implements grid and grid_both
+  if(!grid) return(plot.DSC(x, dsd=dsd, n=n, type=type, ...))
+  
+  
   if(is.na(x$RObj$d)) {
     warning("No data clustered yet")
     return(invisible(NULL))
   }
-    
-  if(x$RObj$d!=2) stop("Image visualization only works for 2D data!") 
+  
+  if(x$RObj$d!=2 && (is.null(dim) || length(dim)!=2)) stop("Image visualization only works for 2D data! Set dim in plot.") 
   
   #  mat <- x$RObj$toMatrix("transitional")
-  mat <- x$RObj$toMatrix("dense")
+  mat <- x$RObj$toMatrix(grid_type, dim)
   mat[mat==0] <- NA
   
+  varnames <- attr(mat, "varnames")
+  
+  ### FIXME: this fails for a single grid!
   image(x=as.numeric(rownames(mat)), 
     y=as.numeric(colnames(mat)), 
     z=mat, 
     col=rev(gray.colors(100)), axes=TRUE, 
-    xlab="", ylab="")
-
+    xlab=varnames[1], ylab=varnames[2])
+  
   if(!is.null(dsd)) {
     ps <- get_points(dsd, n=n, assignment=TRUE)
     pch <- attr(ps, "assignment")
     
-    ### handle noise (samll circle)
-    pch[is.na(pch)] <- 20
-    points(ps, col=rgb(0,0,0,alpha=.3), cex=.5, pch=pch)
-  }
+    if(!is.null(dim)) ps <- ps[, dim]
     
+    ### handle noise (samll circle)
+    pch[is.na(pch)] <- noise_pch
+    points(ps, col=rgb(0,0,0,alpha=.3), pch=pch)
+  }
+  
+  ### add macro-clusters?
+  if(type=="both" || type=="macro") {
+    points(get_centers(x, type="macro"), col="blue", lwd=2, pch=3, 
+      cex=get_weights(x, type="macro", scale=c(1,5)))
+  }
+  
+  
 }
 
+get_assignment.DSC_DStream <- function(dsc, points, type=c("auto", "micro", "macro"), 
+  method=c("auto", "model", "nn"), ...) {
+  
+  type <- match.arg(type)
+  method<- match.arg(method)
+
+  if(method=="auto") method <- "model"
+  if(method!="model") return(NextMethod())
+  
+  c <- get_centers(dsc, type="micro", ...)
+  
+  if(nrow(c)>0L) {
+    dist <- dist(points, c, method="max")
+    # Find the minimum distance and save the class
+    assignment <- apply(dist, 1L, which.min)
+    
+    # dist>threshold means no assignment
+    assignment[apply(dist, 1L, min) > dsc$RObj$gridsize/2] <- NA_integer_
+    
+  } else {
+    warning("There are no clusters!")
+    assignment <- rep(NA_integer_, nrow(points))
+  }
+  
+  if(type=="macro") assignment <- microToMacro(dsc, assignment)
+  
+  attr(assignment, "method") <- "model"
+  
+  assignment 
+}

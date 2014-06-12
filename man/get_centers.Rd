@@ -29,12 +29,14 @@ A data.frame with the micro- or macro-cluster centers as rows.
 }
 
 \examples{
-# setting up the objects
-dsd <- DSD_Gaussians(k=3)
-dsc <- DSC_Kmeans(k=3)
+dsd <- DSD_Gaussians(k=3, d=2)
+dsc <- DSC_DStream(gridsize=.1)
 cluster(dsc, dsd, 500)
-
-# getting the centers (these are macro-clusters since 
-# Kmeans is a macro-cluster)
+dsc
+  
+# getting the micro-cluster centers
 get_centers(dsc)
+
+# D-Stream also has macro-clusters
+get_centers(dsc, type="macro")
 }

@@ -10,11 +10,9 @@ Generates an animation of a data stream or a data steam clustering.
 }
 
 \usage{
-animate_data(dsd, n=1000, wait=.1, 
-    pointInterval=100, horizon=5*pointInterval, ...)
-animate_cluster(dsc, dsd, macro=NULL, n=1000, wait=.1, 
-    pointInterval=100, horizon=5*pointInterval, 
-    evaluationMethod=NULL, evaluationType="micro", evaluationAssign="micro", 
+animate_data(dsd, n=1000, wait=.1, horizon=100, ...)
+animate_cluster(dsc, dsd, macro=NULL, n=1000, wait=.1, horizon=100, 
+    evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
     ...)
 }
 
@@ -24,9 +22,8 @@ animate_cluster(dsc, dsd, macro=NULL, n=1000, wait=.1,
   \item{macro}{a \code{DSC_macro} object used for reclustering when performing evaluations.}
   \item{n}{the number of points to be plotted}
   \item{wait}{the time interval between each frame}
-  \item{pointInterval}{the number of new points needed before a new frame is created}
-  \item{horizon}{the max number of data points to be shown at a time}
-  \item{evaluationMethod}{the evaluation method that should be graphed below the animation}
+  \item{horizon}{the number of points displayed at once/used for evaluation. }
+  \item{evaluationMeasure}{the evaluation measure that should be graphed below the animation}
   \item{evaluationType}{evaluate "micro" or "macro"-clusters?}
   \item{evaluationAssign}{assign new points to the closest "micro" or "macro"-cluster
     to calculate the evaluation measure.}
@@ -48,8 +45,7 @@ Animations are recorded using the library animation and can be replayed
 \examples{
 \dontrun{
 dsd <- DSD_Benchmark(1)
-animate_data(dsd, n=5000,  xlim=c(0,1), ylim=c(0,1), 
-    pointInterval=100, wait=0)
+animate_data(dsd, n=5000,  xlim=c(0,1), ylim=c(0,1), horizon=100)
 
 ### animations can be replayed with the animation package
 library(animation)
@@ -64,8 +60,8 @@ reset_stream(dsd)
 dsc <- DSC_tNN(r=.1, lambda=.01, shared_density=TRUE,
   alpha=.2, noise=.1)  
 
-animate_cluster(dsc, dsd, n=5000, wait=.1, pointInterval=100, 
-  evaluationMethod="crand", evaluationType="macro", evaluationAssign="micro",
+animate_cluster(dsc, dsd, n=5000, horizon=100, 
+  evaluationMeasure="crand", evaluationType="macro", evaluationAssign="micro",
   xlim=c(0,1),ylim=c(0,1), type="shared")
 }
 }

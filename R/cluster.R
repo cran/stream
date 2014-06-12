@@ -34,31 +34,9 @@ cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) {
   invisible(dsc)
 }
 
-### Workers
+### Worker definition. Subclasses define a .cluster function
 .cluster <- function(dsc, dsd, n, verbose=FALSE, ...) UseMethod(".cluster")
 
 
-### geting a block of data improves performance the R implementation
-### needs to make sure that points are processed sequencially
-### (make especially BIRCH faster by passing block data points at once)
-.cluster.DSC_R <- function(dsc, dsd, n, verbose=FALSE, 
-                           block=100000L, ...) {
-  ### dsc contains an RObj which is  a reference object with a cluster method
-  
-  ### TODO: Check data
-
-  for(bl in .make_block(n, block)) {
-    dsc$RObj$cluster(get_points(dsd, bl), ...)
-    if(verbose) cat("Processed", bl, "points -",
-                    nclusters(dsc), "clusters\n")
-    
-  }
-}
-
-
-.cluster.DSC_Macro <- function(dsc, dsd, n, ...) {
-  d <- get_points(dsd, n=n)
-  dsc$RObj$cluster(d, weight=rep(1, nrow(d)), ...)
-}
 
 

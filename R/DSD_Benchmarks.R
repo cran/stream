@@ -29,7 +29,9 @@ DSD_Benchmark <- function(i=1) {
         keyframe(time = 250, density=10, parameter=.01, center=c(.9,.9)),
         keyframe(time = 500, density=10, parameter=.01, center=c(.1,.1), reset=TRUE)
       )),
-      MGC_Noise(density=2, range=rbind(c(0,1),c(0,1)))
+      MGC_Noise(density=2, range=rbind(c(0,1),c(0,1))),
+      labels = c(1,2,NA),
+      description = "Benchmark(1) Two clusters moving diagonally from left to right, meeting in the center (5% noise)."
       ))
   }  
   
@@ -42,7 +44,8 @@ DSD_Benchmark <- function(i=1) {
           keyframe(time = 0, density=1, parameter=.1, center=c(0,0)),
           keyframe(time = 500, density=1, parameter=.1, center=c(1,1)),
           keyframe(time = 1000, density=1, parameter=.1, center=c(0,0), reset=TRUE)
-        ))))
+        )),
+        description = "Benchmark(2) Two fixes clusters. A third cluster moves between them (no noise)."))
     }
 
     stop("Unknown benchmark!")

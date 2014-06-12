@@ -14,7 +14,7 @@ the stream.
 \arguments{
 	\item{dsd}{An object of class \code{DSD_ReadStream}, \code{DSD_Wrapper}
   \code{DSD_ScaleStream} or \code{DSD_MG}.}
-	\item{pos}{Position in the stream (the begining of the stream is position 1).}
+	\item{pos}{Position in the stream (the beginning of the stream is position 1).}
 }
 
 \details{

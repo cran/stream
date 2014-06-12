@@ -22,7 +22,7 @@
 %}
 
 \value{
-An onject of class \code{DSC_Static} (sub class of  \code{DSC}, \code{DSC_R}).
+An object of class \code{DSC_Static} (sub class of  \code{DSC}, \code{DSC_R}).
 The list also contains either
  \code{DSC_Micro} or \code{DSC_Macro} depending on what type 
  of clustering was copied.
@@ -35,10 +35,9 @@ The list also contains either
 }
 
 \examples{
-set.seed(1000)
 dsd <- DSD_Gaussians(k=3, noise=0.05)
 
-dstream <- DSC_DStream(gridsize=0.05, lambda=.01)
+dstream <- DSC_DStream(gridsize=0.05)
 cluster(dstream, dsd, 500)
 dstream
 plot(dstream, dsd)
@@ -48,7 +47,7 @@ static <- DSC_Static(dstream)
 static
 plot(static, dsd)
   
-# copy the 5 largest clusters
+# copy only the 5 largest clusters
 static2 <- DSC_Static(dstream, k_largest=5)
 static2
 plot(static2, dsd)

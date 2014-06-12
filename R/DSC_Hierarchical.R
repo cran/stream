@@ -16,6 +16,23 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+### creator    
+DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete", 
+  min_weight=NULL, description=NULL) {
+  
+  hierarchical <- hierarchical$new( 
+    k=k, h=h, method=method, min_weight=min_weight)
+  
+  if(is.null(description)) description <- paste("Hierarchical clustering (", method, ")", 
+    sep='')
+  
+  l <- list(description = description, RObj = hierarchical)
+  
+  class(l) <- c("DSC_Hierarchical","DSC_Macro","DSC_R","DSC")
+  l
+}
+
+
 ### calculate centroids
 .centroids <- function(centers, weights, assignment){
   macroID <- unique(assignment)
@@ -30,7 +47,7 @@
   
   ws <- sapply(macroID, FUN =
       function(i) sum(weights[assignment==i], na.rm=TRUE))
-
+  
   list(centers=cs, weights=ws)
 }
 
@@ -78,59 +95,48 @@ hierarchical <- setRefClass("hierarchical",
   ),
 )
 
-hierarchical$methods(cluster = function(x,  weight = rep(1,nrow(x)), ..., overwrite=FALSE) {
-  if(length(data)>0 && !overwrite) warning("Hierarchical: Previous data is being overwritten")
-  
-  ### filter weak clusters
-  if(min_weight>0) {
-    x <- x[weight>min_weight,]
-    weight <- weight[weight>min_weight]
-  }
-
-  data <<- x
-  dataWeights <<- weight
-  
-  if((!is.null(k) && nrow(data) <=k) || nrow(data)<2) {
-    centers <<- x
-    weights <<- weight
-  }else{
-    hierarchical <- hclust(d=dist(x), method = method)
-    details <<- hierarchical
+hierarchical$methods(
+  cluster = function(x,  weight = rep(1,nrow(x)), ..., overwrite=FALSE) {
+    if(length(data)>0 && !overwrite) warning("Hierarchical: Previous data is being overwritten")
     
-    if(is.null(k) || k < length(unlist(hierarchical['height'])))
-      assignment <<- cutree(hierarchical, k = k, h = h)
-    else
-      assignment <<- 1
+    ### filter weak clusters
+    if(min_weight>0) {
+      x <- x[weight>min_weight,]
+      weight <- weight[weight>min_weight]
+    }
     
-    ### find centroids
-    centroids <- .centroids(x, weight, assignment)
-    centers <<- centroids$centers
-    weights <<- centroids$weights
-  }
-}
+    data <<- x
+    dataWeights <<- weight
+    
+    if((!is.null(k) && nrow(data) <=k) || nrow(data)<2) {
+      centers <<- x
+      weights <<- weight
+    }else{
+      hierarchical <- hclust(d=dist(x), method = method)
+      details <<- hierarchical
+      
+      if(is.null(k) || k < length(unlist(hierarchical['height'])))
+        assignment <<- cutree(hierarchical, k = k, h = h)
+      else
+        assignment <<- 1
+      
+      ### find centroids
+      centroids <- .centroids(x, weight, assignment)
+      centers <<- centroids$centers
+      weights <<- centroids$weights
+    }
+  },
+  
+  get_microclusters = function(...) { data },
+  get_microweights = function(...) { dataWeights }, 
+  
+  get_macroclusters = function(...) { centers },
+  get_macroweights = function(...) { weights },
+  
+  microToMacro = function(micro=NULL, ...){ 
+    if(is.null(micro)) micro <- 1:nrow(data)
+    structure(assignment[micro], names=micro)
+  }  
 )
 
-### creator    
-DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete", 
-  min_weight=NULL) {
-  
-  hierarchical <- hierarchical$new( 
-    k=k, h=h, method=method, min_weight=min_weight)
-  
-  l <- list(description = paste("Hierarchical -", method),
-    RObj = hierarchical)
-  
-  class(l) <- c("DSC_Hierarchical","DSC_Macro","DSC_R","DSC")
-  l
-}
 
-get_microclusters.DSC_Hierarchical <- function(x) x$RObj$data
-get_microweights.DSC_Hierarchical <- function(x) x$RObj$dataWeights
-
-get_macroclusters.DSC_Hierarchical <- function(x) x$RObj$centers
-get_macroweights.DSC_Hierarchical <- function(x) x$RObj$weights
-
-microToMacro.DSC_Hierarchical <- function(x, micro=NULL){ 
-  if(is.null(micro)) micro <- 1:nclusters(x, type="micro")
-  structure(x$RObj$assignment[micro], names=micro)
-}  

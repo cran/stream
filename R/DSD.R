@@ -28,6 +28,9 @@
 ##
 ## See DSD_Gaussian_Static.R for an example
 
+DSD <- function(...) stop("DSD is an abstract class and cannot be instantiated!")
+DSD_R <- function(...) stop("DSD_R is an abstract class and cannot be instantiated!")
+
 get_points <- function(x, n=1, ...) UseMethod("get_points")
 get_points.default <- function(x, n=1, ...) {
   stop(gettextf("get_points not implemented for class '%s'.",
@@ -46,10 +49,12 @@ reset_stream.DSD <- function(dsd, pos=1) {
 #############################################################
 ### helper
 print.DSD <- function(x, ...) {
-  cat(paste(x$description, " (", paste(class(x), collapse=", "), ")", 
-    '\n', sep=""))
+  cat(.line_break(x$description))
+  #cat("Class:", paste(class(x), collapse=", "), "\n") 
   cat(paste('With', x$k, 'clusters', 'in', x$d, 'dimensions', '\n'))
 }
+
+summary.DSD <- function(object, ...) print(object)
 
 plot.DSD <- function(x, n = 500, col= NULL, pch= NULL, 
   ..., method="pairs", dim=NULL) {
@@ -59,14 +64,22 @@ plot.DSD <- function(x, n = 500, col= NULL, pch= NULL,
   ### make sure to plot noise
   assignment <- attr(d,"assignment")
   
+  ### stream has no assignments!
+  if(length(assignment)==0) assignment <- rep(1L, nrow(d))
+  
+  noise <- is.na(assignment)
   if(is.null(col)) {
     col <- as.integer(assignment)
-    col[assignment==0 | is.na(assignment)] <-  which(palette()=="gray")
-  } 
+  }else{
+    if(length(col)==1L) col <- rep(col, length(assignment))
+  }
+    
+  col[noise] <-  noise_col
   
   if(is.null(pch)) {
-    pch <- rep(1, n)
-    pch[assignment==0 | is.na(assignment)] <- 3L
+    #pch <- rep(1, n)
+    pch <- as.integer(assignment)
+    pch[noise] <- noise_pch
   }
   
   if(!is.null(dim)) d <- d[,dim]

@@ -8,7 +8,7 @@
 \usage{
     DSC_Kmeans(k, weighted = TRUE, iter.max = 10, nstart = 1,
 	    algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"),
-      min_weight = NULL)
+      min_weight = NULL, description=NULL)
 }
 
 \arguments{
@@ -22,6 +22,7 @@
 	\item{algorithm}{character: may be abbreviated.}
   \item{min_weight}{micro-clusters with a weight less than this will be 
     ignored for reclustering.}
+  \item{description}{optional character string to describe the clustering method.}
 }
 
 \details{
@@ -40,19 +41,20 @@ on the algorithm.
 }
 
 \examples{
-# 3 clusters with 5% noise
 dsd <- DSD_Gaussians(k=3, noise=0)
 
-dsc <- DSC_Sample(k=50)
+# create micro-clusters via sampling
+dsc <- DSC_Sample(k=20)
 cluster(dsc, dsd, 500)
-
+dsc
+  
 # recluster micro-clusters
 kmeans <- DSC_Kmeans(k=3)
 recluster(kmeans, dsc)
 plot(kmeans, dsd, type="both")
 
-# Kmeans can also directly cluster data (original data are considered 
-# micro-cluster centers)
+# For comparison we use k-means directly to cluster data
+# Note: k-means is not a data stream clustering algorithm
 kmeans <- DSC_Kmeans(k=3)
 cluster(kmeans, dsd, 500)
 plot(kmeans, dsd)

@@ -18,27 +18,24 @@
 Creates an evolving cluster for a \code{DSD_MG}. 
 }
 \usage{
-MGC_Static(density, center, parameter, shape = NULL , cluster = NA)
-MGC_Function(density, center, parameter, shape = NULL, cluster = NA )
+MGC_Static(density, center, parameter, shape = NULL)
+MGC_Function(density, center, parameter, shape = NULL)
 MGC_Random(density, center, parameter, randomness = 1, shape = NULL) 
 MGC_Noise(density, range)
 
 MGC_Linear(dimension = 2, keyframelist = NULL, shape = NULL) 
-keyframe(time, density, center, parameter, cluster = NA, 
-  reset = FALSE)
-add_keyframe(x, time, density, center, parameter, cluster = NA, 
-  reset = FALSE)
+keyframe(time, density, center, parameter, reset = FALSE)
+add_keyframe(x, time, density, center, parameter, reset = FALSE)
 get_keyframes(x) 
 remove_keyframe(x, time)
 }
 
 \arguments{
   \item{center}{A list that defines the center of the cluster. The list should have a length equal to the dimensionality. For \code{MGC_Function}, this list consists of functions that define the movement of the cluster. For \code{MGC_Random}, this attribute defines the beginning location for the \code{MGC} before it begins moving.}
-  \item{cluster}{The name of the cluster. The cluster attribute is useful if a user wishes to combine multiple \code{MGC}s to create a single macro cluster. To accomplish this, the user would simply assign each of the \code{MGC}s the same cluster name.}
   \item{density}{The density of the cluster. For \code{MGC_Function}, this attribute is a function and defines the density of a cluster at a given timestamp.}
   \item{dimension}{Dimensionality of the data stream.}
   \item{keyframelist}{a list of keyframes to initialize the \code{MGC_Linear} object with.}
-  \item{parameter}{Parameters for the shape. For the defauld shape \code{MGC_Shape_Gaussian} the parameter is the standard deviation, one per dimension. If a single value is specified then it is recycled for all dimensions.}
+  \item{parameter}{Parameters for the shape. For the default shape \code{MGC_Shape_Gaussian} the parameter is the standard deviation, one per dimension. If a single value is specified then it is recycled for all dimensions.}
   \item{randomness}{The maximum amount the cluster will move during one time step.}
   \item{range}{The area in which the noise should appear.}
   \item{reset}{Should the cluster reset to the first keyframe (time 0) after this keyframe is finished?}
@@ -52,7 +49,7 @@ are a vector containing standard deviations) and \code{MGC_Shape_Block} (paramet
 \details{
 An \code{MGC} describes a single cluster for use within an \code{DSD_MG}. There are currently four different \code{MGC}s that allow a user to express many different behaviors within a single data stream.
 
-An \code{MGC_Linear} creates an evolving gaussian cluster for a \code{DSD_MG} who's behavior is determined by several keyframes. Keyframes can be added and removed.
+An \code{MGC_Linear} creates an evolving Gaussian cluster for a \code{DSD_MG} who's behavior is determined by several keyframes. Keyframes can be added and removed.
 
 An \code{MGC_Function} allows for a creation of a \code{DSD_MG} that is defined by functions of time.
 
@@ -82,7 +79,7 @@ dsd <- DSD_MG(dimension=2,
 )
   
 \dontrun{
-  animate_data(dsd,2500,xlim=c(0,3),ylim=c(-2,2), horizon=100)
+  animate_data(dsd, 2500, xlim=c(0,3), ylim=c(-2,2), horizon=100)
 }
   
   
@@ -107,11 +104,11 @@ c2 <- MGC_Function(
 add_cluster(dsd,c2)
 
 \dontrun{
-animate_data(dsd,10000,xlim=c(0,100),ylim=c(0,100), horizon=100)
+animate_data(dsd,10000,xlim=c(-20,120),ylim=c(-20,120), horizon=100)
 }
   
 ### Example of several MGC_Linears: A single cluster splits at time 50 into two.
-### Note how the cluster label for c2 changes!
+### Note that c2 starts at time=50!
 dsd <- DSD_MG(dim = 2)
 c1 <- MGC_Linear(dim = 2)
 add_keyframe(c1, time=1,  dens=50, par=5, center=c(0,0))
@@ -142,7 +139,7 @@ noise <- MGC_Noise(dens=.1, range=rbind(c(-.2,1.2),c(-.2,1.2)))
 add_cluster(dsd, noise)
   
 \dontrun{
-animate_data(dsd, 3.1*4000, xlim=c(-.2,1.2), ylim=c(-.2,1.2), horiz=200)
+animate_data(dsd, n=2000*3.1, xlim=c(-.2,1.2), ylim=c(-.2,1.2), horiz=200)
 }
 }
 

@@ -6,17 +6,20 @@
     }
 
 \usage{
-	DSC_Hierarchical(k=NULL, h=NULL, method = "complete", min_weight=NULL)
+	DSC_Hierarchical(k=NULL, h=NULL, method = "complete", min_weight=NULL, 
+  description=NULL)
 }
 
 \arguments{
 	\item{k}{The number of desired clusters.}
-  \item{h}{Height where to cut the dentrogram.}
+  \item{h}{Height where to cut the dendrogram.}
 	\item{method}{the agglomeration method to be used. This should be (an unambiguous
     abbreviation of) one of "ward", "single", "complete", "average", "mcquitty", "median"
     or "centroid".}
   \item{min_weight}{micro-clusters with a weight less than this will be 
     ignored for reclustering.}
+  \item{description}{optional character string to describe the clustering method.}
+
 }
 
 \details{
@@ -40,23 +43,25 @@ contains the following items:
 # Cassini dataset
 dsd <- DSD_mlbenchGenerator("cassini")
 
-hierarchical <- DSC_Hierarchical(k=3, method="single")
-cluster(hierarchical, dsd, 500)
-plot(hierarchical, dsd)
-
-# Hierarchical can also recluster micro-clusters
-dsc <- DSC_tNN(r=.2)
+# Use hierarchical clustering to recluster micro-clusters
+dsc <- DSC_tNN(r=.1)
 cluster(dsc, dsd, 500)
 
-# reclustering by specifying k
+# reclustering using single-link and specifying k
 hierarchical <- DSC_Hierarchical(k=3, method="single")
 recluster(hierarchical, dsc)
 hierarchical
 plot(hierarchical, dsd, type="both")
 
 # reclustering by specifying height
-hierarchical <- DSC_Hierarchical(h=.4, method="single")
+hierarchical <- DSC_Hierarchical(h=.2, method="single")
 recluster(hierarchical, dsc)
 hierarchical
 plot(hierarchical, dsd, type="both")
+
+# For comparison we use hierarchical clustering directly on the data 
+# Note: hierarchical clustering is not a data stream clustering algorithm!
+hierarchical <- DSC_Hierarchical(k=3, method="single")
+cluster(hierarchical, dsd, 500)
+plot(hierarchical, dsd)
 }

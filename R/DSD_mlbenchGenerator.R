@@ -37,7 +37,7 @@ DSD_mlbenchGenerator <- function(method, ...) {
   if(is.na(m)) stop("DSD_mlbenchGenerator: Invalid data generator")
   
   # creating the DSD object
-  l <- list(description = paste("mlbench",method),
+  l <- list(description = paste("mlbench", method),
     method = methods[m],
     variables = list(...)
   )
@@ -48,21 +48,13 @@ DSD_mlbenchGenerator <- function(method, ...) {
 get_points.DSD_mlbenchGenerator <- function(x, n=1, assignment = FALSE,...) {
   
   if(is.null(unlist(x$variables)))
-    d <- do.call(paste("mlbench.",x$method,sep=""),list(n*20))
+    d <- do.call(paste("mlbench.", x$method,sep=""), list(n))
   else
-    d <- do.call(paste("mlbench.",x$method,sep=""),list(n*20,unlist(x$variables)))
+    d <- do.call(paste("mlbench.", x$method,sep=""), list(n, unlist(x$variables)))
   
-  rand <- sample(1:n*20,n,replace=F)
+  df <- as.data.frame(d$x)
   
-  dat <- d$x[rand,]
-  
-  df <- data.frame()
-  
-  df <- rbind(df,dat)
-  
-  if(assignment) {
-    attr(df,"assignment")<-as.integer(d$classes[rand])
-  }
+  if(assignment) attr(df, "assignment") <- as.integer(d$classes)
   
   names(df) <- 1:ncol(df)
   

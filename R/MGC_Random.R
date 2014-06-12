@@ -45,9 +45,10 @@ MGC_Random_refClass <- setRefClass("MGC_Random",
 )
 
 MGC_Random_refClass$methods(
-  get_attributes = function(time) {
-   
-      c(cluster=NA, density=density)
+  get_attributes = function(time, attributes=NULL) {
+      att <- list(density = density, parameter=parameter, randomness=randomness)
+      if(!is.null(attributes)) att <- att[attributes]
+      att
   },
   
   get_points = function(time) {

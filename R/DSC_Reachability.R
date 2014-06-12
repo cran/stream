@@ -18,17 +18,14 @@
 
 
 ### creator    
-DSC_Reachability <- function(epsilon, min_weight=NULL) {
+DSC_Reachability <- function(epsilon, min_weight=NULL, description=NULL) {
   
   hierarchical <- hierarchical$new( 
-    h=2*epsilon-epsilon*1e-9, method="single", min_weight=min_weight)
+    h=epsilon, method="single", min_weight=min_weight)
   
-  ### we subtract a small value so we still cluster if the epsilon-neighborhoods 
-  ### just touch!
+  if(is.null(description)) description <- "Reachability clustering"
   
-  l <- list(description = paste("Reachability clustering"),
-    RObj = hierarchical)
-  
-  class(l) <- c("DSC_Reachability", "DSC_Hierarchical","DSC_Macro","DSC_R","DSC")
+  l <- list(description = description, RObj = hierarchical)
+  class(l) <- c("DSC_Reachability", "DSC_Hierarchical", "DSC_Macro", "DSC_R", "DSC")
   l
 }

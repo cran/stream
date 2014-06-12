@@ -18,7 +18,7 @@
 
 ### creator    
 MGC_Static <- function(density = 1, center, parameter, 
-  shape = NULL, cluster = NA) {
+  shape = NULL) {
     if(is.null(shape)) shape <- MGC_Shape_Gaussian
   
     x <- MGC_Function( 
@@ -33,4 +33,6 @@ MGC_Static <- function(density = 1, center, parameter,
   class(x) <- c("MGC_Static", class(x))
   x
 }
+
+
 

@@ -18,61 +18,99 @@
 
 ## evaluate clusterings
 
-.eval_methods  <- c(
-    "numMicroClusters","numMacroClusters","numClasses",
-    "precision", "recall", "F1",
-    "purity", "fpr",
-    "SSQ",
-    "Euclidean", "Manhattan", "Rand", "cRand",
-    "NMI", "KP", "angle", "diag", "FM", "Jaccard", "PS", 
-    "classPurity", "tNNRelations", "tNNTotalMicroClusters")
+### FIXME: calculate dist only once
 
+.eval_measures_fpc  <- c(
+  ### internal
+  "average.between",        
+  "average.within",          
+  "max.diameter",        
+  "min.separation",
+  "ave.within.cluster.ss",
+  "g2", "pearsongamma",
+  "dunn", "dunn2", 
+  "entropy", "wb.ratio", 
+  
+  ### external
+  "corrected.rand",
+  "vi"
+)
 
-evaluate <- function (dsc, dsd, method, n = 1000, 
-                      type=c("auto", "micro", "macro"), assign="micro", ...) {
+.eval_measures  <- c(
+  # info
+  "numMicroClusters","numMacroClusters","numClasses",
+  # internal
+  "SSQ",
+  "silhouette",
+  # external
+  "precision", "recall", "F1",
+  "purity", "fpr",
+  "classPurity", 
+  "Euclidean", "Manhattan", "Rand", "cRand",
+  "NMI", "KP", "angle", "diag", "FM", "Jaccard", "PS" 
+)
+
+.eval_measures_special  <- c(  
+  "tNNRelations", "tNNTotalMicroClusters"
+)
+
+evaluate <- function (dsc, dsd, measure, n = 1000, 
+  type=c("auto", "micro", "macro"), assign="micro", 
+  assignmentMethod=c("auto","model", "nn"), ...) {
   
-  methods <- .eval_methods
+  assignmentMethod <- match.arg(assignmentMethod)
+  type <- get_type(dsc, type)  
+
+  all_measures <- c(.eval_measures, .eval_measures_fpc)
+  if(missing(measure) || is.null(measure)) measure <- all_measures
+  else measure <- all_measures[pmatch(tolower(measure), tolower(all_measures))] 
   
-  # last two methods are tNN specific
-  if(missing(method)) method <- head(methods, length(methods)-2L)
-  if(is.null(method)) method <- head(methods, length(methods)-2L)
-  else method <- methods[pmatch(tolower(method),tolower(methods))] 
+  centers <- get_centers(dsc, type=type) 
   
-  ### figure out type
-  type <- get_type(dsc, type)
-  
-  ### FIXME: we might want to use only assigned micro-clusters here!
-  c <- get_centers(dsc, type=type) 
-  
-  
-  if(nrow(c)<1) {
+  if(nrow(centers)<1) {
     warning("No centers available!")
-    return(0)
+    e <- rep.int(NA_real_, length(measure))
+    names(e) <- measure
+    return(structure(e, type=type, assign=assign, class="stream_eval"))
   }
   
-  d <- get_points(dsd, n, assignment = TRUE)
-  actual <- attr(d, "assignment")
-  
-  predict <- get_assignment(dsc,d, type=assign)
+  points <- get_points(dsd, n, assignment = TRUE)
+  actual <- attr(points, "assignment")
+  predict <- get_assignment(dsc, points, type=assign, method=assignmentMethod, ...)
   
   ### translate micro to macro cluster ids if necessary
   if(type=="macro" && assign=="micro") predict <- microToMacro(dsc, predict)
   else if (type!=assign) stop("type and assign are not compatible!")
   
-  ### make points assigned to unassigned micro-clusters noise (0)
-  predict[is.na(predict)] <- 0L
-  
-  ### remove noise
-  noise <- which(is.na(actual))
-  if(length(noise)>0) {
-    predict <- predict[-noise]
-    actual <- actual[-noise]
-    d <- d[-noise,]
+  fpc <- measure %in% .eval_measures_fpc
+  if(any(fpc)) {
+    # noise cluster has the highest index and need to renumber
+    withnoise <- any(is.na(actual))
+    actual[is.na(actual)] <- max(actual, na.rm=TRUE) + 1L
+    actual <- match(actual, unique(sort(actual)))
+    predict[is.na(predict)] <- max(predict, na.rm=TRUE) + 1L 
+    predict <- match(predict, unique(sort(predict)))
+
+    e <- fpc::cluster.stats(d=dist(points), clustering=predict, 
+      alt.clustering = actual,
+      noisecluster=TRUE,
+      silhouette = TRUE,
+      G2 = TRUE, G3 = FALSE,
+      wgap=FALSE, sepindex=FALSE, sepprob=0.1,
+      sepwithnoise=withnoise,
+      compareonly = FALSE,
+      aggregateonly = TRUE)
+    e <- unlist(e)
+  }else e <- numeric()
+    
+  if(any(!fpc)) {
+    m <- sapply(measure[!fpc], function(x) .evaluate(x, predict, actual, 
+      points, centers, dsc))
+    e <- c(e, m)
   }
   
-  e <- sapply(method, function(x) .evaluate(x, predict, actual, 
-                                            d, c, dsc))
-  
+  e <- e[measure]
+
   structure(e, type=type, assign=assign, class="stream_eval")
   
 }
@@ -87,9 +125,10 @@ print.stream_eval <-  function(x, ...) {
 }
 
 ### evaluate during clustering 
-evaluate_cluster <- function(dsc, dsd, macro=NULL, method, 
-                             n=1000, type=c("auto", "micro", "macro"), assign="micro", 
-                             horizon=100, verbose=FALSE, ...) {
+evaluate_cluster <- function(dsc, dsd, macro=NULL, measure, 
+  n=1000, type=c("auto", "micro", "macro"), assign="micro",
+  assignmentMethod =  c("auto", "model", "nn"),
+  horizon=100, verbose=FALSE, ...) {
   
   evaluations <- data.frame()
   for(i in 1:(n/horizon)) {
@@ -98,17 +137,17 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, method,
     
     reset_stream(wrapper)
     if(is.null(macro)) {
-      e <- evaluate(dsc, wrapper, method, 
-                    horizon, type, assign, ...)
+      e <- evaluate(dsc, wrapper, measure, 
+        horizon, type, assign, assignmentMethod, ...)
     } else {
       suppressWarnings(recluster(macro, dsc)) ### we get reclustering warnings
-      e <- evaluate(macro, wrapper, method,
-                    horizon, type, assign, ...)
+      e <- evaluate(macro, wrapper, measure,
+        horizon, type, assign, ...)
     }
     
     if(i==1) evaluations <- e
     else evaluations <- rbind(evaluations,e)
-  
+    
     if(verbose) {
       print(c(points=i*horizon,e))
     }
@@ -121,53 +160,57 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, method,
 }
 
 # work horse
-.evaluate <- function(method, predict, actual, points, 
-                      centers, dsc) {
+.evaluate <- function(measure, predict, actual, points, 
+  centers, dsc) {
   
-  #make a vector of all of the methods and then do a lot of if statements
-  methods <- .eval_methods
+  #make a vector of all of the measures and then do a lot of if statements
+  measures <- .eval_measures
   
-  #finds index of partial match in array of methods
-  method <- methods[pmatch(tolower(method),tolower(methods))] 
+  #finds index of partial match in array of measures
+  m <- measures[pmatch(tolower(measure),tolower(measures))] 
   
-  if(is.na(method)) stop("Invalid measure.")
+  if(is.na(m)) stop("Invalid measure \"", measure, "\".")
   
-  res <- switch(method,
-                numMicroClusters	    = {n <- NA; 
-                        try(n <- nclusters(dsc, type="micro"), silent=TRUE); 
-                        n},
-                numMacroClusters      = {n <- NA; 
-                        try(n <- nclusters(dsc, type="macro"), silent=TRUE); 
-                        n},
-                numClasses	    = numClasses(actual),
-                
-                precision	    = precision(actual, predict),
-                recall	    = recall(actual, predict),
-                F1		    = f1(actual, predict),
-                
-                purity	    = precision(actual, predict),
-                fpr		    = recall(actual, predict),
-                
-                SSQ		    = ssq(points,centers),
-                
-                Euclidean	    = clue_agreement(predict, actual, "euclidean"),
-                Manhattan	    = clue_agreement(predict, actual, "manhattan"),
-                Rand	    = clue_agreement(predict, actual, "rand"),
-                cRand	    = clue_agreement(predict, actual, "crand"),
-                NMI		    = clue_agreement(predict, actual, "NMI"),
-                KP		    = clue_agreement(predict, actual, "KP"),
-                angle	    = clue_agreement(predict, actual, "angle"),
-                diag	    = clue_agreement(predict, actual, "diag"),
-                FM		    = clue_agreement(predict, actual, "FM"),
-                Jaccard	    = clue_agreement(predict, actual, "jaccard"),
-                #	purity	    = clue_agreement(predict, actual, "purity"),
-                PS		    = clue_agreement(predict, actual, "PS"),
-                
-                classPurity	    = recall(actual, predict),
-                
-                # tNN specific
-                tNNRelations = { if(!is(dsc, "DSC_tNN")) NA else length(dsc$RObj$relations) }, 
-                tNNTotalMicroClusters = { if(!is(dsc, "DSC_tNN")) NA else nrow(dsc$RObj$centers) }
+  ### FIXME: deal with noise!
+  ### Noise it its own group with index 0
+  ### this works for external measures
+  predict[is.na(predict)] <- 0L
+  actual[is.na(actual)] <- 0L
+  
+  res <- switch(m,
+    numMicroClusters	    = if(is(try(n <- nclusters(dsc, type="micro"), 
+      silent=TRUE), "try-error")) NA_integer_ else n,
+    numMacroClusters	    = if(is(try(n <- nclusters(dsc, type="macro"), 
+      silent=TRUE), "try-error")) NA_integer_ else n,
+    numClasses	    = numClasses(actual),
+    
+    SSQ  	    = ssq(points, actual, centers),
+    silhouette = silhouette(points, actual, predict),
+    
+    precision	    = precision(actual, predict),
+    recall	    = recall(actual, predict),
+    F1		    = f1(actual, predict),
+    purity	    = precision(actual, predict),
+    fpr		    = recall(actual, predict),
+    
+    Euclidean	    = clue_agreement(predict, actual, "euclidean"),
+    Manhattan	    = clue_agreement(predict, actual, "manhattan"),
+    Rand	    = clue_agreement(predict, actual, "rand"),
+    cRand	    = clue_agreement(predict, actual, "crand"),
+    NMI		    = clue_agreement(predict, actual, "NMI"),
+    KP		    = clue_agreement(predict, actual, "KP"),
+    angle	    = clue_agreement(predict, actual, "angle"),
+    diag	    = clue_agreement(predict, actual, "diag"),
+    FM		    = clue_agreement(predict, actual, "FM"),
+    Jaccard	    = clue_agreement(predict, actual, "jaccard"),
+    #	purity	    = clue_agreement(predict, actual, "purity"),
+    PS		    = clue_agreement(predict, actual, "PS"),
+    
+    classPurity	    = recall(actual, predict),
+    
+    # tNN specific
+    tNNRelations = { if(!is(dsc, "DSC_tNN")) NA else length(dsc$RObj$relations) }, 
+    tNNTotalMicroClusters = { if(!is(dsc, "DSC_tNN")) NA else nrow(dsc$RObj$centers) }
   )
   
   res
@@ -224,19 +267,23 @@ numClasses <- function(actual) {
   length(unique(actual))
 }
 
-ssq <- function(points, centers) {
-  dist <- dist(points,centers)
-  mindistance <- apply(dist, 1, min)
-  sum(mindistance)
+ssq <- function(points, actual, centers) {
+  ### ssq does not use noise points
+  points <- points[actual!=0,]
+  sum(apply(dist(points,centers), 1L , min))
 }
 
-clue_agreement <- function(predict, actual, method) {
+silhouette <- function(points, actual, predict) {
+  ### silhouette does not use noise points
+  noise <- actual==0 & predict==0
+  mean(cluster::silhouette(predict[!noise], dist(points[!noise,]))[,"sil_width"])
+}
+clue_agreement <- function(predict, actual, measure) {
   predict <- clue::as.cl_hard_partition(predict)
   actual <- clue::as.cl_hard_partition(actual)
-  as.numeric(clue::cl_agreement(clue::cl_ensemble(predict, actual), method=method))
+  as.numeric(clue::cl_agreement(clue::cl_ensemble(predict, actual), method=measure))
 }
 
-### silhouette <- function(d,c,assignment = NULL) {}
 
 ### this would need package Matrix
 #get_confusionMatrix <- function(d,c,predict) {

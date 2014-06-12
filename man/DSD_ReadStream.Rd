@@ -34,7 +34,7 @@ connection. The connection is responsible for maintaining where the stream
 is currently being read from. In general, the connections will consist of files
 stored on disk but have many other possibilities (see \code{\link{connection}}).
 
-The position in the file can be reset to the begining using 
+The position in the file can be reset to the beginning using 
 \code{reset_stream()}. The connection can be closed using \code{close_stream()}.
 }
 
