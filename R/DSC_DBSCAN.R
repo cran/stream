@@ -62,11 +62,9 @@ DBSCAN <- setRefClass("DBSCAN",
 
 DBSCAN$methods(
   cluster = function(x, weight = NULL, ...) {
-    if(length(data)>0) {
-      warning("DBSCAN: Previous data is being overwritten")
-    }
-    
-    
+    if(nrow(x)==1) 
+      warning("DSC_DBSCAN does not support iterative updating! Old data is overwritten.")
+      
     if(is.null(weight)) weights <<- rep(1,nrow(x))
     else {
       if(length(weight)!=nrow(x)) stop("number of weights does not match number of points")

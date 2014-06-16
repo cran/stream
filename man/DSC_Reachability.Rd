@@ -23,8 +23,12 @@
 
 }
 
-%\details{
-%}
+\details{
+Reachability uses internally \code{DSC_Hierarchical} with single link.
+
+Note that this clustering cannot be updated iteratively and every time
+it is used for (re)clustering, the old clustering is deleted.
+}
 
 \value{
 An object of class \code{DSC_Reachability}. The object

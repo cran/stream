@@ -83,10 +83,10 @@ kmeans_refClass <- setRefClass("kmeans",
 )
 
 kmeans_refClass$methods(
-  cluster = function(x, weight = rep(1,nrow(x)), ..., overwrite=FALSE) {
+  cluster = function(x, weight = rep(1,nrow(x)), ...) {
     
-    if(length(data)>0 && !overwrite) 
-      warning("Kmeans: Previous data is being overwritten")
+    if(nrow(x)==1) 
+      warning("DSC_Kmeans does not support iterative updating! Old data is overwritten.")
     
     ### filter weak clusters
     if(min_weight>0) {

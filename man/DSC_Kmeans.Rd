@@ -2,7 +2,7 @@
 \alias{DSC_Kmeans}
 \title{Kmeans Macro-clusterer}
 \description{
-    Class implements the k-means algorithm for reclustering micro-clusterings.
+    Class implements the k-means algorithm for reclustering a set of micro-clusters.
     }
 
 \usage{
@@ -28,6 +28,9 @@
 \details{
 Please refer to function \code{kmeans} in \pkg{stats} for more details
 on the algorithm.
+
+Note that this clustering cannot be updated iteratively and every time
+it is used for (re)clustering, the old clustering is deleted.
 }
 
 \value{

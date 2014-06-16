@@ -21,11 +21,11 @@
 animate_cluster <- function(dsc, dsd, macro=NULL, n=1000,
   wait=.1, horizon=100,
   evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
-  ...) {
+  evaluationAssignmentMethod="auto", ...) {
   
   cluster.ani(dsc, dsd, macro, n, wait, horizon, 
     evaluationMeasure, evaluationType, evaluationAssign, 
-    ...)
+    evaluationAssignmentMethod, ...)
 }
 
 animate_data <- function(dsd, n=1000, 
@@ -37,7 +37,8 @@ animate_data <- function(dsd, n=1000,
 
 cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
   wait=.1, horizon=100, 
-  evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", ...) {
+  evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
+  evaluationAssignmentMethod="auto", ...) {
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
@@ -64,7 +65,8 @@ cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
         reset_stream(d)
         evaluation[i,2] <- evaluate(cl, d,
           measure=evaluationMeasure, type=evaluationType, 
-          assign=evaluationAssign, n=horizon)
+          assign=evaluationAssign, assignmentMethod=evaluationAssignmentMethod,
+	  n=horizon)
       }
       
       reset_stream(d)

@@ -26,6 +26,9 @@ number.
 DBSCAN first finds core points based on the number of other points
 in its eps-neighborhood. Then core points are joined into clusters using 
 reachability (overlapping eps-neighborhoods). 
+
+Note that this clustering cannot be updated iteratively and every time
+it is used for (re)clustering, the old clustering is deleted.
 }
 
 \value{

@@ -10,8 +10,9 @@
 	    pch= NULL, ..., method="pairs", dim = NULL)
     \method{plot}{DSC}(x, dsd = NULL, n = 500,
 	    col_points="gray", col_clusters=c("red", "blue"),
-	    weights=TRUE, scale=c(1,5), cex=1, pch=NULL, ..., method="pairs", 
-	    dim = NULL, type = c("auto", "micro", "macro", "both"))
+	    weights=TRUE, scale=c(1,5), cex=1, pch=NULL, method="pairs", 
+	    dim = NULL, type = c("auto", "micro", "macro", "both"), 
+      assignment=FALSE, ...)
 }
 
 \arguments{
@@ -34,9 +35,10 @@
       then for methods \code{"pairs"} and \code{"pc"} all dimensions are used 
       and for \code{"scatter"} the first two dimensions are plotted.}
 	\item{type}{Plot micro- or macro-clusters. Auto
-	        used the class of dsc to decide.}
+      used the class of dsc to decide.}
+	\item{assignment}{logical; show assignment area of micro-clusters. }
 	\item{\dots}{further arguments are passed on to
-	plot or pairs in \pkg{graphics}.}
+      plot or pairs in \pkg{graphics}.}
 }
 
 %\details{
@@ -51,7 +53,6 @@
 }
 
 \examples{
-set.seed(1000)
 dsd <- DSD_Gaussians(k=3, d=3)
 
 ## plot data
@@ -59,16 +60,17 @@ plot(dsd, n=500)
 plot(dsd, method="pc", n=500)
 plot(dsd, method="scatter", dim=c(1,3), n=500)
 
-
 ## create and plot micro-clusters
 dstream <- DSC_DStream(gridsize=0.1)
 cluster(dstream, dsd, 500)
 plot(dstream)
 
-## plot on data
+## plot with data, projected on the first two principal components 
+## and dimensions 2 and 3
 plot(dstream, dsd)
 plot(dstream, dsd, method="pc")
+plot(dstream, dsd, dim=c(2,3))
 
-## plot micro and macro-clusters
+## plot micro and macro-clusters 
 plot(dstream, dsd, type="both")
 }

@@ -23,7 +23,10 @@
 }
 
 \details{
-Please refer to package \code{Hierarchical} for more details on the behavior of the algorithm.
+Please refer to \code{hclust} for more details on the behavior of the algorithm.
+
+Note that this clustering cannot be updated iteratively and every time
+it is used for (re)clustering, the old clustering is deleted.
 }
 
 \value{

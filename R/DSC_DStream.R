@@ -500,15 +500,19 @@ microToMacro.DSC_DStream <- function(x, micro=NULL, ...) {
 
 ### add plot as a grid
 plot.DSC_DStream <- function(x, dsd=NULL, n=500, 
-  type=c("micro", "macro", "both"), grid=FALSE, grid_type="used",
+  type=c("micro", "macro", "both"), grid=FALSE, grid_type="used", assignment=FALSE,
   ...) {
   ### find type
   dim <- list(...)$dim
   
   type <- match.arg(type)
+
+  ### assignment == grid
+  if(assignment) grid=TRUE
   
   ### implements grid and grid_both
   if(!grid) return(plot.DSC(x, dsd=dsd, n=n, type=type, ...))
+  
   
   
   if(is.na(x$RObj$d)) {

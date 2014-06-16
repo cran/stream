@@ -1,4 +1,8 @@
-Changes in version 1.0-1 (6/12/14)
+Changes in version 1.0-2 (06/16/14)
+    * Warning for reclusterers removed.
+    * plot can now show micro-cluster assignment areas using assignment=TRUE
+
+Changes in version 1.0-1 (06/12/14)
     * Improved documentation
     * Improved DSD_MG
     * plot gained a dim argument to plot only selected dimensions

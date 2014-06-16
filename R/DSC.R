@@ -108,9 +108,10 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
   scale=c(1,5),
   cex=1,
   pch=NULL,
-  ..., 
   method="pairs", dim=NULL, 
-  type=c("auto", "micro", "macro", "both")) {
+  type=c("auto", "micro", "macro", "both"), 
+  assignment = FALSE, ### assignment is not implemented
+  ...) {
   
   type <- match.arg(type)
   

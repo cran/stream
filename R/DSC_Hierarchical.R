@@ -96,8 +96,10 @@ hierarchical <- setRefClass("hierarchical",
 )
 
 hierarchical$methods(
-  cluster = function(x,  weight = rep(1,nrow(x)), ..., overwrite=FALSE) {
-    if(length(data)>0 && !overwrite) warning("Hierarchical: Previous data is being overwritten")
+  cluster = function(x,  weight = rep(1,nrow(x)), ...) {
+    if(nrow(x)==1) 
+      warning("DSC_Hierarchical does not support iterative updating! Old data is overwritten.")
+    
     
     ### filter weak clusters
     if(min_weight>0) {

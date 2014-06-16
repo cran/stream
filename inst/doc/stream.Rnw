@@ -110,7 +110,7 @@ E-mail: \email{jforrest@microsoft.com}
 
 
 <<echo=FALSE>>=
-options(width = 75, digits = 3)
+options(width = 75, digits = 3, prompt='R> ')
 @
 
 
