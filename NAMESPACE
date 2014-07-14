@@ -29,14 +29,16 @@ export(
 	DSC_tNN, 
   DSC_Window,
 
-  DSC_Static,
-  
   DSC_Kmeans,
 	DSC_DBSCAN,
 	DSC_Hierarchical,
   DSC_Reachability,
 	
-	# DSD
+  DSC_TwoStage,
+
+  DSC_Static,
+
+  # DSD
 	DSD,
   DSD_R,
   
@@ -143,19 +145,23 @@ S3method(nclusters, DSC)
 S3method(get_assignment, DSC)
 S3method(get_assignment, DSC_tNN)
 S3method(get_assignment, DSC_DStream)
+S3method(get_assignment, DSC_TwoStage)
 
 
 S3method(get_centers, DSC_Macro)
 S3method(get_centers, DSC_Micro)
+S3method(get_centers, DSC_TwoStage)
 
 S3method(get_weights, DSC_Micro)
 S3method(get_weights, DSC_Macro)
+S3method(get_weights, DSC_TwoStage)
 
 S3method(recluster, DSC_Macro)
 
 S3method(microToMacro, DSC_R)
 S3method(microToMacro, DSC_tNN)
 S3method(microToMacro, DSC_DStream)
+S3method(microToMacro, DSC_TwoStage)
 
 S3method(get_copy, DSC_R)
 

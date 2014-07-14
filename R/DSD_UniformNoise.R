@@ -19,7 +19,7 @@
 
 DSD_UniformNoise <- function(d=2, range=NULL) {
   if(is.null(range)) range <- matrix(c(0,1), ncol=2, nrow=d, byrow=TRUE)
-  structure(list(description = "Uniform Noise Data Stream", d = d, range=range),
+  structure(list(description = "Uniform Noise", d = d, range=range),
 	      class=c("DSD_UniformNoise","DSD_R","DSD"))
   }
   

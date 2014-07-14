@@ -1620,7 +1620,7 @@ and the D-Stream clustering objects
 created in the previous section.
 
 <<>>= 
-evaluate(dstream, dsd, n = 500)
+evaluate(dstream, dsd, n = 100)
 @
 
 The number of points taken from \code{dsd} and used for the evaluation are passed 

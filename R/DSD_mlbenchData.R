@@ -136,7 +136,7 @@ DSD_mlbenchData <- function(data=NULL, loop=FALSE, random=FALSE, scale = FALSE) 
   
   k <- length(unique(a))
   
-  l <- DSD_Wrapper(d, k=k, assignment=a, description=paste("mlbench", data))
+  l <- DSD_Wrapper(d, k=k, assignment=a, description=paste("mlbench:", data))
   class(l) <- c("DSD_mlbenchData", class(l))
   l
 }

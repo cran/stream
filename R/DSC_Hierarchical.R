@@ -23,7 +23,7 @@ DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete",
   hierarchical <- hierarchical$new( 
     k=k, h=h, method=method, min_weight=min_weight)
   
-  if(is.null(description)) description <- paste("Hierarchical clustering (", method, ")", 
+  if(is.null(description)) description <- paste("Hierarchical (", method, ")", 
     sep='')
   
   l <- list(description = description, RObj = hierarchical)
@@ -97,8 +97,8 @@ hierarchical <- setRefClass("hierarchical",
 
 hierarchical$methods(
   cluster = function(x,  weight = rep(1,nrow(x)), ...) {
-    if(nrow(x)==1) 
-      warning("DSC_Hierarchical does not support iterative updating! Old data is overwritten.")
+    #if(nrow(x)==1) 
+    #  warning("DSC_Hierarchical does not support iterative updating! Old data is overwritten.")
     
     
     ### filter weak clusters

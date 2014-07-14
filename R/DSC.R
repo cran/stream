@@ -91,7 +91,7 @@ nclusters.DSC <- function(x, type=c("auto", "micro", "macro"), ...) {
 
 print.DSC <- function(x, ...) {
   cat(.line_break(paste(x$description)))
-  #cat("Class:", paste(class(x), collapse=", "), "\n") 
+  cat("Class:", paste(class(x), collapse=", "), "\n") 
   if(!is(nc <- try(nclusters(x, type="micro"), silent=TRUE), "try-error")) 
     cat(paste('Number of micro-clusters:', nc, '\n'))
   if(!is(nc <- try(nclusters(x, type="macro"), silent=TRUE), "try-error")) 

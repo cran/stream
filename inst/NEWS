@@ -1,3 +1,7 @@
+Changes in version 1.0-3 (07/14/14)
+    * Fixed precision and recall calculation
+    * Added DSC_TwoStage
+
 Changes in version 1.0-2 (06/16/14)
     * Warning for reclusterers removed.
     * plot can now show micro-cluster assignment areas using assignment=TRUE

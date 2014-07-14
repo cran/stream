@@ -500,10 +500,13 @@ microToMacro.DSC_DStream <- function(x, micro=NULL, ...) {
 
 ### add plot as a grid
 plot.DSC_DStream <- function(x, dsd=NULL, n=500, 
-  type=c("micro", "macro", "both"), grid=FALSE, grid_type="used", assignment=FALSE,
+  type=c("micro", "macro", "both"), 
+  grid=FALSE, grid_type="used", assignment=FALSE,
   ...) {
+  
   ### find type
   dim <- list(...)$dim
+  main <- list(...)$main
   
   type <- match.arg(type)
 
@@ -520,7 +523,8 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
     return(invisible(NULL))
   }
   
-  if(x$RObj$d!=2 && (is.null(dim) || length(dim)!=2)) stop("Image visualization only works for 2D data! Set dim in plot.") 
+  if(x$RObj$d!=2 && (is.null(dim) 
+    || length(dim)!=2)) stop("Image visualization only works for 2D data! Set dim in plot.") 
   
   #  mat <- x$RObj$toMatrix("transitional")
   mat <- x$RObj$toMatrix(grid_type, dim)
@@ -533,7 +537,7 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
     y=as.numeric(colnames(mat)), 
     z=mat, 
     col=rev(gray.colors(100)), axes=TRUE, 
-    xlab=varnames[1], ylab=varnames[2])
+    xlab=varnames[1], ylab=varnames[2], main=main)
   
   if(!is.null(dsd)) {
     ps <- get_points(dsd, n=n, assignment=TRUE)

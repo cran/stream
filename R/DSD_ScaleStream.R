@@ -23,7 +23,7 @@ DSD_ScaleStream <- function(dsd,
                            n=1000, reset=TRUE) {
   
   # creating the DSD object
-  l <- list(description = paste("Scale Data Stream -", dsd$description),
+  l <- list(description = paste(dsd$description, "(scaled)"),
             dsd = dsd,
             d = dsd$d,
             k = dsd$k,

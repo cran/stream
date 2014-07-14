@@ -37,7 +37,7 @@ DSD_Wrapper <- function(x, n, k=NA, loop=FALSE, assignment = NULL,
   state <- new.env()
   assign("counter", 1L, envir = state)
   
-  if(is.null(description)) description <- "Data Frame Stream Wrapper"
+  if(is.null(description)) description <- "Matrix Stream Wrapper"
   
   # creating the DSD object
   structure(list(

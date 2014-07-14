@@ -20,7 +20,7 @@
 
 animate_cluster <- function(dsc, dsd, macro=NULL, n=1000,
   wait=.1, horizon=100,
-  evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
+  evaluationMeasure=NULL, evaluationType="auto", evaluationAssign="micro", 
   evaluationAssignmentMethod="auto", ...) {
   
   cluster.ani(dsc, dsd, macro, n, wait, horizon, 
@@ -37,8 +37,16 @@ animate_data <- function(dsd, n=1000,
 
 cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
   wait=.1, horizon=100, 
-  evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
+  evaluationMeasure=NULL, evaluationType="auto", evaluationAssign="micro", 
   evaluationAssignmentMethod="auto", ...) {
+  
+  if(evaluationType=="auto") {
+    if(is.null(macro) && !is(dsc, "DSC_Macro")) evaluationType <- "macro"
+    else evaluationType <- "micro"
+  }
+  
+  #cat("Evaluation results for ", attr(x, "type"),"-clusters.\n", sep="")
+  #cat("Points were assigned to ", attr(x, "assign"),"-clusters.\n\n", sep="")
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
@@ -66,7 +74,7 @@ cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
         evaluation[i,2] <- evaluate(cl, d,
           measure=evaluationMeasure, type=evaluationType, 
           assign=evaluationAssign, assignmentMethod=evaluationAssignmentMethod,
-	  n=horizon)
+          n=horizon)
       }
       
       reset_stream(d)
@@ -80,7 +88,7 @@ cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
           ann=FALSE) 
         title(ylab=evaluationMeasure)        
       }
-          
+      
     }else{
       ### plot just data
       plot(d, n=horizon, ...)

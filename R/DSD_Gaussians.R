@@ -81,7 +81,7 @@ DSD_Gaussians <- function(k=2, d=2, mu, sigma, p, separation=0.2,
   # list of length k
   # d x d matrix in the list
   
-  l <- list(description = "Static Mixture of Gaussians Data Stream",
+  l <- list(description = "Mixture of Gaussians",
     k = k,
     d = d,
     mu = mu,

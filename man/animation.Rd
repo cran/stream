@@ -12,7 +12,7 @@ Generates an animation of a data stream or a data steam clustering.
 \usage{
 animate_data(dsd, n=1000, wait=.1, horizon=100, ...)
 animate_cluster(dsc, dsd, macro=NULL, n=1000, wait=.1, horizon=100, 
-    evaluationMeasure=NULL, evaluationType="micro", evaluationAssign="micro", 
+    evaluationMeasure=NULL, evaluationType="auto", evaluationAssign="micro", 
     evaluationAssignmentMethod = "auto", ...)
 }
 
@@ -24,7 +24,9 @@ animate_cluster(dsc, dsd, macro=NULL, n=1000, wait=.1, horizon=100,
   \item{wait}{the time interval between each frame}
   \item{horizon}{the number of points displayed at once/used for evaluation. }
   \item{evaluationMeasure}{the evaluation measure that should be graphed below the animation}
-  \item{evaluationType}{evaluate \code{"micro"} or \code{"macro"}-clusters?}
+  \item{evaluationType}{evaluate \code{"micro"} or \code{"macro"}-clusters? \code{"auto"}
+      chooses micro if \code{dsc} is of class \code{DSC_micro} and no \code{macro}
+      is given. Otherwise macro is used.}
   \item{evaluationAssign}{assign new points to the closest \code{"micro"} or 
     \code{"macro"}-cluster to calculate the evaluation measure.}
   \item{evaluationAssignmentMethod}{how to assign data points to micro-clusters. Options are

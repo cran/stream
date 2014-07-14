@@ -58,7 +58,7 @@ DSD_Cubes <- function(k=2, d=2, center, size, p, noise = 0, noise_range) {
   if (ncol(size) != d || nrow(size) != k)
     stop("invalid size of size matrix")
   
-  l <- list(description = "Static Mixture of (hyper) cubes Data Stream",
+  l <- list(description = "Mixture of (Hyper) Cubes",
             k = k,
             d = d,
             center = center,

@@ -23,7 +23,7 @@ DSC_Reachability <- function(epsilon, min_weight=NULL, description=NULL) {
   hierarchical <- hierarchical$new( 
     h=epsilon, method="single", min_weight=min_weight)
   
-  if(is.null(description)) description <- "Reachability clustering"
+  if(is.null(description)) description <- "Reachability"
   
   l <- list(description = description, RObj = hierarchical)
   class(l) <- c("DSC_Reachability", "DSC_Hierarchical", "DSC_Macro", "DSC_R", "DSC")

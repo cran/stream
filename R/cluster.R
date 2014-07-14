@@ -20,15 +20,15 @@
 ## wrapper for cluster functions
 
 cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) { 
-  if (n < 1)
-    stop("numPoints must be >= 1")
-  
-  # set new data flag
-  if(!is.null(dsc$macro)) dsc$macro$newdata <- TRUE
-
-  # looping through the stream, feeding the new datapoints into 
-  # the algorithm
-  .cluster(dsc, dsd, n, verbose, ...)
+  if (n > 0) {
+    
+    # set new data flag
+    if(is.environment(dsc$macro)) dsc$macro$newdata <- TRUE
+    
+    # looping through the stream, feeding the new datapoints into 
+    # the algorithm
+    .cluster(dsc, dsd, n, verbose, ...)
+  }
   
   # so cl <- cluster(cl, ...) also works
   invisible(dsc)

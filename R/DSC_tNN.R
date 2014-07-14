@@ -24,15 +24,16 @@ DSC_tNN <- function(r, lambda = 1e-3,  gap_time=1000L, noise = 0.1,
   tNN <- tNN$new(r, lambda, as.integer(gap_time), 
     noise, measure, shared_density, alpha, k, minweight)
   
-  l <- list(
-    description = "Threshold nearest-neighbor (tNN)", 
-    RObj = tNN,
-    macro = new.env()
-  )
+  macro <- new.env()
+  macro$newdata <- TRUE
   
-  l$macro$newdata <- FALSE
-  class(l) <- c("DSC_tNN", "DSC_Micro", "DSC_R", "DSC")
-  l
+  structure(
+    list(
+      description = "Threshold nearest-neighbor (tNN)", 
+      RObj = tNN,
+      macro = macro
+    ), class = c("DSC_tNN", "DSC_Micro", "DSC_R", "DSC")
+  )
 }
 
 

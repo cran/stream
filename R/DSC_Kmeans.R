@@ -24,8 +24,8 @@ DSC_Kmeans <- function(k, weighted = TRUE, iter.max = 10, nstart = 1,
   
   algorithm <- match.arg(algorithm)
   if(!is.null(description)) desc <- description
-  else if(weighted) desc <- "k-Means clustering (weighted)"
-  else desc <-"k-Means clustering"
+  else if(weighted) desc <- "k-Means (weighted)"
+  else desc <-"k-Means"
   
   structure(list(description = desc,
     RObj = kmeans_refClass$new(
@@ -85,8 +85,8 @@ kmeans_refClass <- setRefClass("kmeans",
 kmeans_refClass$methods(
   cluster = function(x, weight = rep(1,nrow(x)), ...) {
     
-    if(nrow(x)==1) 
-      warning("DSC_Kmeans does not support iterative updating! Old data is overwritten.")
+  #  if(nrow(x)==1) 
+  #    warning("DSC_Kmeans does not support iterative updating! Old data is overwritten.")
     
     ### filter weak clusters
     if(min_weight>0) {

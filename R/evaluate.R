@@ -32,7 +32,7 @@
   "entropy", "wb.ratio", 
   
   ### external
-  "corrected.rand",
+ # "corrected.rand",
   "vi"
 )
 
@@ -44,8 +44,9 @@
   "silhouette",
   # external
   "precision", "recall", "F1",
-  "purity", "fpr",
-  "classPurity", 
+  "purity", 
+  #"fpr",
+  #"classPurity", 
   "Euclidean", "Manhattan", "Rand", "cRand",
   "NMI", "KP", "angle", "diag", "FM", "Jaccard", "PS" 
 )
@@ -54,16 +55,20 @@
   "tNNRelations", "tNNTotalMicroClusters"
 )
 
-evaluate <- function (dsc, dsd, measure, n = 1000, 
-  type=c("auto", "micro", "macro"), assign="micro", 
-  assignmentMethod=c("auto","model", "nn"), ...) {
+evaluate <- function (dsc, dsd, measure, n = 100, 
+  type=c("auto", "micro", "macro"), 
+  assign="micro", 
+  assignmentMethod=c("auto","model", "nn"), 
+  ...) {
   
   assignmentMethod <- match.arg(assignmentMethod)
   type <- get_type(dsc, type)  
-
+  
   all_measures <- c(.eval_measures, .eval_measures_fpc)
-  if(missing(measure) || is.null(measure)) measure <- all_measures
-  else measure <- all_measures[pmatch(tolower(measure), tolower(all_measures))] 
+  if(missing(measure) || is.null(measure)) m <- all_measures
+  else m <- all_measures[pmatch(tolower(measure), tolower(all_measures))] 
+  
+  if(any(is.na(m))) stop("Invalid measure: ", paste(measure[is.na(m)], collapse=', '))
   
   centers <- get_centers(dsc, type=type) 
   
@@ -82,17 +87,19 @@ evaluate <- function (dsc, dsd, measure, n = 1000,
   if(type=="macro" && assign=="micro") predict <- microToMacro(dsc, predict)
   else if (type!=assign) stop("type and assign are not compatible!")
   
-  fpc <- measure %in% .eval_measures_fpc
+  fpc <- m %in% .eval_measures_fpc
   if(any(fpc)) {
-    # noise cluster has the highest index and need to renumber
-    withnoise <- any(is.na(actual))
-    actual[is.na(actual)] <- max(actual, na.rm=TRUE) + 1L
-    actual <- match(actual, unique(sort(actual)))
-    predict[is.na(predict)] <- max(predict, na.rm=TRUE) + 1L 
-    predict <- match(predict, unique(sort(predict)))
-
-    e <- fpc::cluster.stats(d=dist(points), clustering=predict, 
-      alt.clustering = actual,
+    # noise cluster has the highest index and need to renumbered
+    actual_fpc <- actual
+    predict_fpc <- predict
+    withnoise <- any(is.na(actual_fpc))
+    actual_fpc[is.na(actual_fpc)] <- max(actual_fpc, na.rm=TRUE) + 1L
+    actual_fpc <- match(actual_fpc, unique(sort(actual_fpc)))
+    predict_fpc[is.na(predict_fpc)] <- max(predict_fpc, na.rm=TRUE) + 1L 
+    predict_fpc <- match(predict_fpc, unique(sort(predict_fpc)))
+    
+    e <- fpc::cluster.stats(d=dist(points), clustering=predict_fpc, 
+      alt.clustering = actual_fpc,
       noisecluster=TRUE,
       silhouette = TRUE,
       G2 = TRUE, G3 = FALSE,
@@ -102,17 +109,16 @@ evaluate <- function (dsc, dsd, measure, n = 1000,
       aggregateonly = TRUE)
     e <- unlist(e)
   }else e <- numeric()
-    
+  
   if(any(!fpc)) {
-    m <- sapply(measure[!fpc], function(x) .evaluate(x, predict, actual, 
+    v <- sapply(m[!fpc], function(x) .evaluate(x, predict, actual, 
       points, centers, dsc))
-    e <- c(e, m)
+    e <- c(e, v)
   }
   
-  e <- e[measure]
-
-  structure(e, type=type, assign=assign, class="stream_eval")
+  e <- e[m]
   
+  structure(e, type=type, assign=assign, class="stream_eval")
 }
 
 print.stream_eval <-  function(x, ...) {
@@ -160,38 +166,25 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, measure,
 }
 
 # work horse
-.evaluate <- function(measure, predict, actual, points, 
-  centers, dsc) {
+.evaluate <- function(measure, predict, actual, points, centers, dsc) {
   
-  #make a vector of all of the measures and then do a lot of if statements
-  measures <- .eval_measures
-  
-  #finds index of partial match in array of measures
-  m <- measures[pmatch(tolower(measure),tolower(measures))] 
-  
-  if(is.na(m)) stop("Invalid measure \"", measure, "\".")
-  
-  ### FIXME: deal with noise!
-  ### Noise it its own group with index 0
-  ### this works for external measures
+  ### Noise it its own group with index 0: this works for external measures
   predict[is.na(predict)] <- 0L
   actual[is.na(actual)] <- 0L
   
-  res <- switch(m,
+  res <- switch(measure,
     numMicroClusters	    = if(is(try(n <- nclusters(dsc, type="micro"), 
       silent=TRUE), "try-error")) NA_integer_ else n,
     numMacroClusters	    = if(is(try(n <- nclusters(dsc, type="macro"), 
       silent=TRUE), "try-error")) NA_integer_ else n,
     numClasses	    = numClasses(actual),
     
-    SSQ  	    = ssq(points, actual, centers),
+    SSQ  	    = ssq(points, actual, predict, centers),
     silhouette = silhouette(points, actual, predict),
     
     precision	    = precision(actual, predict),
     recall	    = recall(actual, predict),
     F1		    = f1(actual, predict),
-    purity	    = precision(actual, predict),
-    fpr		    = recall(actual, predict),
     
     Euclidean	    = clue_agreement(predict, actual, "euclidean"),
     Manhattan	    = clue_agreement(predict, actual, "manhattan"),
@@ -203,10 +196,11 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, measure,
     diag	    = clue_agreement(predict, actual, "diag"),
     FM		    = clue_agreement(predict, actual, "FM"),
     Jaccard	    = clue_agreement(predict, actual, "jaccard"),
-    #	purity	    = clue_agreement(predict, actual, "purity"),
+    #purity	    = clue_agreement(predict, actual, "purity"),
     PS		    = clue_agreement(predict, actual, "PS"),
     
-    classPurity	    = recall(actual, predict),
+    purity = purity(predict, actual),
+    #    classPurity	    = classPurity(actual, predict),
     
     # tNN specific
     tNNRelations = { if(!is(dsc, "DSC_tNN")) NA else length(dsc$RObj$relations) }, 
@@ -214,8 +208,60 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, measure,
   )
   
   res
-  
 }
+
+### compare pairs of points
+### http://stats.stackexchange.com/questions/15158/precision-and-recall-for-clustering
+### test:
+# actual  <- c(1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3)
+# predict <- c(1,1,1,1,1,2,3,3,1,2,2,2,2,2,3,3,3)
+# TOTAL = 136
+# P = 40
+# TP = 20
+# FP = 20
+# FN =24
+# TN = 72
+
+# recall TP/(TP+FN)
+recall <- function(actual, predict) {
+  conf <- table(predict, actual)
+  #TOTAL <- length(actual)*(length(actual)-1)/2
+  ### TP+FP
+  #  P <- sum(choose(table(predict), 2))
+  ### TP
+  TP <- sum(choose(conf, 2))
+  
+  #N <- TOTAL - P  
+  
+  FN <- sum(sapply(1:(nrow(conf)-1L), 
+    FUN=function(i) conf[i,] * colSums(conf[-(1:i),,drop=FALSE])))
+  
+  #TN <- N - FN
+  
+  TP/(TP+FN)
+}
+
+# precision TP/(TP+FP)
+precision <- function(actual, predict) {
+  ### TP+FP
+  P <- sum(choose(table(predict), 2))
+  ### TP
+  TP <- sum(choose(table(predict,actual),2))
+  
+  TP/P  
+}
+
+f1 <- function(actual, predict) {
+  precision <- precision(actual, predict)
+  recall <- recall(actual, predict)
+  (2*precision*recall)/(precision+recall)
+}
+
+purity <- function(actual, predict) {
+  conf <- table(predict, actual)
+  mean(colMax(conf)/colSums(conf))
+}
+
 
 ### helper
 colMax <- function(x, which=FALSE) {
@@ -232,26 +278,8 @@ rowMax <- function(x, which=FALSE) {
   }
 }
 
-f1 <- function(actual, predict) {
-  precision <- precision(actual, predict)
-  recall <- recall(actual, predict)
-  (2*precision*recall)/(precision+recall)
-}
 
-# recall tp/(tp+fn)
-recall <- function(actual, predict) {
-  confusion <- table(actual, predict) 
-  relevant <- rowSums(confusion)
-  
-  sum(colMax(confusion))/sum(relevant[colMax(confusion, which=TRUE)])
-}
-
-# precision tp/(tp+fp) == purity (sum_j \max_i n_{ij} / n)
-precision <- function(actual, predict) {
-  confusion <- table(actual, predict)    
-  sum(colMax(confusion))/length(predict)
-}
-
+### FIXME: check!
 # as defined in Density-Based Clustering of Data Streams at 
 # Multiple Resolutions by Wan et al
 classPurity <- function(actual, predict) {
@@ -267,17 +295,39 @@ numClasses <- function(actual) {
   length(unique(actual))
 }
 
-ssq <- function(points, actual, centers) {
-  ### ssq does not use noise points
-  points <- points[actual!=0,]
-  sum(apply(dist(points,centers), 1L , min))
+ssq <- function(points, actual, predict, centers) {
+  ### ssq does not use actual and predicted noise points
+  ### predicted noise points that are not actual noise points form their own 
+  ### cluster
+  noise <- actual==0 & predict==0
+  points <- points[!noise,]
+  predict <- predict[!noise]
+  if(any(predict==0)) {
+    warning("SSQ: ", sum(predict==0), " non-noise points were predicted noise incorrectly and form their own cluster.")
+    centers <- rbind(centers, colMeans(points[predict==0,]))
+    predict[predict==0] <- nrow(centers)
+  }
+  
+  ### points that are predicted as noise but are not are its own group!
+
+  #sum(apply(dist(points, centers), 1L , min)^2)
+  d <- dist(points, centers)
+  sum(sapply(1:length(predict), FUN=function(i) d[i,predict[i]])^2)
 }
 
 silhouette <- function(points, actual, predict) {
   ### silhouette does not use noise points
   noise <- actual==0 & predict==0
-  mean(cluster::silhouette(predict[!noise], dist(points[!noise,]))[,"sil_width"])
+  points <- points[!noise,]
+  predict <- predict[!noise]
+  
+  if(any(predict==0)) warning("silhouette: ", sum(predict==0), " non-noise points were predicted noise incorrectly and form their own cluster.")
+  
+  ### points that are predicted as noise but are not are its own group!
+  
+  mean(cluster::silhouette(predict, dist(points))[,"sil_width"])
 }
+
 clue_agreement <- function(predict, actual, measure) {
   predict <- clue::as.cl_hard_partition(predict)
   actual <- clue::as.cl_hard_partition(actual)

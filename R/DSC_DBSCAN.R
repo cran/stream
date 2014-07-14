@@ -21,7 +21,7 @@ DSC_DBSCAN <- function(eps, MinPts = 5, weighted = TRUE, description=NULL) {
   
   DBSCAN <- DBSCAN$new(eps=eps, MinPts = MinPts, weighted = weighted)
   if(!is.null(description)) desc <- description
-  else if(weighted) desc <- "DBSCAN (weighted)" else desc <- "DBSCAN (unweighted)"
+  else if(weighted) desc <- "DBSCAN (weighted)" else desc <- "DBSCAN"
   
   l <- list(description = desc, RObj = DBSCAN)
   class(l) <- c("DSC_DBSCAN","DSC_Macro","DSC_R","DSC")
@@ -62,8 +62,8 @@ DBSCAN <- setRefClass("DBSCAN",
 
 DBSCAN$methods(
   cluster = function(x, weight = NULL, ...) {
-    if(nrow(x)==1) 
-      warning("DSC_DBSCAN does not support iterative updating! Old data is overwritten.")
+    #if(nrow(x)==1) 
+    #  warning("DSC_DBSCAN does not support iterative updating! Old data is overwritten.")
       
     if(is.null(weight)) weights <<- rep(1,nrow(x))
     else {

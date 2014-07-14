@@ -37,7 +37,7 @@ DSD_mlbenchGenerator <- function(method, ...) {
   if(is.na(m)) stop("DSD_mlbenchGenerator: Invalid data generator")
   
   # creating the DSD object
-  l <- list(description = paste("mlbench", method),
+  l <- list(description = paste("mlbench:", method),
     method = methods[m],
     variables = list(...)
   )

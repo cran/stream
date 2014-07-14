@@ -10,18 +10,18 @@
 }
 
 \usage{
-    evaluate(dsc, dsd, measure, n = 1000, type=c("auto", "micro", "macro"), 
-      assign="micro", assignmentMethod=c("auto", "model", "nn"), ...)
-    evaluate_cluster(dsc, dsd, macro=NULL, measure, n = 1000,
-	    type=c("auto", "micro", "macro"), 
-      assign="micro", assignmentMethod=c("auto", "model", "nn"),
-	    horizon=100, verbose=FALSE, ...)
+evaluate(dsc, dsd, measure, n = 100, type=c("auto", "micro", "macro"), 
+  assign="micro", assignmentMethod=c("auto", "model", "nn"), ...)
+evaluate_cluster(dsc, dsd, macro=NULL, measure, n = 1000,
+  type=c("auto", "micro", "macro"), 
+  assign="micro", assignmentMethod=c("auto", "model", "nn"),
+  horizon=100, verbose=FALSE, ...)
 }
 
 \arguments{
 	\item{dsc}{The DSC object that the evaluation measure is being requested from.}
 	\item{dsd}{The DSD object that holds the initial training data for the DSC.}
-	\item{measure}{Evaluaiton measure(s) to use. If missing then all available
+	\item{measure}{Evaluation measure(s) to use. If missing then all available
     measures are returned.}
 	\item{n}{The number of data points being requested.}
 	\item{type}{Use micro- or macro-clusters for evaluation. Auto
@@ -52,54 +52,69 @@
   
   The following information items are available:  
 	\itemize{
-		\item	\code{"numMicroClusters"} number of micro-clusters, 
-    \item \code{"numMacroClusters"} number of macro-clusters, 
+		\item	\code{"numMicroClusters"} number of micro-clusters
+    \item \code{"numMacroClusters"} number of macro-clusters 
 		\item	\code{"numClasses"} number of classes
 	}
   
   The following internal evaluation measures are available:
 	\itemize{
-		\item	\code{"SSQ"} sum of squares (actual noise points are excluded), 
+		\item	\code{"SSQ"} sum of squares (actual noise points are excluded) 
 		\item	\code{"silhouette"} average silhouette width (points that are actual noise and 
-      predicted to be noise are excluded) (\pkg{cluster}), 
-	  \item \code{"average.between"} average distance between clusters (\pkg{fpc}),        
-	  \item \code{"average.within"} average distance within clusters (\pkg{fpc}),          
-	  \item \code{"max.diameter"} maximum cluster diameter (\pkg{fpc}),        
-	  \item \code{ "min.separation"} minimum cluster separation (\pkg{fpc}),
-	  \item \code{"ave.within.cluster.ss"} a generalisation of the within clusters sum of squares (half the sum of the within cluster squared dissimilarities divided by the cluster size) (\pkg{fpc}),
-	  \item \code{"g2"} Goodman and Kruskal's Gamma coefficien (\pkg{fpc}), 
-    \item \code{"pearsongamma"} correlation between distances and a 0-1-vector where 0 means same cluster, 1 means different clusters (\pkg{fpc}),
-	  \item \code{"dunn"} Dunn index (minimum separation / maximum diameter) (\pkg{fpc}), 
-    \item \code{"dunn2"} minimum average dissimilarity between two cluster / maximum average within cluster dissimilarity (\pkg{fpc}), 
-	  \item \code{"entropy"} entropy of the distribution of cluster memberships (\pkg{fpc}), 
+      predicted to be noise are excluded) (\pkg{cluster}) 
+	  \item \code{"average.between"} average distance between clusters (\pkg{fpc})        
+	  \item \code{"average.within"} average distance within clusters (\pkg{fpc})          
+	  \item \code{"max.diameter"} maximum cluster diameter (\pkg{fpc})    
+	  \item \code{ "min.separation"} minimum cluster separation (\pkg{fpc})
+	  \item \code{"ave.within.cluster.ss"} a generalization of the within clusters sum of squares (half the sum of the within cluster squared dissimilarities divided by the cluster size) (\pkg{fpc})
+	  \item \code{"g2"} Goodman and Kruskal's Gamma coefficient (\pkg{fpc}) 
+    \item \code{"pearsongamma"} correlation between distances and a 0-1-vector where 0 means same cluster, 1 means different clusters (\pkg{fpc})
+	  \item \code{"dunn"} Dunn index (minimum separation / maximum diameter) (\pkg{fpc}) 
+    \item \code{"dunn2"} minimum average dissimilarity between two cluster / maximum average within cluster dissimilarity (\pkg{fpc}) 
+	  \item \code{"entropy"} entropy of the distribution of cluster memberships (\pkg{fpc}) 
     \item \code{"wb.ratio"} average.within/average.between (\pkg{fpc})
 	}  
 
   The following external evaluation measures are available:
   \itemize{
-		\item	\code{"precision"}, 
-		\item	\code{"recall"},
-		\item	\code{"F1"} F1 measure, 
-		\item	\code{"purity"} (of found clusters), 
-		\item	\code{"classPurity"} (of real clusters; see Wan et al (2009)), 
-		\item	\code{"fpr"} false positive rate,
+		\item	\code{"precision"}, \code{"recall"}, \code{"F1"} F1.
+     A true positive (TP) decision assigns two points in the same
+                true cluster also to the same cluster,
+                a true negative (TN) decision assigns two points from two
+                different true clusters to two different clusters.
+                A false positive (FP) decision assigns two points from the
+                same true cluster to two different clusters.
+                A false negative (FN) decision assigns two points from the
+                same true cluster to different clusters.
+
+                precision = TP/(TP+FP)
+                
+                recall = TP/(TP+FN)
+
+                The F1 measure is the harmonic mean of precision and recall.
+                
+		\item	\code{"purity"}  Average purity of clusters. The purity of each cluster
+        is the proportion of the points of the majority true group assigned to it
+        (see Cao et al. (2006))
+%		\item	\code{"classPurity"} (of real clusters; see Wan et al (2009)), 
+%		\item	\code{"fpr"} false positive rate,
 		\item	\code{"Euclidean"} Euclidean dissimilarity of
-		          the memberships (See Dimitriadou, Weingessel and Hornik
-			            (2002)) (\pkg{clue}), 
+		          the memberships (see Dimitriadou, Weingessel and Hornik
+			            (2002)) (\pkg{clue}) 
 		\item	\code{"Manhattan"} Manhattan dissimilarity of
-		          the memberships (\pkg{clue}), 
-		\item	\code{"Rand"} Rand index (see Rand (1971)) (\pkg{clue}),
-		\item	\code{"cRand"} Adjusted Rand index (see Hubert and Arabie (1985)) (\pkg{clue}),
+		          the memberships (\pkg{clue}) 
+		\item	\code{"Rand"} Rand index (see Rand (1971)) (\pkg{clue})
+		\item	\code{"cRand"} Adjusted Rand index (see Hubert and Arabie (1985)) (\pkg{clue})
 		\item	\code{"NMI"} Normalized Mutual Information (see Strehl and Ghosh
-		          (2002)) (\pkg{clue}),
+		          (2002)) (\pkg{clue})
 		\item	\code{"KP"} Katz-Powell index (see Katz and
-		          Powell (1953)) (\pkg{clue}),
-		\item	\code{"angle"} maximal cosine of the angle between the agreements (\pkg{clue}),
-		\item	\code{"diag"} maximal co-classification rate (\pkg{clue}),
-		\item	\code{"FM"} Fowlkes and Mallows's index (see Fowlkes and Mallows (1983)) (\pkg{clue}),
-		\item	\code{"Jaccard"} Jaccard index (\pkg{clue}), 
-		\item	\code{"PS"} Prediction Strength (see Tibshirani and Walter (2005)) (\pkg{clue}).
-	  \item  \code{"corrected.rand"} corrected Rand index (\pkg{fpc}),
+		          Powell (1953)) (\pkg{clue})
+		\item	\code{"angle"} maximal cosine of the angle between the agreements (\pkg{clue})
+		\item	\code{"diag"} maximal co-classification rate (\pkg{clue})
+		\item	\code{"FM"} Fowlkes and Mallows's index (see Fowlkes and Mallows (1983)) (\pkg{clue})
+		\item	\code{"Jaccard"} Jaccard index (\pkg{clue}) 
+		\item	\code{"PS"} Prediction Strength (see Tibshirani and Walter (2005)) (\pkg{clue})
+	%  \item  \code{"corrected.rand"} corrected Rand index (\pkg{fpc})
 	  \item  \code{"vi"} 	variation of information (VI) index (\pkg{fpc})
 }
 
@@ -141,6 +156,8 @@ C. C. Aggarwal, J. Han, J. Wang, P. S. Yu (2003). A Framework for
 Clustering Evolving Data Streams. Proceedings of the 29th International 
 Conference on Very Large Data Bases - Volume 29. 
 
+F. Cao, M. Ester, W. Qian, A. Zhou (2006). Density-Based Clustering over an Evolving Data Stream with Noise. Proceeding of the 2006 SIAM Conference on Data Mining, 326-337.  
+  
 E. Dimitriadou, A. Weingessel and K. Hornik (2002).  A combination
 scheme for fuzzy clustering.  International Journal of Pattern
 Recognition and Artificial Intelligence, 16, 901-912.
@@ -181,7 +198,6 @@ Clustering of Data Streams at Multiple Resolutions, 3(3).
  
 
 \examples{
-set.seed(0)
 dsd <- DSD_Gaussians(k=3, d=2)
 
 dstream <- DSC_DStream(gridsize=0.05)
