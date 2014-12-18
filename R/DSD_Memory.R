@@ -17,27 +17,25 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-DSD_Wrapper <- function(x, n, k=NA, loop=FALSE, assignment = NULL, 
-  description=NULL) {
+DSD_Memory <- function(x, n, k=NA, loop=FALSE, 
+  class = NULL, description=NULL) {
   
   if(is(x, "DSD")) {
     if(is.na(k) && !is.null(x$k)) k <- x$k
-    x <- get_points(x, n, assignment = TRUE)
-    x$assignment <- attr(x, "assignment")
-    assignment <- ncol(x) 
-  }else if(is.null(ncol)) stop("x needs to be a matrix-like object!") 
-  
-  if(length(assignment) == nrow(x)) {
-    x <- cbind(x, assignment)
-    assignment <- ncol(x)
+    
+    x <- get_points(x, n, cluster = TRUE)
+    class <- attr(x, "cluster")
+  }else{ ### x is a matrix-like object    
+    if(!is.null(class) && length(class) != nrow(x)) 
+      stop("Length of class and rows of x do not agree!")
   }
   
-  if(is.null(assignment)) d <- ncol(x) else d <- ncol(x)-1L
+  d <- ncol(x)
   
   state <- new.env()
   assign("counter", 1L, envir = state)
   
-  if(is.null(description)) description <- "Matrix Stream Wrapper"
+  if(is.null(description)) description <- "Memory Stream Interface"
   
   # creating the DSD object
   structure(list(
@@ -47,25 +45,38 @@ DSD_Wrapper <- function(x, n, k=NA, loop=FALSE, assignment = NULL,
     d = d,
     k = k,
     loop = loop,
-    assignment = assignment
-    ), class = c("DSD_Wrapper","DSD_R","DSD"))
+    class = class
+    ), class = c("DSD_Memory", "DSD_R", "DSD_data.frame", "DSD"))
 }
 
-get_points.DSD_Wrapper <- function(x, n=1, assignment = FALSE,...) {
-  n <- as.integer(n)
+get_points.DSD_Memory <- function(x, n=1, 
+  outofpoints=c("stop", "warn", "ignore"), 
+  cluster = FALSE, class = FALSE, ...) {
   
+  n <- as.integer(n)
+  outofpoints <- match.arg(outofpoints)  
+
   if(x$state$counter > nrow(x$strm)) {
     if(x$loop) x$state$counter <- 1L
-    else stop("The stream is at its end!")
+    else {
+    if(outofpoints == "stop") stop("The stream is at its end!")
+    if(outofpoints == "warn") warning("The stream is at its end! No more points available!")
+      return(x$strm[0,])
+    }
   }
   
   n_left <- nrow(x$strm) - x$state$counter + 1L
   
-  if(n_left < n && !x$loop) stop("Not enought data points left in stream!")
-  
+  if(n_left < n && !x$loop) {
+    if(outofpoints == "stop") stop("Not enought data points left in stream!")
+    if(outofpoints == "warn") warning("Not enought data points left in stream! Remaining points returned!")
+    n <- n_left
+  }
+
   if(n_left >= n) {
     ### regular case
     d <- x$strm[x$state$counter:(x$state$counter + n -1L),,drop=FALSE]
+    a <- x$class[x$state$counter:(x$state$counter + n -1L)]
     x$state$counter <- x$state$counter + n
   }else{
     ### we need to loop!
@@ -73,6 +84,8 @@ get_points.DSD_Wrapper <- function(x, n=1, assignment = FALSE,...) {
     
     # take what is left and reset counter
     d <- x$strm[x$state$counter:nrow(x$strm),,drop=FALSE] 
+    a <- x$class[x$state$counter:nrow(x$strm)]
+    
     togo <- n-n_left
     x$state$counter <- 1L
     
@@ -82,29 +95,28 @@ get_points.DSD_Wrapper <- function(x, n=1, assignment = FALSE,...) {
       if(n_left < togo) {
         # take the whole stream
         d <- rbind(d, x$strm)
+        a <- append(a, x$class)
+        
         togo <- togo - n_left
       }else{
         # take the rest
         d <- rbind(d, x$strm[1:(x$state$counter+togo-1),])
+        a <- append(a, x$class[1:(x$state$counter+togo-1)])
+        
         x$state$counter <- x$state$counter + togo
         togo <- 0L
       }
     }
   }
 
-  if(!is.null(x$assignment)) {
-    a <- d[, x$assignment]
-    d <- d[,-x$assignment]
-  }else a <- rep.int(1L, times=nrow(d))
-  
   d <- data.frame(d)
-  
-  if(assignment) attr(d, "assignment") <- a
+  if(cluster) attr(d, "cluster") <- a
+  if(class) d <- cbind(d, class = a)
   
   d
 }
 
-print.DSD_Wrapper <- function(x, ...) {
+print.DSD_Memory <- function(x, ...) {
   NextMethod() # calling the super classes print()
   pos <- x$state$counter
   if (pos>nrow(x$strm)) 
@@ -114,6 +126,6 @@ print.DSD_Wrapper <- function(x, ...) {
     '- loop is', x$loop, '\n'))
 }
 
-reset_stream.DSD_Wrapper <- function(dsd, pos=1) {
+reset_stream.DSD_Memory <- function(dsd, pos=1) {
   dsd$state$counter <- pos
 }

@@ -44,27 +44,27 @@ contains the following items:
 
 \examples{
 # Cassini dataset
-dsd <- DSD_mlbenchGenerator("cassini")
+stream <- DSD_mlbenchGenerator("cassini")
 
 # Use hierarchical clustering to recluster micro-clusters
-dsc <- DSC_tNN(r=.1)
-cluster(dsc, dsd, 500)
+tnn <- DSC_tNN(r=.1)
+update(tnn, stream, 500)
 
 # reclustering using single-link and specifying k
-hierarchical <- DSC_Hierarchical(k=3, method="single")
-recluster(hierarchical, dsc)
-hierarchical
-plot(hierarchical, dsd, type="both")
+hc <- DSC_Hierarchical(k=3, method="single")
+recluster(hc, tnn)
+hc
+plot(hc, stream, type="both")
 
 # reclustering by specifying height
-hierarchical <- DSC_Hierarchical(h=.2, method="single")
-recluster(hierarchical, dsc)
-hierarchical
-plot(hierarchical, dsd, type="both")
+hc <- DSC_Hierarchical(h=.2, method="single")
+recluster(hc, tnn)
+hc
+plot(hc, stream, type="both")
 
 # For comparison we use hierarchical clustering directly on the data 
 # Note: hierarchical clustering is not a data stream clustering algorithm!
-hierarchical <- DSC_Hierarchical(k=3, method="single")
-cluster(hierarchical, dsd, 500)
-plot(hierarchical, dsd)
+hc <- DSC_Hierarchical(k=3, method="single")
+update(hc, stream, 500)
+plot(hc, stream)
 }

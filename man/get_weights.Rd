@@ -32,14 +32,14 @@ Internally the call is delegated to the appropriate
 }
 
 \examples{
-dsd <- DSD_Gaussians(k=3, d=2)
-dsc <- DSC_DStream(gridsize=.1)
-cluster(dsc, dsd, 500)
-dsc
+stream <- DSD_Gaussians(k=3, d=2)
+dstream <- DSC_DStream(gridsize=.1)
+update(dstream, stream, 500)
+dstream
   
 # getting the micro-cluster weights
-get_weights(dsc)
+get_weights(dstream)
 
 # D-Stream also has macro-clusters
-get_weights(dsc, type="macro")
+get_weights(dstream, type="macro")
 }

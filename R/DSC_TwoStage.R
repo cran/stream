@@ -34,17 +34,28 @@ DSC_TwoStage <- function(micro, macro) {
 }
 
 ### TwoStage has its own interface (does not use DSC_R)
-.cluster.DSC_TwoStage <- function(dsc, dsd, n, verbose=FALSE, 
+update.DSC_TwoStage <- function(object, dsd, n=1, verbose=FALSE, 
   block=100000L, ...) {
   ### dsc contains an RObj which is  a reference object with a cluster method
   
-  ### TODO: Check data
-  
-  for(bl in .make_block(n, block)) {
-    cluster(dsc$micro_dsc, dsd, n=bl, ...)
-    if(verbose) cat("Processed", bl, "points -",
-      nclusters(dsc), "clusters\n")
+  n <- as.integer(n)
+  if(n>0) {
+    if(!is(dsd, "DSD_data.frame"))
+      stop("Cannot cluster stream (need a DSD_data.frame.)")
+    
+    ### for DSC_TwoStage
+    if(is.environment(object$macro)) object$macro$newdata <- TRUE
+    
+    ### TODO: Check data
+    for(bl in .make_block(n, block)) {
+      update(object$micro_dsc, dsd, n=bl, ...)
+      if(verbose) cat("Processed", bl, "points -",
+        nclusters(object), "clusters\n")
+    }
   }
+   
+  # so cl <- cluster(cl, ...) also works
+  invisible(object)
 }
 
 ### accessors

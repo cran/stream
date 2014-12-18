@@ -16,27 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-## wrapper for cluster functions
-
-cluster <- function(dsc, dsd, n=1, verbose=FALSE, ...) { 
-  if (n > 0) {
-    
-    # set new data flag
-    if(is.environment(dsc$macro)) dsc$macro$newdata <- TRUE
-    
-    # looping through the stream, feeding the new datapoints into 
-    # the algorithm
-    .cluster(dsc, dsd, n, verbose, ...)
-  }
-  
-  # so cl <- cluster(cl, ...) also works
-  invisible(dsc)
+print.DSO <- function(x, ...) {
+  cat(.line_break(paste(x$description)))
+  cat("Class:", paste(class(x), collapse=", "), "\n") 
+  #if(!is(nc <- try(nclusters(x, type="micro"), silent=TRUE), "try-error")) 
+  #  cat(paste('Number of micro-clusters:', nc, '\n'))
+  #if(!is(nc <- try(nclusters(x, type="macro"), silent=TRUE), "try-error")) 
+  #  cat(paste('Number of macro-clusters:', nc, '\n'))
 }
-
-### Worker definition. Subclasses define a .cluster function
-.cluster <- function(dsc, dsd, n, verbose=FALSE, ...) UseMethod(".cluster")
-
-
-
-

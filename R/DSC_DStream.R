@@ -106,9 +106,6 @@ DStream <- setRefClass("DStream",
   )
 )
 
-
-
-
 DStream$methods(list(
   cluster = function(newdata, debug = FALSE) {
     'Cluster new data.' ### online help
@@ -463,9 +460,6 @@ DStream$methods(list(
 )
 )
 
-
-
-
 get_attraction <- function(x, dist=FALSE, relative=FALSE) 
   x$RObj$get_attraction(dist=dist, relative=relative)
 
@@ -508,6 +502,10 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
   dim <- list(...)$dim
   main <- list(...)$main
   
+  ### grid uses a darker color for the points
+  col_points <- list(...)$col_points
+  if(is.null(col_points)) col_points <- gray(.1, alpha=.3)
+  
   type <- match.arg(type)
 
   ### assignment == grid
@@ -515,8 +513,6 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
   
   ### implements grid and grid_both
   if(!grid) return(plot.DSC(x, dsd=dsd, n=n, type=type, ...))
-  
-  
   
   if(is.na(x$RObj$d)) {
     warning("No data clustered yet")
@@ -536,18 +532,18 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
   image(x=as.numeric(rownames(mat)), 
     y=as.numeric(colnames(mat)), 
     z=mat, 
-    col=rev(gray.colors(100)), axes=TRUE, 
+    col=rev(gray.colors(100, alpha=1)), axes=TRUE, 
     xlab=varnames[1], ylab=varnames[2], main=main)
   
   if(!is.null(dsd)) {
-    ps <- get_points(dsd, n=n, assignment=TRUE)
-    pch <- attr(ps, "assignment")
+    ps <- get_points(dsd, n=n, cluster=TRUE)
+    pch <- attr(ps, "cluster")
     
     if(!is.null(dim)) ps <- ps[, dim]
     
     ### handle noise (samll circle)
-    pch[is.na(pch)] <- noise_pch
-    points(ps, col=rgb(0,0,0,alpha=.3), pch=pch)
+    pch[is.na(pch)] <- .noise_pch
+    points(ps, col= col_points, pch=pch)
   }
   
   ### add macro-clusters?
@@ -555,8 +551,6 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
     points(get_centers(x, type="macro"), col="blue", lwd=2, pch=3, 
       cex=get_weights(x, type="macro", scale=c(1,5)))
   }
-  
-  
 }
 
 get_assignment.DSC_DStream <- function(dsc, points, type=c("auto", "micro", "macro"), 

@@ -42,8 +42,8 @@ object (subclass of
 %}
 \examples{
 # create data stream with three clusters in 3D
-dsd <- DSD_Cubes(k=3, d=3)
+stream <- DSD_Cubes(k=3, d=3)
 
 # plotting the data
-plot(dsd)
+plot(stream)
 }

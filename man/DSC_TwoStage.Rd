@@ -14,7 +14,7 @@ DSC_TwoStage(micro, macro)
 }
 
 \details{
-\code{cluster()} runs the micro-clustering stage and if centers/weights are 
+\code{update()} runs the micro-clustering stage and if centers/weights are 
 requested the reclustering is automatically performed.
 }
 
@@ -30,18 +30,18 @@ An object of class \code{DSC_TwoStage} (subclass of  \code{DSC}, \code{DSC_Macro
 }
 
 \examples{
-dsd <- DSD_Gaussians(k=3)
+stream <- DSD_Gaussians(k=3)
 
 # Create a clustering process that uses a window for the online stage and
 # k-means for the offline stage (reclustering)
-dsc <- DSC_TwoStage(
+win_km <- DSC_TwoStage(
   micro=DSC_Window(horizon=100), 
   macro=DSC_Kmeans(k=3)
   ) 
-dsc
+win_km
   
-cluster(dsc, dsd, 200) 
-dsc
-plot(dsc, dsd, type="both")  
-evaluate(dsc, dsd, assign="macro")
+update(win_km, stream, 200) 
+win_km
+plot(win_km, stream, type="both")  
+evaluate(win_km, stream, assign="macro")
 }

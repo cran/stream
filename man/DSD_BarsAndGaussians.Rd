@@ -26,8 +26,8 @@ Returns a \code{DSD_BarsAndGaussians} object.
 
 \examples{
 # create data stream with three clusters in 2D
-dsd <- DSD_BarsAndGaussians(noise=0.1)
+stream <- DSD_BarsAndGaussians(noise=0.1)
 
 # plotting the data
-plot(dsd)
+plot(stream)
 }

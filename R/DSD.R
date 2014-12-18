@@ -31,8 +31,10 @@
 DSD <- function(...) stop("DSD is an abstract class and cannot be instantiated!")
 DSD_R <- function(...) stop("DSD_R is an abstract class and cannot be instantiated!")
 
-get_points <- function(x, n=1, ...) UseMethod("get_points")
-get_points.default <- function(x, n=1, ...) {
+get_points <- function(x, n=1, outofpoints=c("stop", "warn", "ignore"), ...) 
+  UseMethod("get_points")
+get_points.default <- function(x, n=1, 
+  outofpoints=c("stop", "warn", "ignore"), ...) {
   stop(gettextf("get_points not implemented for class '%s'.",
     paste(class(x), collapse=", ")))
 }
@@ -57,29 +59,34 @@ print.DSD <- function(x, ...) {
 summary.DSD <- function(object, ...) print(object)
 
 plot.DSD <- function(x, n = 500, col= NULL, pch= NULL, 
-  ..., method="pairs", dim=NULL) {
+  ..., method="pairs", dim=NULL, alpha=.6) {
   ## method can be pairs, plot or pc (projection with PCA)
-  d <- get_points(x, n, assignment = TRUE)
+  d <- get_points(x, n, cluster = TRUE)
   
   ### make sure to plot noise
-  assignment <- attr(d,"assignment")
+  assignment <- attr(d, "cluster")
   
   ### stream has no assignments!
   if(length(assignment)==0) assignment <- rep(1L, nrow(d))
   
   noise <- is.na(assignment)
+  
+  ### assignment is not numeric
+  if(!is.numeric(assignment)) assignment <- as.integer(as.factor(assignment))
+  
+  ### add alpha shading to color
   if(is.null(col)) {
-    col <- as.integer(assignment)
+    col <- rgb(cbind(t(col2rgb(assignment)/255)), alpha=alpha)
   }else{
     if(length(col)==1L) col <- rep(col, length(assignment))
   }
     
-  col[noise] <-  noise_col
+  col[noise] <-  .noise_col
   
   if(is.null(pch)) {
     #pch <- rep(1, n)
     pch <- as.integer(assignment)
-    pch[noise] <- noise_pch
+    pch[noise] <- .noise_pch
   }
   
   if(!is.null(dim)) d <- d[,dim]
@@ -89,7 +96,11 @@ plot.DSD <- function(x, n = 500, col= NULL, pch= NULL,
   } else if(ncol(d)>2 && method=="pc") {
     ## we assume Euclidean here
     p <- prcomp(d)
+ 
     plot(p$x, col=col, pch=pch, ...)
+    title(sub = paste("Explains ",
+      round(sum(p$sdev[1:2]) / sum(p$sdev)* 100, 2), 
+      "% of the point variability", sep=""))
   } else {
     if(ncol(d)>2) d <- d[,1:2]
     plot(d, col=col, pch=pch, ...)

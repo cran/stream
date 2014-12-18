@@ -30,11 +30,14 @@ DSD_Target <- function(center_sd =.05, center_weight=.5,
 	    ring_sd = ring_sd,
 	    noise = noise
 	    )
-    class(l) <- c("DSD_Target","DSD_R","DSD")
+    class(l) <- c("DSD_Target", "DSD_R", "DSD_data.frame", "DSD")
     l
 }
 
-get_points.DSD_Target <- function(x, n=1, assignment = FALSE,...) {
+get_points.DSD_Target <- function(x, n=1, 
+    outofpoints=c("stop", "warn", "ignore"), 
+    cluster = FALSE, class=FALSE, ...) {
+    
     ### choose point type
     type <- sample(c(NA, 1:2), n, replace=TRUE, 
 	    prob=c(x$noise, (1-x$noise)*x$center_weight,
@@ -58,9 +61,8 @@ get_points.DSD_Target <- function(x, n=1, assignment = FALSE,...) {
 	p<- as.data.frame(t(p))
 	colnames(p) <- c("x", "y")
 	
-	if(assignment) {
-		attr(p,"assignment") <- type
-	}
+	if(cluster) attr(p,"cluster") <- type
+	if(class) p <- cbind(p, class = type)
 	
 	p
     }

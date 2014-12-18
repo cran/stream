@@ -79,8 +79,8 @@ evaluate <- function (dsc, dsd, measure, n = 100,
     return(structure(e, type=type, assign=assign, class="stream_eval"))
   }
   
-  points <- get_points(dsd, n, assignment = TRUE)
-  actual <- attr(points, "assignment")
+  points <- get_points(dsd, n, cluster = TRUE)
+  actual <- attr(points, "cluster")
   predict <- get_assignment(dsc, points, type=assign, method=assignmentMethod, ...)
   
   ### translate micro to macro cluster ids if necessary
@@ -138,8 +138,8 @@ evaluate_cluster <- function(dsc, dsd, macro=NULL, measure,
   
   evaluations <- data.frame()
   for(i in 1:(n/horizon)) {
-    wrapper <- DSD_Wrapper(dsd, n=horizon, loop=FALSE)
-    cluster(dsc, wrapper, horizon)
+    wrapper <- DSD_Memory(dsd, n=horizon, loop=FALSE)
+    update(dsc, wrapper, horizon)
     
     reset_stream(wrapper)
     if(is.null(macro)) {

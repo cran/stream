@@ -6,7 +6,7 @@ connection.}
 
 \usage{
 	write_stream(dsd, file, n=100, block=100000L, 
-	assignment=FALSE, sep=",", 
+	class=FALSE, sep=",", 
 	col.names=FALSE, row.names=FALSE, ...)
 }
 
@@ -15,7 +15,7 @@ connection.}
 	\item{file}{A file name or a R connection to be written to.}
 	\item{n}{The number of data points to be written.}
 	\item{block}{Write stream in blocks to improve file I/O speed.}
-	\item{assignment}{Save the assignment of the points as the last column.}
+	\item{class}{Save the class/cluster labels of the points as the last column.}
 	\item{sep}{The character that will separate attributes in a data point.}
 	\item{col.names}{A flag that determines if column names will be output.}
 	\item{row.names}{A flag that determines if row names will be output.}
@@ -36,8 +36,8 @@ There is no value returned from this operation.
 
 \examples{
 # creating data and writing it to disk
-dsd <- DSD_Gaussians(k=3, d=5)
-write_stream(dsd, file="data.txt", n=100)
+stream <- DSD_Gaussians(k=3, d=5)
+write_stream(stream, file="data.txt", n=100, class=TRUE)
 
 # clean up
 file.remove("data.txt")

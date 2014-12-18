@@ -7,14 +7,18 @@ Gets points from a DSD object.
 }
 
 \usage{
-	get_points(x, n=1, ...)
+	get_points(x, n=1, outofpoints=c("stop", "warn", "ignore"), ...)
 }
 
 \arguments{
 	\item{x}{The DSD object.}
-	\item{n}{The number of data points being requested.}
+	\item{n}{Request up to \eqn{n} points from the stream.}
+	\item{outofpoints}{Action taken if less than \eqn{n} data points
+	    are available. The default is to stop with an error. 
+	    For warn and ignore all avaialable (possibly zero) points 
+	    are returned. }
 	\item{...}{Additional parameters to pass to \code{get_points()}
-	implementations.}
+	implementations. }
 }
 
 \details{
@@ -33,6 +37,6 @@ Returns a matrix of \code{x$d} columns and \code{n} rows.
 }
 
 \examples{
-dsd <- DSD_Gaussians()
-get_points(dsd, 100)
+stream <- DSD_Gaussians()
+get_points(stream, 100)
 }

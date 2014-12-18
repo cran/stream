@@ -29,10 +29,10 @@ Returns a \code{DSD_UniformNoise} object.(subclass of \code{DSD_R},
 
 \examples{
 # create data stream with three clusters in 2D
-dsd <- DSD_UniformNoise(d=2)
-plot(dsd, n=100)
+stream <- DSD_UniformNoise(d=2)
+plot(stream, n=100)
 
 # specify a different range for each dimension 
-dsd <- DSD_UniformNoise(d=3, range=rbind(c(0,1), c(0,10), c(0,5)))
-plot(dsd, n=100)
+stream <- DSD_UniformNoise(d=3, range=rbind(c(0,1), c(0,10), c(0,5)))
+plot(stream, n=100)
 }

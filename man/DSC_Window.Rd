@@ -39,21 +39,21 @@ of Data Streams in Real Time, Intl. Conference of Very Large Data Bases (VLDB'02
 }
 
 \examples{
-dsd <- DSD_Gaussians(k=3, d=2, noise=0.05)
+stream <- DSD_Gaussians(k=3, d=2, noise=0.05)
 
-dsc <- DSC_Window(horizon=100)
-dsc
+window <- DSC_Window(horizon=100)
+window
 
-cluster(dsc, dsd, 200)
-dsc
+update(window, stream, 200)
+window
 
 # plot micro-clusters
-plot(dsc, dsd)
+plot(window, stream)
 
 # animation for a window using a damped window model. The weight decays 
 # with a half-life of 25
 \dontrun{
-dsc <- DSC_Window(horizon=25, lambda=1/25)
-animate_cluster(dsc, dsd, horizon=1, n=100, xlim=c(0,1), ylim=c(0,1))
+window <- DSC_Window(horizon=25, lambda=1/25)
+animate_cluster(window, stream, horizon=1, n=100, xlim=c(0,1), ylim=c(0,1))
 }
 }

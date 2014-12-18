@@ -27,8 +27,8 @@ Returns a \code{DSD} object.
 }
 
 \examples{
-dsd <- DSD_Benchmark(i=1)
+stream <- DSD_Benchmark(i=1)
 \dontrun{
-animate_data(dsd, n=10000, horizon=100, xlim=c(0,1), ylim=c(0,1)) 
+animate_data(stream, n=10000, horizon=100, xlim=c(0,1), ylim=c(0,1)) 
 }
 }

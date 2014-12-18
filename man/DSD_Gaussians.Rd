@@ -65,17 +65,17 @@ Prentice-Hall, Inc., Upper Saddle River, NJ, USA.
 }
 \examples{
 # create data stream with three clusters in 3-dimensional data space
-dsd1 <- DSD_Gaussians(k=3, d=3)
+stream1 <- DSD_Gaussians(k=3, d=3)
 
-plot(dsd1)
+plot(stream1)
 
 
 # create data stream with specified clusterpositions, 
 # 20% noise in a given bounding box and
 # with different densities (1 to 9 between the two clusters) 
-dsd2 <- DSD_Gaussians(k=2, d=2, 
+stream2 <- DSD_Gaussians(k=2, d=2, 
     mu=rbind(c(-.5,-.5), c(.5,.5)), 
     noise=0.2, noise_range=rbind(c(-1,1),c(-1,1)),
     p=c(.1,.9))
-plot(dsd2)
+plot(stream2)
 }

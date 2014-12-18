@@ -31,18 +31,28 @@ DSC_R <- function(...) stop("DSC_R is an abstract class and cannot be instantiat
 ### geting a block of data improves performance the R implementation
 ### needs to make sure that points are processed sequencially
 ### (make especially BIRCH faster by passing block data points at once)
-.cluster.DSC_R <- function(dsc, dsd, n, verbose=FALSE, 
+update.DSC_R <- function(object, dsd, n=1, verbose=FALSE, 
   block=100000L, ...) {
-  ### dsc contains an RObj which is  a reference object with a cluster method
+  ### object contains an RObj which is  a reference object with a cluster method
   
-  ### TODO: Check data
+  n <- as.integer(n)
+  if(n>0) {
+    if(!is(dsd, "DSD_data.frame"))
+      stop("Cannot cluster stream (need a DSD_data.frame.)")
   
-  for(bl in .make_block(n, block)) {
-    dsc$RObj$cluster(get_points(dsd, bl), ...)
-    if(verbose) cat("Processed", bl, "points -",
-      nclusters(dsc), "clusters\n")
+    ### for clusterers which also create macro-clusterings
+    if(is.environment(object$macro)) object$macro$newdata <- TRUE
     
+    ### TODO: Check data
+    for(bl in .make_block(n, block)) {
+      object$RObj$cluster(get_points(dsd, bl), ...)
+      if(verbose) cat("Processed", bl, "points -",
+        nclusters(object), "clusters\n")
+    }
   }
+  
+  # so cl <- cluster(cl, ...) also works
+  invisible(object)
 }
 
 ### accessors

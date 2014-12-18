@@ -18,8 +18,8 @@ Provides a convenient stream interface for data sets from the mlbench package.
 
 \details{
 The \code{DSD_mlbenchData} class is designed to be a wrapper class for data
-that is held in memory in either a data frame or matrix form. It functions
-nearly identical to \code{DSD_Wrapper}.
+that is held in memory in either a data frame or matrix form. It is a subclass 
+of \code{DSD_Memory}.
 
 Call \code{DSD_mlbenchData} with a missing value for data to get a list of all
 available data sets.
@@ -27,18 +27,18 @@ available data sets.
 
 \value{
 Returns a \code{DSD_mlbenchData} object which 
-is also of class \code{DSD_Wrapper}.
+is also of class \code{DSD_Memory}.
 }
 
 \seealso{
 	\code{\link{DSD}},
-	\code{\link{DSD_Wrapper}},
+	\code{\link{DSD_Memory}},
 	\code{\link{reset_stream}}
 }
 
 \examples{
-dsd <- DSD_mlbenchData("Shuttle")
-dsd
+stream <- DSD_mlbenchData("Shuttle")
+stream
 
-plot(dsd, n=100)
+plot(stream, n=100)
 }

@@ -49,8 +49,8 @@ Animations are recorded using the library animation and can be replayed
 
 \examples{
 \dontrun{
-dsd <- DSD_Benchmark(1)
-animate_data(dsd, n=5000,  xlim=c(0,1), ylim=c(0,1), horizon=100)
+stream <- DSD_Benchmark(1)
+animate_data(stream, n=5000,  xlim=c(0,1), ylim=c(0,1), horizon=100)
 
 ### animations can be replayed with the animation package
 library(animation)
@@ -61,11 +61,11 @@ ani.replay()
 saveHTML(ani.replay())  
   
 ### animate the clustering process with evaluation
-reset_stream(dsd)
-dsc <- DSC_tNN(r=.1, lambda=.01, shared_density=TRUE,
+reset_stream(stream)
+tnn <- DSC_tNN(r=.1, lambda=.01, shared_density=TRUE,
   alpha=.2, noise=.1)  
 
-animate_cluster(dsc, dsd, n=5000, horizon=100, 
+animate_cluster(tnn, stream, n=5000, horizon=100, 
   evaluationMeasure="crand", evaluationType="macro", evaluationAssign="micro",
   xlim=c(0,1),ylim=c(0,1), type="shared")
 }

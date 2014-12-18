@@ -69,36 +69,36 @@ Stream Clustering in R, Journal of Statistical Software, 35(5), 1-31, URL \url{h
 
 \examples{
 set.seed(0)
-dsd <- DSD_Gaussians(k=3, noise=0.05)
+stream <- DSD_Gaussians(k=3, noise=0.05)
 
 # tNN with reachability (increase noise parameter to reduce the micro-clusters
 # at the fringes of the Gaussians)
 tnn <- DSC_tNN(r=.1, noise=0.1)
-cluster(tnn, dsd, 500)
+update(tnn, stream, 500)
 tnn
 
 # check micro-clusters
 nclusters(tnn)
 head(get_centers(tnn))
-plot(tnn, dsd)
+plot(tnn, stream)
 
 # plot macro-clusters
-plot(tnn, dsd, type="both")
+plot(tnn, stream, type="both")
 
 # plot micro-clusters with assignment area
-plot(tnn, dsd, type="micro", assignment=TRUE)
+plot(tnn, stream, type="micro", assignment=TRUE)
 
 
 # tNN with shared density 
 tnn <- DSC_tNN(r=.1, noise=0.1, shared_density=TRUE)
-cluster(tnn, dsd, 500)
+update(tnn, stream, 500)
 tnn
-plot(tnn, dsd, type="both")
+plot(tnn, stream, type="both")
 
 # plot the shared density graph
-plot(tnn, dsd, type="micro", shared_density=TRUE)
-plot(tnn, dsd, type="micro", shared_density=TRUE, assignment=TRUE)
-plot(tnn, dsd, type="none", shared_density=TRUE, assignment=TRUE)
+plot(tnn, stream, type="micro", shared_density=TRUE)
+plot(tnn, stream, type="micro", shared_density=TRUE, assignment=TRUE)
+plot(tnn, stream, type="none", shared_density=TRUE, assignment=TRUE)
 
 # see how micro and macro-clusters relate
 # each microcluster has an entry with the macro-cluster id
@@ -107,7 +107,7 @@ microToMacro(tnn)
 
 # evaluate first using macro and then using micro-clusters
 \dontrun{
-evaluate(tnn, dsd, measure="purity")
-evaluate(tnn, dsd, measure="cRand", type="macro")
+evaluate(tnn, stream, measure="purity")
+evaluate(tnn, stream, measure="cRand", type="macro")
 }
 }

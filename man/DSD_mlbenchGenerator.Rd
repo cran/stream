@@ -34,7 +34,7 @@ in from the function or created internally. They include:
 }
 
 \examples{
-dsd <- DSD_mlbenchGenerator(method="cassini")
+stream <- DSD_mlbenchGenerator(method="cassini")
 
-plot(dsd, n=500)
+plot(stream, n=500)
 }

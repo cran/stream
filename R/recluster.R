@@ -29,8 +29,8 @@ recluster.DSC <- function(macro, dsc, type="auto", ...) {
 ### reclustering is done with a DSC_Macro object!
 recluster.DSC_Macro <- function(macro, dsc, type="auto", ...) {
     cen <- get_centers(dsc, type=type)
-    dsd <- DSD_Wrapper(cen)
+    dsd <- DSD_Memory(cen)
     weight <- get_weights(dsc, scale=NULL, type=type)
-    cluster(macro, dsd, n=nrow(cen), weight=weight, ...)
+    update(macro, dsd, n=nrow(cen), weight=weight, ...)
 }
 

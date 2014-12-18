@@ -19,8 +19,9 @@
 
 
 ### noise symbol and color
-noise_pch <- 20L 
-noise_col <-  which(palette()=="gray")
+.noise_pch <- 20L 
+.noise_col <- gray(.5, alpha = .3)
+.points_col <- gray(.5, alpha = .5)
 
 ### helper for doing things in blocks
 .make_block <- function(n, block) {

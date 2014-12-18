@@ -198,39 +198,39 @@ Clustering of Data Streams at Multiple Resolutions, 3(3).
  
 
 \examples{
-dsd <- DSD_Gaussians(k=3, d=2)
+stream <- DSD_Gaussians(k=3, d=2)
 
 dstream <- DSC_DStream(gridsize=0.05)
-cluster(dstream, dsd, 500)
-plot(dstream, dsd)
+update(dstream, stream, 500)
+plot(dstream, stream)
 # Evaluate micro-clusters 
 # Note: we use here only n=500 points for evaluation to speed up execution
-evaluate(dstream, dsd, measure=c("numMicro","numMacro","purity","crand", "SSQ"), 
+evaluate(dstream, stream, measure=c("numMicro","numMacro","purity","crand", "SSQ"), 
   n=100)
 
 # DStream also provides macro clusters. Evaluate macro clusters with type="macro"
-plot(dstream, dsd, type="macro")
-evaluate(dstream, dsd, type ="macro", 
+plot(dstream, stream, type="macro")
+evaluate(dstream, stream, type ="macro", 
   measure=c("numMicro","numMacro","purity","crand", "SSQ"), n=100)
 
 # Points are by default assigned to the closest micro clusters for evalution. 
 # However, points can also be assigned to the closest macro-cluster using
 # assign="macro".
-evaluate(dstream, dsd, type ="macro", assign="macro",
+evaluate(dstream, stream, type ="macro", assign="macro",
   measure=c("numMicro","numMacro","purity","crand", "SSQ"), n=100)
 
 # Evaluate an evolving data stream
-dsd <- DSD_Benchmark(1)
+stream <- DSD_Benchmark(1)
 dstream <- DSC_DStream(gridsize=0.05, lambda=0.1)
-evaluate_cluster(dstream, dsd, type="macro", assign="micro",
+evaluate_cluster(dstream, stream, type="macro", assign="micro",
   measure=c("numMicro","numMacro","purity","crand"), 
   n=600, horizon=100)
 
 \dontrun{
 # animate the clustering process
-reset_stream(dsd)
+reset_stream(stream)
 dstream <- DSC_DStream(gridsize=0.05, lambda=0.1)
-animate_cluster(dstream, dsd, n=5000, horizon=100, 
+animate_cluster(dstream, stream, n=5000, horizon=100, 
   evaluationMeasure=c("crand"), evaluationType="macro", evaluationAssign="micro",
   type="both", xlim=c(0,1), ylim=c(0,1))
 }

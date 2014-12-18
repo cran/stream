@@ -42,9 +42,7 @@ created internally. They include:
 
 \examples{
 # create data stream with three clusters in 2D
-dsd <- DSD_Target()
+stream <- DSD_Target()
 # plotting the data
-plot(dsd)
-
-
+plot(stream)
 }

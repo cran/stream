@@ -19,17 +19,17 @@
 
 # accepts an open connection
 DSD_ScaleStream <- function(dsd,  
-                           center=TRUE, scale=TRUE,
-                           n=1000, reset=TRUE) {
+  center=TRUE, scale=TRUE,
+  n=1000, reset=FALSE) {
   
   # creating the DSD object
   l <- list(description = paste(dsd$description, "(scaled)"),
-            dsd = dsd,
-            d = dsd$d,
-            k = dsd$k,
-            center = FALSE,
-            scale = FALSE)
-  class(l) <- c("DSD_ScaleStream","DSD_R","DSD")
+    dsd = dsd,
+    d = dsd$d,
+    k = dsd$k,
+    center = FALSE,
+    scale = FALSE)
+  class(l) <- c("DSD_ScaleStream", "DSD_R", "DSD_data.frame", "DSD")
   
   l <- scale_stream(l, n=n, center=center, scale=scale, reset=reset)
   
@@ -37,16 +37,18 @@ DSD_ScaleStream <- function(dsd,
 }
 
 ## it is important that the connection is OPEN
-get_points.DSD_ScaleStream <- function(x, n=1, assignment=FALSE, ...) {
+get_points.DSD_ScaleStream <- function(x, n=1, 
+  outofpoints=c("stop", "warn", "ignore"),
+  cluster=FALSE, class=FALSE, ...) {
   
-  d <- get_points(x$dsd, n, assignment)
+  d <- get_points(x$dsd, n, cluster=cluster, class=class)
   
-  if(assignment) cl <- attr(d,"assignment")
+  if(cluster) cl <- attr(d,"cluster")
   
   # scale
   d <- as.data.frame(scale(d, center= x$center, scale=x$scale))
   
-  if(assignment) attr(d, "assignment") <-cl
+  if(cluster) attr(d, "cluster") <-cl
   
   d
 }
@@ -55,7 +57,7 @@ reset_stream.DSD_ScaleStream <- function(dsd, pos=1) {
   reset_stream(dsd$dsd, pos=pos)
 }
 
-scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE, reset=TRUE) {
+scale_stream <- function(dsd, n=1000, center=TRUE, scale=TRUE, reset=FALSE) {
   
   sc <- scale(get_points(dsd, n=n), center=center, scale=scale)
   dsd$center <- attr(sc, "scaled:center")

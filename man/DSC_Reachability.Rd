@@ -48,22 +48,22 @@ Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A density-bas
 }
 
 \examples{
-dsd <- DSD_mlbenchGenerator("cassini")
+stream <- DSD_mlbenchGenerator("cassini")
 
 # Recluster micro-clusters from tNN with reachability using epsilon=2r, i.e.,
 # two micro-clusters are reachable if their assignment areas overlap.
 tnn <- DSC_tNN(r=0.1)
-cluster(tnn, dsd, 500)
+update(tnn, stream, 500)
 
 reach <- DSC_Reachability(epsilon=0.2)
 recluster(reach, tnn)
   
-plot(reach, dsd, type="both")  
+plot(reach, stream, type="both")  
 
 # For comparison we using reachability clustering directly on data points
 # Note: reachability is not a data stream clustering algorithm!
 reach <- DSC_Reachability(epsilon=0.2)
-cluster(reach, dsd, 500)
+update(reach, stream, 500)
 reach
-plot(reach, dsd)
+plot(reach, stream)
 }

@@ -23,7 +23,7 @@ DSD_MG<- function(dimension = 2, ..., labels=NULL, description=NULL) {
   
   x <- structure(list(description = description,
     RObj = dsd_MG_refClass$new(d = dimension)),
-    class = c("DSD_MG","DSD_R","DSD"))
+    class = c("DSD_MG", "DSD_R", "DSD_data.frame", "DSD"))
   
   l <- list(...)
   if(length(l) > 0) {
@@ -34,7 +34,6 @@ DSD_MG<- function(dimension = 2, ..., labels=NULL, description=NULL) {
   
   x
 }
-
 
 add_cluster <- function(x, c, label=NULL) UseMethod("add_cluster")
 get_clusters <- function(x) UseMethod("get_clusters")
@@ -71,10 +70,10 @@ dsd_MG_refClass$methods(
     labels <<- append(labels, label)
     },
   
-  get_points = function(n, assignment = FALSE) {
+  get_points = function(n, cluster = FALSE) {
     if(length(clusters)==0) stop("DSD_MG does not contain any clusters!")
 
-    if(assignment) a <- integer(n)
+    if(cluster) a <- integer(n)
     data <- matrix(NA_real_, nrow=n, ncol=dimension)
     
     j <- 0L
@@ -107,7 +106,7 @@ dsd_MG_refClass$methods(
           clusters[[i]]$RObj$get_points(t)
         }))
         
-        if(assignment) {
+        if(cluster) {
           a[(j+1):(j+k)] <- labels[clusterOrder]
         }
       }
@@ -118,7 +117,7 @@ dsd_MG_refClass$methods(
     
     data <- data.frame(data)
     
-    if(assignment) attr(data,"assignment") <- a
+    if(cluster) attr(data,"cluster") <- a
     
     data
   }
@@ -126,8 +125,18 @@ dsd_MG_refClass$methods(
 
 
 
-get_points.DSD_MG <- function(x, n=1, assignment = FALSE,...) {
-  x$RObj$get_points(n,assignment)
+get_points.DSD_MG <- function(x, n=1, 
+  outofpoints=c("stop", "warn", "ignore"), 
+  cluster = FALSE, class = FALSE, ...) {
+  d <- x$RObj$get_points(n, cluster=TRUE)
+
+  a <- attr(d, "cluster")
+  if(!cluster) attr(d, "cluster") <- NULL
+  
+  if(class) d <- cbind(d, class = a)
+  
+  d
+
 }
 
 add_cluster.DSD_MG <- function(x, c, label=NULL) {

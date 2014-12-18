@@ -61,8 +61,3 @@ get_weights.DSC_Macro <- function(x, type=c("auto", "micro", "macro"),
 
     w
 }
-
-### cluster workhorse
-.cluster.DSC_Macro <- function(dsc, dsd, n, ...) {
-  NextMethod() ### delegate to next class 
-}

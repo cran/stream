@@ -31,11 +31,14 @@ DSD_BarsAndGaussians <- function(angle = NULL, noise = 0) {
     angle = angle,
     rotation = rotation,
     noise = noise)
-  class(l) <- c("DSD_BarsAndGaussians","DSD_R","DSD")
+  class(l) <- c("DSD_BarsAndGaussians", "DSD_R", "DSD_data.frame", "DSD")
   l
 }
 
-get_points.DSD_BarsAndGaussians <- function(x, n=1, assignment = FALSE,...) {
+get_points.DSD_BarsAndGaussians <- function(x, n=1, 
+  outofpoints=c("stop", "warn", "ignore"), 
+  cluster = FALSE, class = FALSE,...) {
+  
   ### gaussians at (3,2.5) and (3,-2.5)
   ### bars at (-3,2.8) and (-3,-2.8)
   
@@ -88,10 +91,12 @@ get_points.DSD_BarsAndGaussians <- function(x, n=1, assignment = FALSE,...) {
   ### add noise
   n <- which(is.na(a))
   if(length(n)) dat[n,] <- matrix(runif(2L*length(n), -8, 8), ncol=2L)
-  
-  if(assignment) attr(dat, "assignment") <- a
-  
+
   names(dat) <- c("x","y")
+
+  if(cluster) attr(dat, "cluster") <- a
+  if(class) dat <- cbind(dat, class = a)
+  
   
   dat
 }

@@ -44,21 +44,21 @@ it is used for (re)clustering, the old clustering is deleted.
 }
 
 \examples{
-dsd <- DSD_Gaussians(k=3, noise=0)
+stream <- DSD_Gaussians(k=3, noise=0)
 
 # create micro-clusters via sampling
-dsc <- DSC_Sample(k=20)
-cluster(dsc, dsd, 500)
-dsc
+sample <- DSC_Sample(k=20)
+update(sample, stream, 500)
+sample
   
 # recluster micro-clusters
 kmeans <- DSC_Kmeans(k=3)
-recluster(kmeans, dsc)
-plot(kmeans, dsd, type="both")
+recluster(kmeans, sample)
+plot(kmeans, stream, type="both")
 
 # For comparison we use k-means directly to cluster data
 # Note: k-means is not a data stream clustering algorithm
 kmeans <- DSC_Kmeans(k=3)
-cluster(kmeans, dsd, 500)
-plot(kmeans, dsd)
+update(kmeans, stream, 500)
+plot(kmeans, stream)
 }

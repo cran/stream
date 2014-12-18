@@ -499,7 +499,7 @@ get_shared_density <- function(x, matrix=FALSE) x$RObj$get_shared_density(matrix
 ### special plotting for DSC_tNN
 ### FIXME: only show edges that really are used
 plot.DSC_tNN <- function(x, dsd = NULL, n = 500,
-  col_points="gray",
+  col_points=NULL,
 #  col_clusters=c("red", "blue"),
 #  weights=TRUE,
 #  scale=c(1,5),
@@ -511,6 +511,8 @@ plot.DSC_tNN <- function(x, dsd = NULL, n = 500,
   shared_density=FALSE, assignment=FALSE, ...) {
   
   type <- match.arg(type)
+  
+  if(is.null(col_points)) col_points <- .points_col
   
   if(type=="none") r <- plot(dsd, col=col_points, ...)
   #r <- NextMethod()

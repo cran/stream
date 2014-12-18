@@ -32,16 +32,16 @@ The object macro is altered and contains the clustering.
 \examples{
 set.seed(0)
 ### create a data stream and a micro-clustering
-dsd <- DSD_Gaussians(k=3, d=3)
+stream <- DSD_Gaussians(k=3, d=3)
 
-micro <- DSC_Sample(k=50)
-cluster(micro, dsd, 500)
-micro
+sample <- DSC_Sample(k=50)
+update(sample, stream, 500)
+sample
   
 ### recluster using k-means
 kmeans <- DSC_Kmeans(k=3)
-recluster(kmeans, micro)
+recluster(kmeans, sample)
 
 ### plot clustering
-plot(kmeans, dsd, main="Macro-clusters (Sampling + k-means)")
+plot(kmeans, stream, main="Macro-clusters (Sampling + k-means)")
 }
