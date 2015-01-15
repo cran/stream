@@ -26,8 +26,8 @@ get_attraction(x, dist=FALSE, relative=FALSE)
     will be computed from lambda using \eqn{2^-lambda}).}
 	\item{gaptime}{sporadic grids are removed every
     gaptime number of points.}
-	\item{Cm}{threshold used to detect dense grids (as a proportion of the 
-	    average expected density).}
+	\item{Cm}{threshold used to detect dense grids as a proportion of the 
+	    average expected density (Cm > 1).}
 	\item{Cl}{threshold to detect transitional and sporadic grids (0 > Cl > 1).}
   \item{attraction}{compute and store information about the attraction between
     adjacent grids. If \code{TRUE} then attraction is used to create macro-clusters,
@@ -94,7 +94,7 @@ stream <- DSD_BarsAndGaussians(noise=.05)
 plot(stream)
 
 # we set Cm=.8 to pick up the lower density clusters
-dstream1 <- DSC_DStream(gridsize=1, Cm=3)
+dstream1 <- DSC_DStream(gridsize=1, Cm=1.5)
 update(dstream1, stream, 1000)
 dstream1
 
@@ -122,7 +122,7 @@ plot(dstream1, stream, type="both", grid=TRUE)
 evaluate(dstream1, stream, measure="crand", type="macro")
 
 # use attraction for reclustering
-dstream2 <- DSC_DStream(gridsize=1, attraction=TRUE, Cm=3)
+dstream2 <- DSC_DStream(gridsize=1, attraction=TRUE, Cm=1.5)
 update(dstream2, stream, 1000)
 dstream2
 

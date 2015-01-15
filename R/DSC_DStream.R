@@ -53,6 +53,7 @@ DStream <- setRefClass("DStream",
     ### other grid types
     ### transitional grid Cl < d < Cm
     ### sporadic grid pi = (Cl * (1-decay_factor))/(N*(1-decay_factor))
+    ### for large t -> 1/decay_factor
     
     ### attraction boundary (FIXME: Needs to be implemented)
     attraction      = "logical",
@@ -95,6 +96,8 @@ DStream <- setRefClass("DStream",
       else k <<- as.integer(k)
       
       grid  <<- hash()
+      #grid <<- new("hash", new.env(hash = TRUE, parent = emptyenv(), 
+      #  size = 10000L))
       npoints <<- 0L
       ### this is what the paper calls lambda!
       decay_factor <<- 2^(-lambda)
@@ -128,20 +131,33 @@ DStream$methods(list(
       npoints <<- npoints + 1L
       
       ### remove sporadic grids
-      if(decay_factor<1 && !npoints%%gaptime) {
+      if(!npoints%%gaptime && decay_factor<1) {
         if(length(grid)>0) {
+          
           ### remove sporadic grids
           N <- prod(maxs-mins+1L)
           
-          remove <- sapply(values(grid, simplify=FALSE), FUN=function(gv) {
-            gv[["weight"]]*decay_factor^(npoints-gv[["t"]]) < 
-              Cl*(1-decay_factor^(npoints-gv[["t"]]+1)/N/(1-decay_factor))
-          })
+          ### add missing decay
+          gv <- values(grid, simplify=FALSE)
+          #ws <- sapply(gv, FUN=function(g) {
+          #  g[["weight"]] * decay_factor ^ (npoints - g[["t"]])
+          #}) 
+          
+          remove <- sapply(gv, FUN=function(g) {
+            g[["weight"]] * decay_factor ^ (npoints - g[["t"]]) < Cl*(1-decay_factor^(npoints-g[["t"]]+1L))/(N*(1-decay_factor))
+          }) 
+          
+          #L <- log(Cl/(N+Cl), base=decay_factor)
+          # remove if age > L
+          
+          #remove <- ws < Cl*(1-decay_factor^(npoints+1L))/(N*(1-decay_factor))
           
           if(debug) cat("Removing ", sum(remove) ," sporadic grids\n")
           for (k in keys(grid)[remove]) {
-            grid[[k]] <<- NULL
+            #grid[[k]] <<- NULL
+            del(k, grid)
           }
+          
         } 
       }
       
@@ -172,34 +188,32 @@ DStream$methods(list(
         ### rows are dimensions and cols are prev/next
         overlap <- matrix(0, ncol=2, nrow=d)
         
-        if(attraction) {
-          for(j in 1:d) {
-            center <- get_center(grid_id)  
-            ### previous cell
-            o <- -point[j]+center[j] - (gridsize[j]/2-eps[j])
-            if(o>0) overlap[j,1] <- o
-            
-            ### next cell
-            o <- point[j]-center[j] - (gridsize[j]/2-eps[j])
-            if(o>0) overlap[j,2] <- o
-          }        
+        for(j in 1:d) {
+          center <- get_center(grid_id)  
+          ### previous cell
+          o <- -point[j]+center[j] - (gridsize[j]/2-eps[j])
+          if(o>0) overlap[j,1] <- o
           
-          if(any(overlap>0)) {
-            ### calculate intersection hypercube
-            overlap_max <- apply(overlap, MARGIN=1, max)  
-            overlap2 <- overlap
-            for(j in 1:d) {
-              overlap2[j,] <- overlap2[j,]*prod(2*eps[-j]-overlap_max[-j])
-            }
-            
-            ### overlap is vector with two entries by dimension (prev/next)
-            overlap2 <- as.vector(overlap2/prod(2*eps))
-            
-            ### save attraction (including decay)
-            if(is.null(val[["attr"]])) val[["attr"]] <- overlap2
-            else val[["attr"]] <- val[["attr"]] * 
-              decay_factor^(npoints-val[["t"]]) + overlap2
+          ### next cell
+          o <- point[j]-center[j] - (gridsize[j]/2-eps[j])
+          if(o>0) overlap[j,2] <- o
+        }        
+        
+        if(any(overlap>0)) {
+          ### calculate intersection hypercube
+          overlap_max <- apply(overlap, MARGIN=1, max)  
+          overlap2 <- overlap
+          for(j in 1:d) {
+            overlap2[j,] <- overlap2[j,]*prod(2*eps[-j]-overlap_max[-j])
           }
+          
+          ### overlap is vector with two entries by dimension (prev/next)
+          overlap2 <- as.vector(overlap2/prod(2*eps))
+          
+          ### save attraction (including decay)
+          if(is.null(val[["attr"]])) val[["attr"]] <- overlap2
+          else val[["attr"]] <- val[["attr"]] * 
+            decay_factor^(npoints-val[["t"]]) + overlap2
         }
       }
       
@@ -209,8 +223,10 @@ DStream$methods(list(
       grid[[key]] <<- val
       
       ### update maxs/mins
-      maxs <<- apply(cbind(maxs, grid_id), MARGIN=1, max, na.rm=TRUE)
-      mins <<- apply(cbind(mins, grid_id), MARGIN=1, min, na.rm=TRUE)
+      maxs <<- pmax(maxs, grid_id, na.rm=TRUE)
+      #apply(cbind(maxs, grid_id), MARGIN=1, max, na.rm=TRUE)
+      mins <<- pmin(mins, grid_id, na.rm=TRUE)
+      #mins <<- apply(cbind(mins, grid_id), MARGIN=1, min, na.rm=TRUE)
       
       if(debug && !i%%100) cat("Processed",i,"points\n")
     }
@@ -321,17 +337,17 @@ DStream$methods(list(
       USE.NAMES=FALSE)))
     
     N <- prod(maxs-mins+1L)
-    gv <- values(grid, simplify=FALSE)
     
     ### add missing decay
+    gv <- values(grid, simplify=FALSE)
     ws <- sapply(gv, FUN=function(g) {
       g[["weight"]] * decay_factor ^ (npoints - g[["t"]])
     }) 
     
     c_type <- factor(rep.int("sparse", times=length(ws)), 
       levels=c("dense", "transitional", "sparse"))
-    c_type[ws > Cl/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)] <- "transitional"
-    c_type[ws > Cm/N * (1-decay_factor^(npoints+1L))/(1-decay_factor)] <- "dense"
+    c_type[ws > Cl/(N*(1-decay_factor))] <- "transitional"
+    c_type[ws > Cm/(N*(1-decay_factor))] <- "dense"
     
     if(grid_type=="used") {
       # dense + adjacent transitional
@@ -507,7 +523,7 @@ plot.DSC_DStream <- function(x, dsd=NULL, n=500,
   if(is.null(col_points)) col_points <- gray(.1, alpha=.3)
   
   type <- match.arg(type)
-
+  
   ### assignment == grid
   if(assignment) grid=TRUE
   
@@ -558,7 +574,7 @@ get_assignment.DSC_DStream <- function(dsc, points, type=c("auto", "micro", "mac
   
   type <- match.arg(type)
   method<- match.arg(method)
-
+  
   if(method=="auto") method <- "model"
   if(method!="model") return(NextMethod())
   

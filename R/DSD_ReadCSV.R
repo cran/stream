@@ -22,26 +22,18 @@ DSD_ReadCSV <- function(file, sep=",", k=NA, d=NA,
   take=NULL, class=NULL, loop=FALSE) {
   
   # if the user passes a string, create a new connection and open it
-  if (is(file,"character")) {
-    file <- file(file)
-    open(file)
-  }
+  if (is(file, "character")) file <- file(file)
   
   # error out if no string or connection is passed
-  else if (!is(file,"connection")) {
-    stop("please pass a valid connection")
-  }
+  if (!is(file, "connection")) stop("Please pass a valid connection!")
   
   # open the connection if its closed
-  else if (!isOpen(file)) {
-    open(file)
-  }
-  
-  
+  if (!isOpen(file)) open(file)
   
   # seekable? get bytes_per_point + d
   bytes_per_point <- NA
   if(isSeekable(file)) {
+    dat <- data.frame()
     tryCatch({
       dat <- suppressWarnings(read.table(file=file, 
         sep=sep, nrows=1, comment.char=""))
@@ -85,10 +77,7 @@ get_points.DSD_ReadCSV <- function(x, n=1,
   
   d <- data.frame()
   if(!isSeekable(x$file)) pos <- NA else pos <- seek(x$file)
-  tryCatch({
-    d <- suppressWarnings(read.table(file=x$file, 
-      sep=x$sep, nrows=n, comment.char="", ...))
-  }, error = function(ex) {})
+  d <- read.table(text=readLines(con=x$file, n=n), sep=x$sep, ...)
   
   if(nrow(d) < n) {
     if(!x$loop || !isSeekable(x$file)){
@@ -101,8 +90,8 @@ get_points.DSD_ReadCSV <- function(x, n=1,
     } else { ### looping
       while(nrow(d) < n) {
         seek(x$file, where=0) # resetting the connection
-        d2 <- suppressWarnings(read.table(file=x$file, 
-          sep=x$sep, nrows=n-nrow(d), comment.char="", ...))
+        d2 <- read.table(text=readLines(con=x$file, 
+          n=n-nrow(d)), sep=x$sep, ...)
         if(nrow(d2) < 1) stop("Empty stream!")
         
         d <- rbind(d, d2)
@@ -111,17 +100,19 @@ get_points.DSD_ReadCSV <- function(x, n=1,
   }
   
   cl <- NULL
-  if((class || cluster)&& nrow(d)>0) {
-    if(is.null(x$class)) {
-      warning("No class labels avaialble!")
-    } else cl <- d[,x$class[1]]
-  }
-  
-  if(!is.null(x$take) && nrow(d)>0) d <- d[,x$take, drop=FALSE]
+  if(nrow(d)>0) {
+    if(class || cluster) {
+      if(is.null(x$class)) {
+        warning("No class labels available!")
+      } else cl <- d[,x$class[1]]
+    }
+    
+    if(!is.null(x$take)) d <- d[,x$take, drop=FALSE]
+    if(is.null(x$take) && !is.null(x$class)) d <- d[,-x$class, drop=FALSE]
+  }  
   
   if(cluster) attr(d, "cluster") <- cl
   if(class) d <- cbind(d, class = cl)
-  
   d
 }
 

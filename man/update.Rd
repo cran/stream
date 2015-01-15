@@ -11,9 +11,9 @@ Update a clustering model by clustering a number of input points from a data str
 }
 
 \usage{
-\method{update}{DSC_R}(object, dsd, n = 1, verbose = FALSE, block=100000L, ...)
+\method{update}{DSC_R}(object, dsd, n = 1, verbose = FALSE, block=10000L, ...)
 \method{update}{DSC_TwoStage}(object, dsd, n = 1, verbose = FALSE, 
-  block=100000L, ...)
+  block=10000L, ...)
 \method{update}{DSO_Sample}(object, dsd, n = 1, verbose = FALSE, ...)
 \method{update}{DSO_Window}(object, dsd, n = 1, verbose = FALSE, ...)
 }

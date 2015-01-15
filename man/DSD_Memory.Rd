@@ -49,7 +49,7 @@ plot(replayer)
   
 # creating 2 clusterers of different algorithms
 dsc1 <- DSC_tNN(r=0.1)
-dsc2 <- DSC_DStream(gridsize=0.1)
+dsc2 <- DSC_DStream(gridsize=0.1, Cm=1.5)
   
 # clustering the same data in 2 DSC objects
 reset_stream(replayer) # resetting the replayer to the first position
@@ -70,5 +70,4 @@ head(df)
 
 stream <- DSD_Memory(df[,c("x", "y")], class=df[,"class"])  
 stream
-plot(stream, n=100)  
 }

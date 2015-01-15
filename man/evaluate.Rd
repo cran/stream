@@ -200,7 +200,7 @@ Clustering of Data Streams at Multiple Resolutions, 3(3).
 \examples{
 stream <- DSD_Gaussians(k=3, d=2)
 
-dstream <- DSC_DStream(gridsize=0.05)
+dstream <- DSC_DStream(gridsize=0.05, Cm=1.5)
 update(dstream, stream, 500)
 plot(dstream, stream)
 # Evaluate micro-clusters 

@@ -9,7 +9,7 @@
 %\setlength{\parindent}{0em}
 
 %\usepackage[round,longnamesfirst]{natbib} 
-\usepackage{hyperref}
+%\usepackage{hyperref}
 
 %%% for tabulars
 %\usepackage{rotating}
@@ -69,10 +69,10 @@ process.  Common
 data mining tasks associated with data streams include clustering,
 classification and frequent pattern mining. New algorithms for these types of
 data are
-proposed regularity and it is important to evaluate them 
+proposed regularly and it is important to evaluate them 
 thoroughly under standardized conditions.
 
-In this paper we introduce \pkg{stream}, a general purpose tool that includes
+In this paper we introduce \pkg{stream}, a research tool that includes
 modeling and simulating data streams as well as an extensible
 framework for implementing, interfacing and experimenting with algorithms for 
 various data stream mining tasks. 
@@ -87,7 +87,8 @@ languages popular among data mining researchers
 %to efficiently access large data stored in secondary memory 
 %(e.g., with packages~\pkg{ff} and \pkg{bigmemory}).
 In this paper we describe the architecture
-of \pkg{stream} and and focus on its use for data stream clustering. \pkg{stream}
+of \pkg{stream} and and focus on its use for data stream clustering research. 
+\pkg{stream}
 was implemented with extensibility in mind and will be extended in the future to
 cover additional data stream mining tasks like classification 
 and frequent pattern mining.
@@ -196,7 +197,7 @@ new algorithms to deal with the special challenges posed by data streams are nee
 Even though \proglang{R} represents an ideal platform to develop and test prototypes
 for data stream mining algorithms, \proglang{R} currently does 
 only have very limited infrastructure for data streams. The following are
-some packages on CRAN\footnote{\url{http://CRAN.R-project.org/}} related to streams:
+some packages available from the Comprehensive R Archive Network\footnote{\url{http://CRAN.R-project.org/}} related to streams:
 
 \begin{description}
 \item[Data sources:]  Random numbers are typically
@@ -213,7 +214,7 @@ updating
 statistical models, typically to deal with very large data. For example,
 \pkg{factas}~\citep{stream:Bar:2014} implements iterative versions of 
 correspondence analysis, PCA, canonical correlation analysis and 
-canonical discriminant analysis. For clustering 
+canonical discriminant analysis. For clustering, 
 \pkg{birch}~\citep{stream:Charest:2012} implements
 BIRCH, a clustering algorithm for very large data sets. The algorithm
 maintains a clustering feature tree which can be updated in an iterative
@@ -223,7 +224,7 @@ it first introduced some characteristics needed for efficiently handling data st
 stream's temporal structure. 
 %The clustering part of this algorithm called tNN 
 %(threshold nearest neighbor) is also available in the \pkg{stream} framework.  
-Very recently \pkg{RMOA}~\citep{stream:Wijffels:2014} was introduced. Th package interfaces data stream classification algorithms from the MOA framework (see existing tools discussed in Section~\ref{sec:background:moa}), however, instead of streaming data it focuses on static data sets that do not fit into main memory.
+Very recently \pkg{RMOA}~\citep{stream:Wijffels:2014} was introduced. Th package interfaces data stream classification algorithms from the MOA framework (see existing tools discussed in Section~\ref{sec:background:moa}), however, the package focuses on static data sets that do not fit into main memory.
 
 \item[Distributed computing frameworks:]
 With the development of Hadoop\footnote{\url{http://hadoop.apache.org/}}, 
@@ -270,8 +271,9 @@ Sections~\ref{sec:dsd}, \ref{sec:dst} and \ref{sec:evaluation} introduce
 details about creating data stream sources, performing data stream mining 
 tasks, and evaluating data stream clustering algorithms, respectively.
 Each of the three sections include example code.
-Section~\ref{sec:example} we provides a comprehensive example performing
-an experimental comparison of several clustering algorithms.
+Section~\ref{sec:example} we provides comprehensive examples performing
+an experimental comparison of several data stream clustering algorithms
+and clustering a large, high-dimensional data set.
 %Extending the framework with new data stream sources and algorithms is briefly
 %described in Section~\ref{sec:extension}
 %and 
@@ -282,7 +284,8 @@ Section~\ref{sec:conclusion} concludes the paper.
 \section{Data stream mining} \label{sec:mining}
 
 Due to advances in data gathering techniques, it is often the case that data is
-no longer viewed as a static collection, but rather as a dynamic set, or
+no longer viewed as a static collection, but rather as a potentially very large
+dynamic set, or
 stream, of incoming data points. 
 The most common data
 stream mining tasks are clustering, classification and frequent pattern
@@ -299,14 +302,14 @@ Clustering, the assignment of data points to (typically $k$) groups
 such that points within each group are more similar to each other than to points 
 in different 
 groups, is a very basic unsupervised data mining task. For 
-static data sets, methods like $k$-means, $k$-medians, 
+static data sets, methods like $k$-means, $k$-medoids, 
 hierarchical clustering and density-based methods 
 have been developed among others~\citep{stream:Jain:1999}.
 Many of these methods are available in tools like \proglang{R}, however, 
 the standard algorithms need access to 
 all data points and typically iterate over the data multiple times. 
 This requirement makes
-these algorithms unsuitable for data streams and led to the 
+these algorithms unsuitable for large data streams and led to the 
 development of data stream clustering algorithms.
 
 Over the last 10 years many algorithms for clustering data streams have been
@@ -544,7 +547,7 @@ Like WEKA~\citep{stream:Witten:2005},
 a popular collection of machine learning algorithms,
 MOA is also developed by the University of Waikato
 and its graphical user
-interface and workflow are similar to those of WEKA.
+interface (GUI) and workflow are similar to those of WEKA.
 %
 %The workflow in MOA consists of three main steps:
 %\begin{enumerate}
@@ -566,7 +569,7 @@ tool for distributed stream mining with Storm or the Apache S4 distributed compu
 platform. Similar to MOA it is implemented in \proglang{Java}, and
 supports the basic data stream mining tasks of clustering, classification and 
 frequent pattern mining. Some MOA clustering algorithms are interfaced in SAMOA.
-SAMOA does not provide a GUI.
+SAMOA currently does not provide a GUI.
 
 Another distributed processing framework and streaming machine learning library
 is Jabatus\footnote{\url{http://jubat.us/en/}}. It is implemented in \proglang{C++} and 
@@ -604,7 +607,7 @@ streams.
 
 The \pkg{stream} framework provides an \proglang{R}-based alternative to MOA which
 seamlessly integrates with the extensive existing \proglang{R} infrastructure.
-Since \proglang{R} can interface code written in a whole set of
+Since \proglang{R} can interface code written in many
 different programming languages (e.g., \proglang{C/C++}, \proglang{Java}, 
 \proglang{Python}), data stream mining algorithms in any of these languages 
 can be easily integrated into \pkg{stream}.
@@ -618,7 +621,7 @@ including
 \pkg{proxy}~\citep{stream:Meyer+Buchta:2010}, 
 and others. 
 The \pkg{stream} 
-extension package \pkg{streamMOA}
+extension package \pkg{streamMOA}~\citep{stream:streamMOA:2014}
 also interfaces
 the data stream clustering algorithms already available in MOA using the
 \pkg{rJava} package by
@@ -628,7 +631,7 @@ the data stream clustering algorithms already available in MOA using the
 %language interfaceable by \proglang{R}.
 
 We will start with a very short example to
-make the introduce of the framework and its components
+make the introduction of the framework and its components
 easier to follow.
 After loading \pkg{stream}, we create a simulated data stream 
 with data points drawn from three random Gaussians in 2D space. 
@@ -653,7 +656,7 @@ stream <- DSD_Gaussians(k = 3, d = 2)
 Next, we create an instance of the data stream clustering algorithm 
 D-Stream and update the model with the next 500 data points from the stream.
 <<>>=
-dstream <- DSC_DStream(gridsize = .1)
+dstream <- DSC_DStream(gridsize = .1, Cm = 1.2)
 update(dstream, stream, n = 500)
 @
 
@@ -662,7 +665,7 @@ and plot the resulting micro and macro clusters (see Figure~\ref{figure:initial_
 <<initial_example, fig=TRUE, include=FALSE>>=
 km <- DSC_Kmeans(k = 3)
 recluster(km, dstream)
-plot(km, stream, type="both")
+plot(km, stream, type = "both")
 @
 
 
@@ -697,7 +700,7 @@ object. DSTs can implement any type of data stream mining task
 Since stream mining is a relatively young field and many advances are expected in the near
 future, the object oriented framework
 in \pkg{stream} was developed with easy extensibility in mind.
-We using the \proglang{S3}~class system~\citep{stream:Chambers:1992}
+We are using the \proglang{S3}~class system~\citep{stream:Chambers:1992}
 throughout and, for performance reasons, 
 the \proglang{R}-based algorithms are implemented using
 reference classes.
@@ -707,9 +710,9 @@ lightweight interface definition (i.e., an abstract class) which can be easily
 implemented to create new data stream types or to interface 
 new data stream mining algorithms. Developers can also extend the infrastructure
 with new data mining tasks.
-Details for developers interested in
+Details for developers interested in extending \pkg{stream}
 can be found
-in package's vignette and manual pages~\cite{stream:stream:2014}.
+in the package's vignette and manual pages~\citep{stream:stream:2014}.
 In the following we will concentrate on describing the aspects of the 
 framework which are of interest to a users.
 
@@ -768,7 +771,7 @@ mathematical functions.
 \item Connectors to real data and streams.
 \begin{itemize}
 \item \code{DSD_Memory} provides a streaming interface to 
-static matrix-like data (e.g., a data frame, a matrix) in memory
+static, matrix-like data (e.g., a data frame, a matrix) in memory
 which represent a fixed portion of a data stream.
 Matrix-like objects also includes large objects potentially stored on disk
 like \code{ffdf} from
@@ -779,13 +782,13 @@ which implements at least row subsetting with
 Using these, stream mining algorithms 
 (e.g., clustering) can be performed on data that does not fit into main memory.  
 In addition, \code{DSD_Memory} can directly create a static copy of a portion 
-of another DSD object to be replayed several times.
+of another DSD object to be replayed in experiments several times.
 
-\item \code{DSD_ReadCSV} reads data in CSV format line by line 
-from files or open connections and makes it available in a streaming fashion. 
+\item \code{DSD_ReadCSV} reads data line by line in CSV format
+from a file or an open connection and makes it available 
+in a streaming fashion. 
 This way data that is larger than the available main memory can be processed.
-Connections can be used to read from real-time data streams
-in a blocking or non-blocking fashion.
+Connections can be used to read from real-time data streams (blocking or non-blocking).
 
 \item \code{DSD_ReadDB} provides an interface to an open result set
 from a SQL query to a relational database. Any of the many database
@@ -812,24 +815,26 @@ All DSD implementations share a simple interface consisting
 of the following two functions:
 
 \begin{enumerate}
-\item {A creator function.} This function typically has the same name 
+\item A creator function. This function typically has the same name 
 as the class. 
 By definition the function name starts with the prefix \code{DSD_}.
 The list of parameters depends on the type of data stream
 it creates. 
-The most common input parameters for the creation of DSD classes are \code{k},
+The most common input parameters for the creation of DSD classes 
+for clustering are \code{k},
 the number of clusters (i.e., dense areas), 
 and \code{d}, the number of dimensions. A full list of 
 parameters can be obtained 
 from the help page for each class. The result of this creator function
 is not a data set but
 an object representing the stream's properties and its current state.
-\item {A data generating function} \code{get_points(x, n = 1, outofpoints = c("stop", "warn", "ignore") , ...)}. 
+\item A data generating function \\
+\code{get_points(x, n = 1, outofpoints = c("stop", "warn", "ignore") , ...)}.\\
 This function is used
 to obtain the next data point (or next \code{n} data points) from the 
 stream represented by object~\code{x}. Parameter \code{outofpoints}
 controls how to deal with a stream which runs out of points (the stream source
-does not provide more points at this time). For \code{"warn"} and \code{"ignore"} all (possible zero) available points are returned. 
+does not provide more points at this time). For \code{"warn"} and \code{"ignore"} all (possibly zero) available points are returned. 
 For clustering data,
 the data points are returned
 as a data frame with each row representing a single data point.
@@ -839,8 +844,8 @@ appropriate  way (e.g., as a list).
 \end{enumerate}
 
 Next to these core functions several utility functions 
-like \code{print()}, \code{plot()} and \code{write_stream()}
-to save a part of a data stream to disk are provided by \pkg{stream}
+like \code{print()}, \code{plot()} and \code{write_stream()},
+to save a part of a data stream to disk, are provided by \pkg{stream}
 for class \code{DSD} and are available for all data stream sources. 
 Different data stream implementations might have additional functions
 implemented. For example, \code{DSD_Memory} and \code{DSD_ReadCSV}
@@ -910,7 +915,7 @@ truth (class or cluster label) if they are called with \code{class = TRUE}.
 
 <<>>= 
 p <- get_points(stream, n = 100, class = TRUE) 
-head(p)
+head(p, n = 10)
 @
 
 Note that the data was created by a generator with 5\% noise. Noise points
@@ -1123,8 +1128,7 @@ stream_file
 Using \code{take} and \code{class} we define which columns should be used
 as data and which column contains the ground truth assignment. We also specify
 the true number of clusters $k$. Ground truth and number of clusters do not
-need to be specified if they are not available or no evaluation with 
-external measures is planned. Note that at this point no data has been read in.
+need to be specified if they are not available or no evaluation is planned. Note that at this point no data has been read in.
 Reading only occurs when \code{get_points} is called.
 
 %\code{DSD_ReadCSV} objects are just like any other DSD object in that you
@@ -1163,7 +1167,7 @@ we can write a portion of a stream to
 disk with \code{write_stream()} and then use \code{DSD_ReadCSV} to read the
 stream portion back every time it is needed.
 However, often the interesting portion of the stream is small enough to
-fit into main memory and might be already available as a 
+fit into main memory or might be already available as a 
 matrix or a data frame in
 \proglang{R}. In this case we can use the DSD class \code{DSD_Memory} which
 provides a stream interface for a matrix-like objects.
@@ -1175,7 +1179,7 @@ library("stream")
 set.seed(1000) 
 @
 <<>>=
-data("EuStockMarkets")
+data("EuStockMarkets", package = "datasets")
 head(EuStockMarkets)
 @
 
@@ -1209,9 +1213,11 @@ err <- try(get_points(replayer, n = 2000))
 cat(err)
 @
 
+Note that with the parameter \code{outofpoints} this behavior can be changed to a warning or ignoring the problem.
+
 \code{DSD_Memory} and \code{DSD_ReadCSV} can be created to loop 
 indefinitely, i.e., start over once the last data point is reached.
-This is achieved by passing \code{loop=TRUE} to the creator function.
+This is achieved by passing \code{loop = TRUE} to the creator function.
 The current position in the stream for those 
 two types of DSD classes can also be reset to the beginning of the stream
  or to an arbitrary position via \code{reset_stream()}. Here we set the 
@@ -1241,7 +1247,7 @@ and subsetting with \code{[} can be used.
 \includegraphics[width=\linewidth]{dst_uml} 
 \caption{Overview of the data stream task (DST) class structure with subclasses
 for data stream operators (DSO), clustering (DSC),
-classification (DSCClass) and frequent pattern mining (DSFPM).}
+classification (DSClass) and frequent pattern mining (DSFPM).}
 \label{figure:dst} \end{figure}
 
 After choosing a DSD class to use as the data stream source, the next step in
@@ -1258,8 +1264,10 @@ would be minimal.
 
 DST classes implement mutable objects which
 can be changed without creating a copy. This is more 
-efficient, since otherwise for processing each data point a new copy of all 
-data structures used by the algorithm would be created.
+efficient, since otherwise 
+a new copy of all 
+data structures used by the algorithm would be created
+for processing each data point.
 Mutable objects can be implemented in \proglang{R} using environments
 or the recently introduced reference class construct (see 
 package~\pkg{methods} by the \cite{stream:R:2005}).
@@ -1272,7 +1280,7 @@ since \pkg{stream} currently focuses on this task.
 \pkg{stream} currently provides
 moving windows and sampling from a stream as data stream operators (DSO).
 The operators  provide simple functionality which can be used
-by the other tasks and we will discuss them in the context of clustering.
+by other tasks and we will discuss them in the context of clustering.
 Packages which cover the other tasks using the \pkg{stream} framework are
 currently under development.
 
@@ -1289,7 +1297,7 @@ DSCs implement the online process as subclasses of \code{DSC_Micro}
 and the offline process as subclasses of \code{DSC_Macro}.
 To implement the typical two-stage process in data stream clustering,
 \pkg{stream} provides \code{DSC_TwoStage} which can be used to
-combine a micro and a macro-clustering algorithm.
+combine any available micro and a macro-clustering algorithm.
 
 The following function can be used for objects of subclasses of DSC: 
 
@@ -1300,11 +1308,11 @@ The following function can be used for objects of subclasses of DSC:
 by definition start with the prefix \code{DSC_}.
 
 \item
-\code{update(dsc, dsd, n=1, verbose = FALSE, ...)} which accepts a DSC object and a DSD object. It takes $n$
-data points out of \code{dsd} and adds them to the clustering in \code{dsc}.
+\code{update(dsc, dsd, n = 1, verbose = FALSE, ...)} which accepts a DSC object and a DSD object. It requests the next $n$
+data points from \code{dsd} and adds them to the clustering in \code{dsc}.
 
 \item
-\code{nclusters(x, type=c("auto", "micro", "macro"), ...)} returns the number of
+\code{nclusters(x, type = c("auto", "micro", "macro"), ...)} returns the number of
 clusters currently in the DSC object. This is important since
 the number of 
 clusters is not fixed for most data stream clustering algorithms.
@@ -1325,24 +1333,24 @@ many other functions.
 
 
 \item
-\code{get_centers(x, type=c("auto", "micro", "macro"), ...)} returns the centers
+\code{get_centers(x, type = c("auto", "micro", "macro"), ...)} returns the centers
  of the clusters of the DSC object. Depending on the clustering algorithm
  the centers can be centroids, medoids, centers of dense grids, etc.
 
 \item
-\code{get_weights(x, type=c("auto", "micro", "macro"), ...)} returns the weights of the
+\code{get_weights(x, type = c("auto", "micro", "macro"), ...)} returns the weights of the
 clusters in the DSC object \code{x}. How the weights
 are calculated depends on the clustering algorithm. Typically they are a function of 
 the number of points assigned to each cluster. 
 
 \item
-\code{get_assignment(dsc, points, type=c("auto", "micro", "macro"),} \\ 
-\code{method=c("auto", "model", "nn"), ...)} 
+\code{get_assignment(dsc, points, type = c("auto", "micro", "macro"),} \\ 
+\code{method = c("auto", "model", "nn"), ...)} 
 returns a cluster assignment vector indicating to which cluster each data point 
 in \code{points} would be assigned. For assignment, 
 the assignment can be determined by the model (e.g., point falls
 inside the radius of the micro-cluster) or via nearest neighbor assignment
-(\code{"nn"}). \code{method="auto"} selects model-based assignment if available
+(\code{"nn"}). \code{method = "auto"} selects model-based assignment if available
 and otherwise defaults to nearest neighbor assignment. Note that
 model-based assignment might result in some points not being assigned to 
 any cluster (i.e., an assignment value of \code{NA}) which indicates a
@@ -1356,7 +1364,8 @@ results in an error if a mechanism for creating a deep copy is not
 implemented for the used DSC implementation.
 \item
 
-\code{plot(x, dsd=NULL, ..., method="pairs", dim=NULL, type = c("auto", "micro", "macro", "both")} 
+\code{plot(x, dsd = NULL, ..., method = "pairs", dim = NULL,}\\ 
+\code{type = c("auto", "micro", "macro", "both")} 
 (see manual page for more available parameters) plots the centers
 of the clusters. There are 3 available plot methods: \code{"pairs"},
 \code{"scatter"}, \code{"pc"}. Method \code{"pairs"} is the default method and produces a
@@ -1396,7 +1405,7 @@ and thus the result of \code{update()} does not need to be reassigned to its nam
 %obtained using \code{get_assignment()}.
 
 Reclustering (the offline component of data stream clustering)
-is done with 
+is performed with 
 
 \begin{center}
 \code{recluster(macro, dsc, type="auto", ...)}.
@@ -1484,12 +1493,12 @@ clustering with single linkage and the dendrogram cut at he height of epsilon.
 
 Some data clustering algorithms create small clusters for noise or 
 outliers in the data.
-\pkg{stream} provides \code{prune_clusters(dsc, threshold=.05, weight=TRUE)} to remove
+\pkg{stream} provides \code{prune_clusters(dsc, threshold = .05, weight = TRUE)} to remove
 a given percentage (given by \code{threshold}) of the clusters with the least weight.
 The percentage is either computed based on the number of clusters (e.g., remove
 5\% of the number of clusters) or based on the total weight of the clustering
 (e.g., remove enough clusters to reduce the total weight by 5\%).
-The default \code{weight=TRUE} is based on the total weight.
+The default \code{weight = TRUE} is based on the total weight.
 The resulting clustering is a static copy (\code{DSC_Static}). Further clustering
 cannot be performed with this object, but it can be used as input for reclustering
 and for evaluation.
@@ -1521,7 +1530,7 @@ set.seed(1000)
 
 <<>>= 
 library("stream") 
-stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
+stream <- DSD_Gaussians(k = 3, d = 2, noise = .05)
 @
 
 Next, we prepare the clustering algorithm. We use here \code{DSC_DStream}
@@ -1530,7 +1539,7 @@ D-Stream assigns points to cells in a grid. For the example we use
 a gridsize of 0.1.
 
 <<>>=
-dstream <- DSC_DStream(gridsize = 0.1) 
+dstream <- DSC_DStream(gridsize = .1, Cm = 1.2) 
 dstream
 @
 
@@ -1540,7 +1549,7 @@ will implicitly alter the mutable DSC object so no
 reassignment is necessary.
 
 <<>>= 
-update(dstream, stream, 500) 
+update(dstream, stream, n = 500) 
 dstream
 @
 
@@ -1591,6 +1600,7 @@ data points represented by each micro-cluster. In Figure~\ref{figure:cluster}(b)
 the micro-clusters are shown as dense grid cells (density is coded with gray values).
 
 
+\pagebreak[4]
 \section{Evaluating data stream clustering}\label{sec:evaluation}
 \subsection{Introduction}
 Evaluation of data stream mining is an important issue.
@@ -1598,26 +1608,40 @@ The evaluation of conventional clustering
 is discussed in the literature extensively and there are many evaluation criteria
 available. 
 For an overview we refer the reader to the popular books by
-\cite{clust:Jain:1988} and \cite{Kaufman:1990}. However, the evaluation of
+\cite{clust:Jain:1988} and \cite{Kaufman:1990}. However, this evaluation
+only measures how well the algorithm learns static structure in the data.
+Data streams often exhibit concept drift and it is important to evaluate
+how well the algorithm is able to adapt to these changes.
+The evaluation of
 data stream clustering is still in its infancy. 
-We will only briefly introduce the current state
-of the evaluation of data stream clustering here and refer the interested 
-reader to the books by \cite{stream:Aggarwal:2007} and \cite{stream:Gama:2010},
-and the paper by \cite{stream:Kremer:2011}.
+The current state
+of the evaluation of data stream clustering is described 
+in the books by \cite{stream:Aggarwal:2007} and \cite{stream:Gama:2010},
+and the paper by \cite{stream:Kremer:2011}. 
+In the following we will discuss how \pkg{stream} can be used to 
+evaluate clustering algorithms in terms of learning static structures and 
+clustering dynamic streams.
 
-Evaluation of data stream clustering is performed in \pkg{stream} via
+\subsection{Evaluating the learned static structure}
+
+Evaluation 
+how well an algorithm is able to learn a static structure in the data 
+is performed in \pkg{stream} via
 
 \begin{center}
-\code{evaluate(dsc, dsd, measure, n = 100, type=c("auto", "micro", "macro"),}\\
-\code{assign="micro"), assignmentMethod=c("auto", "model", "nn"), ...)},
+\code{evaluate(dsc, dsd, measure, n = 100, type = c("auto", "micro", "macro"),}\\
+\code{assign = "micro"), assignmentMethod = c("auto", "model", "nn"), ...)},
 \end{center}
 
-where \code{n} data points are taken from \code{dsd} and assigned to a 
-cluster in the clustering in \code{dsc} using \code{get_assignment()}. 
+where \code{dsc} is the evaluated clustering.
+\code{n} data points are taken from \code{dsd} and
+used for evaluation.
+The points are assigned to the 
+clusters in the clustering in \code{dsc} using \code{get_assignment()}. 
 By default the points are assigned to micro-clusters,
 but it is also possible to assign them to macro-cluster centers instead 
-(\code{assign="macro"}). New points can be assigned to clusters using the
-rule used in the clustering algorithm (\code{assignmentMethod="model"}) or
+(\code{assign = "macro"}). New points can be assigned to clusters by the
+rule used in the clustering algorithm (\code{assignmentMethod = "model"}) or
 using nearest-neighbor assignment (\code{"nn"}). 
 If the assignment method is set to 
 \code{"auto"} then model assignment is used when available and otherwise 
@@ -1657,14 +1681,14 @@ evaluation measure is shown in parentheses) include:
 
 
 \begin{itemize}
-\item Information items  
+\item Information items.
   \begin{itemize}
 		\item	\code{"numMicroClusters"} Number of micro-clusters 
     \item \code{"numMacroClusters"} Number of macro-clusters 
 		\item	\code{"numClasses"} Number of classes (i.e., groups in the ground truth)
 	\end{itemize}
   
-\item Internal evaluation measures
+\item Internal evaluation measures.
 	\begin{itemize}
 		\item	\code{"SSQ"} Within cluster sum of squares (actual noise points
     identified by the clustering algorithm are excluded) 
@@ -1683,7 +1707,7 @@ evaluation measure is shown in parentheses) include:
     \item \code{"wb.ratio"} average.within over average.between (\pkg{fpc})
 	\end{itemize}  
 
-\item  External evaluation measures
+\item  External evaluation measures.
   \begin{itemize}
 		\item	\code{"precision"}, \code{"recall"}, \code{"F1"}.
 		A true positive (TP) decision assigns two points in the same
@@ -1752,7 +1776,10 @@ significantly from the data that is used to learn the clustering to
 the data that is used for evaluation. 
 However, since data streams typically exhibit concept drift and 
 evolve over time this approach might not be ideal.
-Also, for data streams it is important to evaluate how well the clustering
+
+\subsection{Evaluating clustering of dynamic streams}
+
+For dynamic data streams it is important to evaluate how well the clustering
 algorithm is able to adapt to the changing cluster structure. 
 \cite{stream_clust:Aggarwal:2003}
 have developed an evaluation scheme for data stream clustering which 
@@ -1818,9 +1845,9 @@ First, we prepare a data stream and create a clustering.
 
 <<>>= 
 library("stream") 
-stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
-dstream <- DSC_DStream(gridsize = 0.1) 
-update(dstream, stream, 500) 
+stream <- DSD_Gaussians(k = 3, d = 2, noise = .05)
+dstream <- DSC_DStream(gridsize = .1) 
+update(dstream, stream, n = 500) 
 @
 
 
@@ -1835,8 +1862,9 @@ evaluate(dstream, stream, n = 100)
 The number of points taken from \code{dsd} and used for the evaluation are 
 passed on as the parameter \code{n}. Since no evaluation measure is 
 specified, all
-available measures are calculated. We use only a small number of points 
-since calculating some measures is expensive.
+available measures are calculated. 
+We use only a small number of points for evaluation
+since calculating some measures is computational quite expensive.
 Individual measures can be calculated using the measure argument.
 
 <<>>=
@@ -1846,11 +1874,11 @@ evaluate(dstream, stream, measure = c("purity", "crand"), n = 500)
 Note that
 this second call of \code{evaluate()} uses a new and larger set of 
 500 evaluation data points from the stream and thus the results may
-vary from the first call.
+vary slightly from the first call.
 Purity of the micro-clusters is high since each micro-cluster only covers points 
-from the same true cluster, however, corrected Rand is low because several micro-clusters
+from the same true cluster, however, the corrected Rand index is low because several micro-clusters
 split the points from each true cluster. We will see in one of the 
-following examples that reclustering will improve the corrected Rand. 
+following examples that reclustering will improve the corrected Rand index. 
 
 To evaluate how well a clustering algorithm can adapt to an evolving
 data stream, \pkg{stream} provides \code{evaluate_cluster()}. Following
@@ -1931,7 +1959,7 @@ r <- animate_cluster(dstream, stream, n = 5000, horizon = 100,
 
 Figure~\ref{figure:eval} shows the result of the clustering animation with
 purity evaluation. The whole animation can be recreated by executing the code
-above. The animation can be again replayed and saved using package \pkg{animation}.
+above. The animation can also be replayed and saved using package \pkg{animation}.
 
 % <<eval=FALSE>>=
 % library(animation)
@@ -1953,8 +1981,8 @@ set.seed(1000)
 @
 
 <<>>= 
-stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
-dstream <- DSC_DStream(gridsize = .05)
+stream <- DSD_Gaussians(k = 3, d = 2, noise = .05)
+dstream <- DSC_DStream(gridsize = .05, Cm = 1.5)
 
 update(dstream, stream, n = 1000)
 dstream
@@ -2055,9 +2083,10 @@ assignment
 
 Note that D-Stream uses a grid for assignment and that points which do not fall
 inside a dense (or connected transitional) cell are not assigned to a cluster 
-represented by a value of \code{NA}. For silhouette calculation we 
+represented by a value of \code{NA}. For the following silhouette 
+calculation we 
 replace the \code{NA}s with 0 to make the unassigned (noise) points its own 
-cluster. Also, the silhouette is only calculated for a small number of points and not the whole stream.
+cluster. Note that the silhouette is only calculated for a small number of points and not the whole stream.
 
 <<silhouette, fig=TRUE, include=FALSE>>=
 assignment[is.na(assignment)] <- 0L
@@ -2235,7 +2264,8 @@ package's \code{R} directory.
 %\pagebreak[1]
 %
 
-\section{Sample application: Experimental comparison} \label{sec:example}
+\section{Example applications} \label{sec:example}
+\subsection{Experimental comparison of different algorithms}
 Providing a framework for rapid prototyping new data stream mining algorithms 
 and comparing them experimentally is the main purpose of
 \pkg{stream}. In this section we give a more elaborate example of how to
@@ -2251,11 +2281,11 @@ evaluation.
 
 <<echo=FALSE>>=
 set.seed(1000) 
-library("stream") 
 @
 
 <<data_bng, fig=TRUE, include=FALSE>>= 
-stream <- DSD_Memory(DSD_BarsAndGaussians(noise = 0.05), n = 1500)
+library("stream") 
+stream <- DSD_Memory(DSD_BarsAndGaussians(noise = .05), n = 1500)
 stream
 plot(stream)
 @
@@ -2281,14 +2311,14 @@ algorithms <- list(
     macro = DSC_Kmeans(k = 4)), 
   'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100), 
     macro = DSC_Kmeans(k = 4)), 
-  'D-Stream' = DSC_DStream(gridsize = .7),
+  'D-Stream' = DSC_DStream(gridsize = .7, Cm = 1.5),
   'tNN' = DSC_tNN(r = .45)
 )
 @
 
 The algorithms are reservoir sampling reclustered with weighted $k$-means, 
 sliding window reclustered with weighted $k$-means, D-Stream and 
-tNN (threshold nearest-neighbors).
+tNN (threshold nearest-neighbors) with their built-in reclustering strategies.
 We store the algorithms in a list for easier handling and then cluster the same 
 1000 data points with each algorithm. Note that we have to reset the stream
 each time before we cluster.
@@ -2303,7 +2333,7 @@ for(a in algorithms) {
 We use \code{nclusters()} with \code{type="micro"} 
 to inspect the number of micro-clusters.
 <<>>=
-sapply(algorithms, nclusters, type="micro")
+sapply(algorithms, nclusters, type = "micro")
 @
 
 To inspect micro-cluster placement, we plot the calculated micro-clusters on a 
@@ -2319,7 +2349,7 @@ for(a in algorithms) {
 par(op)
 @
 
-\begin{figure} 
+\begin{figure}[tp] 
 \centering
 \includegraphics{stream-microclusters}
 \caption{Micro-cluster placement for different data stream clustering 
@@ -2344,7 +2374,7 @@ the micro-cluster.
 The specific clustering algorithm decides how points which fall inside 
 the assignment area of several
 micro-clusters (e.g., assign the point to the closest center).
-To show the assignment area we add \code{assignment=TRUE} to plot.
+To show the assignment area we add \code{assignment = TRUE} to plot.
 We also disable showing micro-cluster weights to make the plot less cluttered.
 
 <<microclusters_assignment, fig=TRUE, include=FALSE, width=8, height=9>>= 
@@ -2549,42 +2579,120 @@ analyzed using
 
 The \pkg{stream} framework allows us to easily create 
 many experiments by using different data and by matching
-different clustering and reclustering algorithms. One example of 
+different clustering and reclustering algorithms. An example of 
 a study for clustering large data sets using an early version of 
 \pkg{stream} can be found in~\cite{hahsler:Bolanos2012}.
 
+\subsection{Clustering a real data set}
+In this section we show how to cluster 
+the well-known and widely used KDD Cup'99 data set. The data set
+was created for the Third International Knowledge Discovery and Data Mining Tools Competition and contains simulated network traffic 
+with a wide variety of intrusions. The data set contains 4,898,431
+data points and we use the 34 numeric features for clustering. 
+The data set is available from the UCI Machine Learning Repository~\citep{Bache+Lichman:2013} and we
+directly stream the data from there. We use the first 1000 data points 
+to center and scale the observations in the data stream in flight.
+
+<<eval=FALSE>>=
+library("stream")
+con <- gzcon(
+  url(paste("http://archive.ics.uci.edu/ml/machine-learning-databases/",
+    "kddcup99-mld/kddcup.data.gz", sep="")))
+
+stream <- DSD_ReadCSV(con, take=c(1, 5, 6, 8:11, 13:20, 23:41), 
+    class=42, k=7)
+stream2 <- DSD_ScaleStream(stream, n=1000)
+@
+
+Next, we set up D-Stream with slightly modified values for gaptime (increased number of points after which
+obsolete micro-clusters are removed) and lambda (faster fading),
+and cluster the next 4 million data points.
+<<eval=FALSE>>=
+dstream <- DSC_DStream(gridsize = .5, gaptime = 10000L, lambda=.01)
+update(dstream, stream2, n=4000000, verbose=TRUE)
+@
+
+\begin{figure} 
+\centering
+\begin{minipage}{1\linewidth} \centering
+\includegraphics[width=1\linewidth]{time}
+\end{minipage}
+\\ (a)
+\\
+\begin{minipage}{1\linewidth} \centering
+\includegraphics[width=1\linewidth]{mcs}
+\end{minipage}
+\\ (b)
+\\
+\begin{minipage}{1\linewidth} \centering
+\includegraphics[width=1\linewidth]{classes}
+\end{minipage}
+\\ (c)
+\caption{Clustering 4 million data points of the KDD Cup'99 data set with D-Stream.} 
+\label{figure:intrusion} 
+\end{figure}
+
+In stream clustering each data point is processed individually
+and we have recorded some key statistics averaged over 1000 point intervals.
+Figure~\ref{figure:intrusion}(a) reports the time needed to cluster one new
+data point.
+Initially, the time needed to cluster a point increases and then stabilizes at
+around .5 milliseconds per point. 
+Every 10,000 points (gaptime) the algorithm checks
+for obsolete (i.e., sporadic) micro-clusters which causes 
+ peaks in processing time.
+Figure~\ref{figure:intrusion}(b) shows the number of micro-clusters
+used by the algorithm. This number is directly related to the memory used by the algorithm. For the used 34 dimensional data set, each micro-cluster
+occupies 416 bytes of storage leading to a maximal memory requirement of 
+less than 5~MB (a maximum of 12,039 micro-clusters are used at the end of the first quarter of the stream) for this clustering.
+The number of micro-clusters varies significantly over the stream. 
+This behavior can be explained by the changes in the distribution of the data. 
+Figure~\ref{figure:intrusion}(c) shows the number of different classes (normal and different types of intrusions) in 1000 point segments. 
+It is easy to see that the number of micro-clusters is directly related 
+to the number of different classes in the data. Although, the algorithm
+is implemented in \proglang{R} and thus slow (it took 37.5 minutes to cluster all the data), it still can be used to cluster
+large data sets in reasonable time. In order to improve run time, 
+we are working on reimplementing several algorithms in \proglang{C++}.
+
 \section{Conclusion and future work} \label{sec:conclusion}
 
-Package \pkg{stream} is a data stream modeling framework in \proglang{R} that 
+Package \pkg{stream} is a data stream modeling framework for \proglang{R} that 
 provides both
 a variety of data stream generation tools as well as a component for performing
 data stream mining tasks. The flexibility offered by the framework allows the
 user to create a multitude of easily reproducible experiments to compare the
-performance of these tasks.
+performance of these tasks. While \proglang{R} is not an ideal environment to
+process high-throughput streams in real-time, \pkg{stream}
+provides an infrastructure to develop and test these algorithms.
+\pkg{stream} can be directly used for applications where new points 
+are produced at slower speeds. Another important application 
+of \pkg{stream} 
+is for processing 
+data which does not fit in main memory point by point.
 
-Furthermore, the presented infrastructure can be extended by adding new 
-data sources and algorithms, or by defining a whole new data stream mining 
-task. We have abstracted each 
+The presented infrastructure can be extended by adding new 
+data sources and algorithms, or by defining whole new data stream mining 
+tasks. We have abstracted each 
 component to only require a small
 set of functions that are defined in each base class. Writing the framework in
 \proglang{R} means that developers have the ability to design components either
-directly in \proglang{R}, or design components in \proglang{Java}, 
+directly in \proglang{R}, or implement components in \proglang{Java}, 
 \proglang{Python} or
 \proglang{C}/\proglang{C++}, and then write a small \proglang{R} wrapper as
-is provided for some MOA algorithms in \pkg{streamMOA}. 
+we did for some MOA algorithms in \pkg{streamMOA}. 
 This approach makes it easy to experiment with a multitude
 of algorithms in a consistent way.
 
 Currently, \pkg{stream} focuses on the data stream 
 clustering task, but we are working on incorporating 
-classification (incorporating the algorithms interfaced by \pkg{RMOA}~\cite{stream:Wijffels:2014}) 
+classification (incorporating the algorithms interfaced by \pkg{RMOA}~\citep{stream:Wijffels:2014}) 
 and frequent pattern mining algorithms 
 as an extension of the base DST class.
 
 \section*{Acknowledgments} 
 Matthew Bola\~nos and John Forrest worked on \pkg{stream} when they were 
-undergraduate students at the Lyle School of Engineering at SMU
-and were supported in part by the U.S. National
+undergraduate students at the Lyle School of Engineering at SMU.
+Both were supported in part by the U.S. National
 Science Foundation as a research experience for undergraduates (REU) under
 contract number IIS-0948893 and by the National Human Genome Research Institute
 under contract number R21HG005912.

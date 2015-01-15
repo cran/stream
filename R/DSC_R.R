@@ -32,7 +32,7 @@ DSC_R <- function(...) stop("DSC_R is an abstract class and cannot be instantiat
 ### needs to make sure that points are processed sequencially
 ### (make especially BIRCH faster by passing block data points at once)
 update.DSC_R <- function(object, dsd, n=1, verbose=FALSE, 
-  block=100000L, ...) {
+  block=10000L, ...) {
   ### object contains an RObj which is  a reference object with a cluster method
   
   n <- as.integer(n)

@@ -218,7 +218,9 @@ tNN$methods(list(
         if(debug) cat("  + Creating micro-cluster with ID: 1\n")
         
       } else {
-        inside <- which(dist(point, centers, method=distFun) < r)
+        dd <- dist(point, centers, method=distFun)
+        inside <- which(dd < r)
+        dd <- dd[inside]
         
         if(length(inside) < 1) { ### new cluster (cannot have shared density)
           weights <<- c(weights, 1)
@@ -233,14 +235,33 @@ tNN$methods(list(
         }else{ ### update existing cluster
           
           ### for moving
+          
+          ### all move the same
+          #partialweight <- 1 
+          
           #partialweight <- weights[inside] %in% min(weights[inside]) * 10
-          
-          partialweight <- 1 
-          
           #partialweight <- 1/length(inside) 
           
-          #partialweight <- (1-dist(point, centers, method=distFun)[inside]/r)^2
+          ### the closer you are the more you move
+          #partialweight <- (1-dd/r)^2
           #partialweight <- partialweight/sum(partialweight)
+          
+          ### only winner moves
+          mv <- which.min(dd)
+          partialweight <- rep(0, length(inside))
+          partialweight[mv] <- 1
+          
+          ### alpha for SOM
+          #a <- .5
+          #partialweight <- rep(-a, length(inside))
+          #partialweight[mv] <- a
+          
+          #partialweight <- -a* 1/(dd/r)^2
+          #partialweight[mv] <- a * 1 
+          
+          
+          ### no movement
+          #partialweight <- rep(0, length(inside))
           
           ### decay weights first
           ws <- weights[inside] * 
@@ -254,19 +275,23 @@ tNN$methods(list(
           
           ### weight the clusters get
           #partialweight <- 1/length(inside) 
+          
+          ### winner gets all
           partialweight <- rep.int(0, length(inside))
-          partialweight[which.min(dist(point, centers[inside,], method=distFun))] <- 1
+          partialweight[which.min(dd)] <- 1
           
           ### update weights
           weights[inside] <<- ws + partialweight
           last_update[inside] <<- t
           
           ### check overlap
-          distance <- dist(newCenters,method=distFun)
+          #distance <- dist(newCenters,method=distFun)
+          #test <- apply(distance, 1, function(x) all(x>r|x==0) )
+          #if(length(which(test)) > 0) { 
+          #  centers[inside[which(test)],] <<- newCenters[which(test),]
+          #}
           
-          test <- apply(distance, 1, function(x) all(x>r|x==0) )
-          if(length(which(test)) > 0) 
-            centers[inside[which(test)],] <<- newCenters[which(test),]
+          centers[inside,] <<- newCenters
           
           ### shared density
           if(shared_density && length(inside) > 1) {
