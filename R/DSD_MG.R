@@ -128,6 +128,8 @@ dsd_MG_refClass$methods(
 get_points.DSD_MG <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE, ...) {
+  .nodots(...)
+
   d <- x$RObj$get_points(n, cluster=TRUE)
 
   a <- attr(d, "cluster")

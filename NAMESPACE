@@ -1,6 +1,8 @@
 useDynLib(stream)
+#exportPattern("^[[:alpha:]]+")
 
 import(methods)
+import(Rcpp)
 import(proxy)
 #import(birch) 
 import(hash) 
@@ -23,11 +25,13 @@ export(
   DSC_Micro,
   DSC_Macro,
   
-  #  DSC_BIRCH,
+  #  DSC_BIRCH,  # removed from CRAN
   DSC_DStream,
   DSC_Sample,
-	DSC_tNN, 
+	DSC_DBSTREAM, 
   DSC_Window,
+	
+  DSC_DBSTREAM, 
 
   DSC_Kmeans,
 	DSC_DBSCAN,
@@ -105,8 +109,9 @@ export(
 	animate_cluster,
 	animate_data,
   
-  ### DSC_tNN
+  ### DSC_DBSTREAM
   get_shared_density,
+  change_alpha,
   ### DSC_DStream
   get_attraction,
   
@@ -156,12 +161,12 @@ S3method(print, DSC)
 S3method(summary, DSC)
 
 S3method(plot, DSC)
-S3method(plot, DSC_tNN)
+S3method(plot, DSC_DBSTREAM)
 S3method(plot, DSC_DStream)
 
 S3method(nclusters, DSC)
 S3method(get_assignment, DSC)
-S3method(get_assignment, DSC_tNN)
+S3method(get_assignment, DSC_DBSTREAM)
 S3method(get_assignment, DSC_DStream)
 S3method(get_assignment, DSC_TwoStage)
 
@@ -176,7 +181,7 @@ S3method(get_weights, DSC_TwoStage)
 S3method(recluster, DSC_Macro)
 
 S3method(microToMacro, DSC_R)
-S3method(microToMacro, DSC_tNN)
+S3method(microToMacro, DSC_DBSTREAM)
 S3method(microToMacro, DSC_DStream)
 S3method(microToMacro, DSC_TwoStage)
 

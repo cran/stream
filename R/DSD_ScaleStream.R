@@ -19,7 +19,7 @@
 
 # accepts an open connection
 DSD_ScaleStream <- function(dsd,  
-  center=TRUE, scale=TRUE,
+  center=TRUE, scale=TRUE, 
   n=1000, reset=FALSE) {
   
   # creating the DSD object
@@ -40,15 +40,24 @@ DSD_ScaleStream <- function(dsd,
 get_points.DSD_ScaleStream <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"),
   cluster=FALSE, class=FALSE, ...) {
-  
+  .nodots(...)
+
   d <- get_points(x$dsd, n, cluster=cluster, class=class)
   
-  if(cluster) cl <- attr(d,"cluster")
+  if(cluster) cl <- attr(d, "cluster")
+  if(class) {
+    j <- which("class" == colnames(d))
+    if(length(j)==1L) {
+      cl <- d[, j]
+      d <- d[, -j]
+    }else cl <- rep(NA_integer_, nrow(d))
+  }
   
   # scale
   d <- as.data.frame(scale(d, center= x$center, scale=x$scale))
   
-  if(cluster) attr(d, "cluster") <-cl
+  if(cluster) attr(d, "cluster") <- cl
+  if(class) d <- cbind(d, class=cl)
   
   d
 }

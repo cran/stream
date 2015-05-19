@@ -41,7 +41,8 @@ DSD_ReadDB <- function(result, k=NA,
 get_points.DSD_ReadDB <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE, ...) {
-  
+  .nodots(...)
+
   outofpoints <- match.arg(outofpoints)
   n <- as.integer(n) 
   

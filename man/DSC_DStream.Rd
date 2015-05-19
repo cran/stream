@@ -6,44 +6,54 @@
 \alias{get_attraction}
 \title{D-Stream Data Stream Clustering Algorithm}
 \description{
-    Implements the D-Stream data stream clustering algorithm.}
-
+    Implements the D-Stream data stream clustering algorithm.
+}
 \usage{
-DSC_DStream(gridsize, d=NA_integer_, lambda = 1e-3, 
-   gaptime=1000L, Cm=3, Cl=.8, attraction=FALSE, epsilon=.3, Cm2=Cm, k=NULL)
-get_attraction(x, dist=FALSE, relative=FALSE)
+DSC_DStream(gridsize, lambda = 1e-3, gaptime=1000L, 
+  Cm=3, Cl=.8, attraction=FALSE, epsilon=.3, Cm2=Cm, k=NULL, N = 0)
+get_attraction(x, relative=FALSE, grid_type = "dense", dist=FALSE)
 }
 
 \arguments{
-	\item{gridsize}{Size of grid cells. Vector of length 
-		\code{d} (dimensionality of the data). If only
-		one value is specified then the same size is used for 
-		all dimensions.}
-	\item{d}{dimensionality of the data. If unspecified then it is taken from the 
-    first clustered data point.}
-	\item{lambda}{The lambda used in the fading function (Note: in the paper the 
-    authors use denote the decay factor as lambda, while here the decay factor
-    will be computed from lambda using \eqn{2^-lambda}).}
+	\item{gridsize}{Size of grid cells.}
+	\item{lambda}{ Fading constant used function to calculate the 
+    decay factor \eqn{2^-lambda}.    
+    (Note: in the paper the authors use lamba to denote the decay 
+    factor and not the fading constant!)}
 	\item{gaptime}{sporadic grids are removed every
     gaptime number of points.}
-	\item{Cm}{threshold used to detect dense grids as a proportion of the 
-	    average expected density (Cm > 1).}
-	\item{Cl}{threshold to detect transitional and sporadic grids (0 > Cl > 1).}
-  \item{attraction}{compute and store information about the attraction between
-    adjacent grids. If \code{TRUE} then attraction is used to create macro-clusters,
-  otherwise macro-clusters are created by merging adjacent dense grids.}
+	\item{Cm}{density threshold used to detect dense 
+      grids as a proportion of the 
+	    average expected density (Cm > 1). The average density is given
+      by the total weight of the clustering over \eqn{N}, the number of 
+      grid cells.}
+	\item{Cl}{density threshold to detect sporadic grids (0 > Cl > Cm).  
+      Transitional grids have a density between Cl and Cm. }
+  \item{attraction}{compute and store information about the 
+    attraction between
+    adjacent grids. If \code{TRUE} then attraction is used to 
+    create macro-clusters, otherwise macro-clusters are 
+    created by merging adjacent dense grids.}
   \item{epsilon}{overlap parameter for attraction as a proportion of 
     \code{gridsize}.}
-  \item{Cm2}{threshold on attraction to join two dense grid cells (as a 
-    proportion on the average expected attraction). In the original algorithm 
-    \code{Cm2} is equal to \code{Cm}.}
+  \item{Cm2}{threshold on attraction to join two dense grid cells 
+    (as a proportion on the average expected attraction). 
+    In the original algorithm \code{Cm2} is equal to \code{Cm}.}
   \item{k}{alternative to Cm2 (not in the original algorithm). 
     Create k clusters based on attraction. In case 
     of more than k unconnected components, closer groups of MCs are joined.}
+  \item{N}{ Fix the number of grid cells used for the calculation 
+    of the density thresholds with Cl and Cm. If \code{N} is not 
+    given (0) then the algorithm tries to determine N from the data. Note   
+    that this means that N potentially increases over time and outliers
+    might produce an extremely large value which will lead to a sudden
+    creation of too many dense micro-clusters. The original paper
+    assumed that N is known a priori.} 
   \item{x}{DSC_DStream object to get attraction values from.}
-  \item{dist}{make attraction symmetric and transform into a distance.}
   \item{relative}{calculates relative attraction (normalized by the cluster 
     weight).}
+  \item{grid_type}{the attraction between what grid types should be returned?}
+  \item{dist}{make attraction symmetric and transform into a distance.}
 }
 
 \details{
@@ -72,6 +82,9 @@ D-Stream creates an equally spaced grid and estimates the density in each
   For plot D-Stream also provides extra parameters \code{"grid"} and 
   \code{"grid_type"} to show micro-clusters as grid cells
   (density represented by gray values). 
+
+  Note that \code{DSC_DStream} can at this point not be saved to disk using
+  save() or saveRDS(). This functionality will be added later!
 }
 
 \value{

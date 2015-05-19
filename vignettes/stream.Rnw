@@ -1459,7 +1459,7 @@ For evolving data streams it is more appropriate to bias the sample
 toward more recent data points. For biased sampling, 
 Algorithm~2.1 by \cite{stream:Aggarwal:2006} is also implemented.
 
-\item\code{DSC_tNN} implements the simple data stream clustering algorithm called 
+\item\code{DSC_DBSTREAM} implements the simple data stream clustering algorithm called 
 \emph{tNN threshold nearest-neighbors (tNN)} which was developed
 for package~\pkg{rEMM}
 by \cite{stream:Hahsler+Dunham:2014,stream:Hahsler+Dunham:2010b}.
@@ -2312,13 +2312,13 @@ algorithms <- list(
   'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100), 
     macro = DSC_Kmeans(k = 4)), 
   'D-Stream' = DSC_DStream(gridsize = .7, Cm = 1.5),
-  'tNN' = DSC_tNN(r = .45)
+  'DBSTREAM' = DSC_DBSTREAM(r = .45)
 )
 @
 
 The algorithms are reservoir sampling reclustered with weighted $k$-means, 
 sliding window reclustered with weighted $k$-means, D-Stream and 
-tNN (threshold nearest-neighbors) with their built-in reclustering strategies.
+DBSTREAM with their built-in reclustering strategies.
 We store the algorithms in a list for easier handling and then cluster the same 
 1000 data points with each algorithm. Note that we have to reset the stream
 each time before we cluster.
@@ -2362,9 +2362,9 @@ the different algorithms. Micro-clusters are shown as red circles and
 the size is proportional to each cluster's weight.
 Reservoir sampling and the sliding window select some data points as micro-clusters
 and also include a few noise points. 
-D-Stream and tNN
+D-Stream and DBSTREAM
 suppress noise well and concentrate the micro-clusters on the real clusters. D-Stream
-is grid-based and thus the micro-clusters are regularly spaced. tNN 
+is grid-based and thus the micro-clusters are regularly spaced. DBSTREAM 
 produces a similar, almost regular pattern.
 
 It is also interesting to compare the assignment areas for micro-clusters 
@@ -2400,7 +2400,7 @@ Figure~\ref{figure:microclusters_assignment} shows the assignment areas.
 For regular micro-cluster-based algorithms the assignment areas are shown
 as dotted
 circles around micro-cluster centers. 
-For example for tNN the assignment area for all micro-clusters has exactly 
+For example for DBSTREAM the assignment area for all micro-clusters has exactly 
 the same radius. D-Stream uses a grid for assignment and thus shows the grid.
 Reservoir sampling and sliding window does
 not have assignment areas and data points are always assigned to
@@ -2428,10 +2428,10 @@ of micro-clusters is close.
 All algorithms produce very good values 
 for purity for this data set with reasonably well separated clusters.
 
-Next, we compare macro-cluster placement. D-Stream and tNN
+Next, we compare macro-cluster placement. D-Stream and DBSTREAM
 have built-in reclustering strategies. 
 D-Stream joins adjacent dense grid cells to form macro-clusters and
-tNN joins micro-clusters reachable by overlapping assignment areas.
+DBSTREAM joins micro-clusters reachable by overlapping assignment areas.
 For sampling and sliding window we already have created a two-stage process 
 together with weighted $k$-means ($k=4$).
 
@@ -2457,7 +2457,7 @@ Figure~\ref{figure:macroclusters} shows the macro-cluster placement. Sampling an
 the sliding window use $k$-means reclustering and therefore produce exactly four clusters.
 However, the placement is off, splitting a true cluster and missing one of the less
 dense clusters. 
-D-Stream and tNN identify the two denser clusters
+D-Stream and DBSTREAM identify the two denser clusters
 correctly, but split the lower density clusters into multiple pieces.
 
 <<>>=
@@ -2472,7 +2472,7 @@ sapply(algorithms, FUN = function(a) {
 
 The evaluation measures at the macro-cluster level reflect the findings from the 
 visual analysis of the clustering with D-Stream producing the best results. 
-Note that D-Stream and tNN do not assign some points which are not noise points
+Note that D-Stream and DBSTREAM do not assign some points which are not noise points
 which has a negative effect on the average silhouette width.
 %This is shown with a warning and these points form their own cluster
 %for calculating the within sum of squares and the average silhouette width.
@@ -2498,7 +2498,7 @@ Next we initialize again a list of clustering algorithms. Note that this time we
 a $k$ of two for reclustering sampling and the sliding window. We also use a sample 
 biased to newer data points~\citep{stream:Aggarwal:2006} since otherwise outdated data points would
 result in creating outdated clusters. For the sliding window, D-Stream and
-tNN we use faster decay (\code{lambda=.01}) 
+DBSTREAM we use faster decay (\code{lambda=.01}) 
 since the clusters in the data stream move very quickly.
 
 <<>>= 
@@ -2508,7 +2508,7 @@ algorithms <- list(
   'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100, lambda = .01), 
     macro = DSC_Kmeans(k = 2)), 
   'D-Stream' = DSC_DStream(gridsize = .05, lambda = .01),
-  'tNN' = DSC_tNN(r = .02, lambda = .01)
+  'DBSTREAM' = DSC_DBSTREAM(r = .02, lambda = .01)
 )
 @
 
@@ -2568,7 +2568,7 @@ Figure~\ref{figure:data_bng2} shows the corrected Rand index for the four
 data stream clustering algorithms over the evolving data stream.
 All algorithms show that separating the two clusters is 
 impossible around position 3000 when the two clusters overlap. 
-D-Stream and tNN perform equally well while biased sampling and the 
+D-Stream and DBSTREAM perform equally well while biased sampling and the 
 sliding window achieve only a lower corrected Rand index. This is easily
 explained by the fact that these two algorithms cannot detect noise and thus
 have to assign noise points to one of the clusters resulting in
@@ -2633,26 +2633,33 @@ update(dstream, stream2, n=4000000, verbose=TRUE)
 \end{figure}
 
 In stream clustering each data point is processed individually
-and we have recorded some key statistics averaged over 1000 point intervals.
-Figure~\ref{figure:intrusion}(a) reports the time needed to cluster one new
-data point.
-Initially, the time needed to cluster a point increases and then stabilizes at
-around .5 milliseconds per point. 
-Every 10,000 points (gaptime) the algorithm checks
-for obsolete (i.e., sporadic) micro-clusters which causes 
- peaks in processing time.
+and we have recorded some key statistics averaged over 10000 point intervals.
+Figure~\ref{figure:intrusion}(a) reports clustering speed in 1000s of points
+per second (on a laptop with a Intel Core i5-4300U at 1.9 GHz and 
+8GB main memory running Ubuntu 14.10). 
+Clustering 4 million data points took about 67 seconds.
+Note that this measurement only includes the clustering and not the time it takes to access the data online.
+The processing speed varies greatly between about 7000 and 357,000 points
+per second with a median speed of 294,000 points per second.
+The speed depends on the number of micro clusters which need 
+to be maintained. 
 Figure~\ref{figure:intrusion}(b) shows the number of micro-clusters
-used by the algorithm. This number is directly related to the memory used by the algorithm. For the used 34 dimensional data set, each micro-cluster
-occupies 416 bytes of storage leading to a maximal memory requirement of 
-less than 5~MB (a maximum of 12,039 micro-clusters are used at the end of the first quarter of the stream) for this clustering.
+used by the algorithm. The maximal number of micro clusters is
+12,310 which occurs in the first half of the data stream.
+This number is directly related to the memory used by the algorithm. For the used 34 dimensional data set, each micro-cluster
+occupies only 16 bytes (without attraction) 
+or 560 bytes (with attraction)
+which leads even with the overhead of the storage data structure 
+to only a negligible memory consumption of a few MB.
 The number of micro-clusters varies significantly over the stream. 
 This behavior can be explained by the changes in the distribution of the data. 
-Figure~\ref{figure:intrusion}(c) shows the number of different classes (normal and different types of intrusions) in 1000 point segments. 
+Figure~\ref{figure:intrusion}(c) shows the number of different classes (normal and different types of intrusions) in 10000 point segments. 
 It is easy to see that the number of micro-clusters is directly related 
-to the number of different classes in the data. Although, the algorithm
-is implemented in \proglang{R} and thus slow (it took 37.5 minutes to cluster all the data), it still can be used to cluster
-large data sets in reasonable time. In order to improve run time, 
-we are working on reimplementing several algorithms in \proglang{C++}.
+to the number of different classes in the data. 
+%Although, the algorithm
+%is implemented in \proglang{R} and thus slow (it took 37.5 minutes to cluster all the data), it still can be used to cluster
+%large data sets in reasonable time. In order to improve run time, 
+%we are working on reimplementing several algorithms in \proglang{C++}.
 
 \section{Conclusion and future work} \label{sec:conclusion}
 

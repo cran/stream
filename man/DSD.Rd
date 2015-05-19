@@ -43,8 +43,8 @@ stream <- DSD_Gaussians(k=3, d=3)
 get_points(stream, n=5)  
 
 # get points with true cluster assignment
-p <- get_points(stream, n=5, assignment=TRUE)
-attr(p, "assignment")
+p <- get_points(stream, n=5, cluster=TRUE)
+attr(p, "cluster")
   
 # plotting the data (scatter plot matrix, first and third dimension, and first
 #  two principal components)

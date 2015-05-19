@@ -37,6 +37,12 @@ DSC_TwoStage <- function(micro, macro) {
 update.DSC_TwoStage <- function(object, dsd, n=1, verbose=FALSE, 
   block=10000L, ...) {
   ### dsc contains an RObj which is  a reference object with a cluster method
+ 
+  ### some matrix to be processed in one go
+  if(!is(dsd, "DSD")) { 
+    n <- nrow(dsd)
+    dsd <- DSD_Memory(dsd)
+  }
   
   n <- as.integer(n)
   if(n>0) {

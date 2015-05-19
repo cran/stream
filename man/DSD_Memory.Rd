@@ -48,7 +48,7 @@ replayer
 plot(replayer)  
   
 # creating 2 clusterers of different algorithms
-dsc1 <- DSC_tNN(r=0.1)
+dsc1 <- DSC_DBSTREAM(r=0.1)
 dsc2 <- DSC_DStream(gridsize=0.1, Cm=1.5)
   
 # clustering the same data in 2 DSC objects
@@ -59,7 +59,7 @@ update(dsc2, replayer, 500)
   
 # plot the resulting clusterings
 reset_stream(replayer) 
-plot(dsc1, replayer, main="tNN")
+plot(dsc1, replayer, main="DBSTREAM")
 reset_stream(replayer) 
 plot(dsc2, replayer, main="D-Stream")   
   

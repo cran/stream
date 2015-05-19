@@ -25,9 +25,16 @@ DSO_Window <- function(horizon = 100, lambda=0)
       if(lambda>0) "Damped sliding window" else "Sliding window",
     RObj = WindowDSO$new(horizon = as.integer(horizon), lambda=lambda)),
     class = c("DSO_Window", "DSO")
-    )
+  )
 
 update.DSO_Window <- function(object, dsd, n=1, verbose=FALSE, ...) {
+  
+  ### some matrix to be processed in one go
+  if(!is(dsd, "DSD")) { 
+    n <- nrow(dsd)
+    dsd <- DSD_Memory(dsd)
+  }
+  
   ### FIXME: we do not need to get all points if n is very large!
   object$RObj$update(get_points(dsd, n=n), verbose=verbose, ...)
 }
@@ -62,13 +69,18 @@ WindowDSO <- setRefClass("WindowDSO",
     
     update = function(x, ...) {
       isdf <- is.data.frame(x) 
-
+      
       ### fist time we get data
-      if(is.null(data)) data <<- if(isdf) data.frame() else list()
-      if(isdf && !is.data.frame(data)) 
-        stop("Stream and Window data type not compatible!")
-      if(!isdf && !is.list(data)) 
-        stop("Stream and Window data type not compatible!")
+      if(is.null(data)) {
+        data <<- if(isdf) data.frame() else list()
+      } else {
+        if(isdf && !is.data.frame(data)) 
+          stop("Stream and Window data type not compatible!")
+        if(!isdf && !is.list(data))
+          stop("Stream and Window data type not compatible!")
+        if(isdf && ncol(x) != ncol(data))
+          stop("Dimensionality mismatch between window and data!")
+      }
       
       n <- if(isdf) nrow(x) else length(x) 
       
@@ -100,7 +112,7 @@ WindowDSO <- setRefClass("WindowDSO",
       
       isdf <- is.data.frame(data) 
       n <- if(isdf) nrow(data) else length(data) 
-
+      
       if(pos==1 || n<horizon) return(data)
       if(isdf) data[c(pos:(horizon), 1L:(pos-1L)),]
       else data[c(pos:(horizon), 1L:(pos-1L))]

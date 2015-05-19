@@ -448,7 +448,7 @@ algorithms <- list(
   'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100), 
     macro = DSC_Kmeans(k = 4)), 
   'D-Stream' = DSC_DStream(gridsize = .7, Cm = 1.5),
-  'tNN' = DSC_tNN(r = .45)
+  'DBSTREAM' = DSC_DBSTREAM(r = .45)
 )
 
 
@@ -548,7 +548,7 @@ algorithms <- list(
   'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100, lambda = .01), 
     macro = DSC_Kmeans(k = 2)), 
   'D-Stream' = DSC_DStream(gridsize = .05, lambda = .01),
-  'tNN' = DSC_tNN(r = .02, lambda = .01)
+  'DBSTREAM' = DSC_DBSTREAM(r = .02, lambda = .01)
 )
 
 

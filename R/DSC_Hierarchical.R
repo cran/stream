@@ -35,6 +35,7 @@ DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete",
 
 ### calculate centroids
 .centroids <- function(centers, weights, assignment){
+
   macroID <- unique(assignment)
   macroID <- macroID[!is.na(macroID)]
   assignment[is.na(assignment)] <- -1 ### prevent NAs in matching
@@ -42,7 +43,9 @@ DSC_Hierarchical <- function(k=NULL, h=NULL, method = "complete",
   cs <- as.data.frame(t(sapply(macroID, FUN=
       function(i) {
         take <- assignment==i
-        colSums(centers[take,]*rep(weights[take], times=length(take)))/sum(weights[take])
+        colSums(centers[take, ] * 
+            matrix(weights[take], nrow=sum(take), ncol=ncol(centers))) / 
+          sum(weights[take])
       })))
   
   ws <- sapply(macroID, FUN =
@@ -129,13 +132,14 @@ hierarchical$methods(
     }
   },
   
-  get_microclusters = function(...) { data },
-  get_microweights = function(...) { dataWeights }, 
+  get_microclusters = function(...) { .nodots(...); data },
+  get_microweights = function(...) { .nodots(...); dataWeights }, 
   
-  get_macroclusters = function(...) { centers },
-  get_macroweights = function(...) { weights },
+  get_macroclusters = function(...) { .nodots(...); centers },
+  get_macroweights = function(...) { .nodots(...); weights },
   
   microToMacro = function(micro=NULL, ...){ 
+    .nodots(...);   
     if(is.null(micro)) micro <- 1:nrow(data)
     structure(assignment[micro], names=micro)
   }  

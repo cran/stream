@@ -46,18 +46,23 @@ DSD_mlbenchGenerator <- function(method, ...) {
 }
 
 get_points.DSD_mlbenchGenerator <- function(x, n=1, 
-    outofpoints=c("stop", "warn", "ignore"), assignment = FALSE,...) {
+  outofpoints=c("stop", "warn", "ignore"), 
+  cluster = FALSE, class = FALSE, ...) {
+  .nodots(...)
+
+  d <- do.call(paste("mlbench.", x$method,sep=""), c(list(n), x$variables))
   
-  if(is.null(unlist(x$variables)))
-    d <- do.call(paste("mlbench.", x$method,sep=""), list(n))
-  else
-    d <- do.call(paste("mlbench.", x$method,sep=""), list(n, unlist(x$variables)))
+  ## the data order needs to be scrambled...
+  if(n > 1) {
+    o <- sample(nrow(d$x))
+    d$x <- d$x[o, , drop=FALSE]
+    d$classes <- d$classes[o]
+  }
   
-  df <- as.data.frame(d$x)
-  
-  if(assignment) attr(df, "assignment") <- as.integer(d$classes)
-  
-  names(df) <- 1:ncol(df)
+  df <- as.data.frame(d$x)  
+  names(df) <- paste("V", 1:ncol(df), sep = "")
+  if(cluster) attr(df, "cluster") <- as.integer(d$classes)
+  if(class) df <- cbind(df, class = as.integer(d$classes))
   
   df
 }

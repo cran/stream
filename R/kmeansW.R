@@ -1,20 +1,20 @@
 #############################################################################################
-##  Funcion de clasificación alrededor de centros moviles k-means                          ##
-##  Tiene en cuenta los pesos de los elementos a clasificar                                 ##
+##  Funcion de clasificacion alrededor de centros moviles k-means                          ##
+##  Tiene en cuenta los pesos de los elementos a clasificar                                ##
 ##                                                                                         ##
 ##                                                                                         ##
 ## Elaborado por: Pedro Cesar del Campo Neira                                              ##
-##                Campo Elías Pardo                                                        ##
-## Modificado por: Mauricio SadinleCamilo José Torres. Nov. 25 2009.                       ##
+##                Campo Elias Pardo                                                        ##
+## Modificado por: Mauricio SadinleCamilo Jose Torres. Nov. 25 2009.                       ##
 ## Universidad Nacional de Colombia                                                        ##
 ##                                                                                         ##
 ##                                                                                         ##
-## kmeansW  ( x       = un vector o matriz númerica                                        ##
-##            centers = centros de las clasificaciones iniciales. si es un número,         ##
+## kmeansW  ( x       = un vector o matriz numerica                                        ##
+##            centers = centros de las clasificaciones iniciales. si es un numero,         ##
 ##                      un conjunto aleatorio de centros es seleccionado para iniciar.     ##
 ##            weight  = peso de los elementos a clasificar, por defecto pesos iguales      ##
-##            iter.max= número maximo de iteracciones a desarrollar en el proceso.         ##
-##            nstart  = si centers es un número, como se seleccionan aleatoriamente los    ##
+##            iter.max= numero maximo de iteracciones a desarrollar en el proceso.         ##
+##            nstart  = si centers es un numero, como se seleccionan aleatoriamente los    ##
 ##                      centros iniciales?                                                 ##
 ##           )                                                                             ##
 ##                                                                                         ##

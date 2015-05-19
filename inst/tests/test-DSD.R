@@ -7,7 +7,7 @@ df <- data.frame(x=runif(100), y=runif(100),
 ############################################################################
 context("DSD_Memory")
 
-stream <- DSD_Memory(df, assignment=3)  
+stream <- DSD_Memory(df[,1:2], class=df[,3])  
 reset_stream(stream)
 points <- get_points(stream, n=10)
 expect_equal(nrow(points), 10) 
@@ -26,9 +26,10 @@ expect_equal(nrow(points), 0)
 ##########################################################################
 context("DSD_ReadCSV")
 
-write_stream(DSD_Memory(df, assignment=3), file="test.stream", n=100)
+write_stream(DSD_Memory(df[,1:2], class=df[,3]), file="test.stream", 
+  n=100, class=TRUE)
 
-stream <- DSD_ReadCSV("test.stream", assignment=3)  
+stream <- DSD_ReadCSV("test.stream", class=3)  
 
 reset_stream(stream)
 points <- get_points(stream, n=10)
@@ -60,7 +61,7 @@ dbWriteTable(con, "gaussians", df)
 
 ### prepare a query result set  
 res <- dbSendQuery(con, "SELECT x, y, assignment FROM gaussians")
-stream <- DSD_ReadDB(res, k=3, assignment = 3)
+stream <- DSD_ReadDB(res, k=3, class = 3)
 
 ### no reset for this
 expect_error(reset_stream(stream)) 
@@ -73,10 +74,11 @@ dbClearResult(res)
 
 ###
 res <- dbSendQuery(con, "SELECT x, y, assignment FROM gaussians")
-stream <- DSD_ReadDB(res, k=3, assignment = 3)
+stream <- DSD_ReadDB(res, k=3, class = 3)
 
 points <- NA
 expect_warning(points <- get_points(stream, n=101, outofpoints = "warn"))
 expect_equivalent(nrow(points), 100L) 
 dbClearResult(res)
 dbDisconnect(con)
+

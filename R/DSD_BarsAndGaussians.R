@@ -38,7 +38,8 @@ DSD_BarsAndGaussians <- function(angle = NULL, noise = 0) {
 get_points.DSD_BarsAndGaussians <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE,...) {
-  
+  .nodots(...)
+
   ### gaussians at (3,2.5) and (3,-2.5)
   ### bars at (-3,2.8) and (-3,-2.8)
   

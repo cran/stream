@@ -25,7 +25,8 @@ DSD_UniformNoise <- function(d=2, range=NULL) {
   
 get_points.DSD_UniformNoise <- function(x, n=1, 
     cluster=FALSE, class=FALSE, ...) {
-    
+  .nodots(...)
+
     data <- as.data.frame(t(replicate(n, 
       runif(x$d, min=x$range[,1], max=x$range[,2]))))
     

@@ -35,13 +35,13 @@ Returns an object of class
 # 3 clusters with 10% noise
 stream <- DSD_Gaussians(k=3, noise=0.1)
 
-tnn <- DSC_tNN(r=0.1)
-update(tnn, stream, 500)
-tnn
-plot(tnn, stream)
+dbstream <- DSC_DBSTREAM(r=0.1)
+update(dbstream, stream, 500)
+dbstream
+plot(dbstream, stream)
 
-# prune lightest micro-clusters for 10% of the weight of the clustering
-static <- prune_clusters(tnn, threshold=0.1)
+# prune lightest micro-clusters for 20% of the weight of the clustering
+static <- prune_clusters(dbstream, threshold=0.2)
 static
 plot(static, stream)
 }

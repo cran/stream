@@ -35,6 +35,13 @@ update.DSC_R <- function(object, dsd, n=1, verbose=FALSE,
   block=10000L, ...) {
   ### object contains an RObj which is  a reference object with a cluster method
   
+  ### for data frame/matrix we do it all at once
+  if(is.data.frame(dsd) || is.matrix(dsd)) {
+    if(verbose) cat("Clustering all data at once for matrix/data.frame.")
+    object$RObj$cluster(dsd, ...)  
+    return(invisible(object))
+  }
+  
   n <- as.integer(n)
   if(n>0) {
     if(!is(dsd, "DSD_data.frame"))
@@ -44,10 +51,14 @@ update.DSC_R <- function(object, dsd, n=1, verbose=FALSE,
     if(is.environment(object$macro)) object$macro$newdata <- TRUE
     
     ### TODO: Check data
+    total <- 0
     for(bl in .make_block(n, block)) {
       object$RObj$cluster(get_points(dsd, bl), ...)
-      if(verbose) cat("Processed", bl, "points -",
+      if(verbose) {
+        total <- total + bl
+        cat("Processed", total, "/", n, "points -",
         nclusters(object), "clusters\n")
+      }
     }
   }
   
@@ -66,7 +77,12 @@ microToMacro.DSC_R <- function(x, micro=NULL, ...)  x$RObj$microToMacro(micro, .
 ### make a deep copy of the reference class in RObj 
 get_copy.DSC_R <- function(x) {
 	temp <- x
+	
 	temp$RObj <- x$RObj$copy(TRUE)
+  
+	if(is.environment(temp$macro)) 
+    temp$macro <- as.environment(as.list(temp$macro, all.names=TRUE))
+	
 	temp
 }
 

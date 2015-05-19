@@ -75,7 +75,8 @@ DSD_Cubes <- function(k=2, d=2, center, size, p, noise = 0, noise_range) {
 get_points.DSD_Cubes <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE, ...) {
-  
+  .nodots(...)
+
   clusterOrder <- sample(x=c(1:x$k), 
                          size=n, 
                          replace=TRUE, 

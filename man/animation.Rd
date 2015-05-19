@@ -62,11 +62,11 @@ saveHTML(ani.replay())
   
 ### animate the clustering process with evaluation
 reset_stream(stream)
-tnn <- DSC_tNN(r=.1, lambda=.01, shared_density=TRUE,
-  alpha=.2, noise=.1)  
+dbstream <- DSC_DBSTREAM(r=.05, lambda=.1, shared_density=TRUE,
+  alpha=.2, noise=.1, gap_time=100)  
 
-animate_cluster(tnn, stream, n=5000, horizon=100, 
+animate_cluster(dbstream, stream, n=5000, horizon=100, 
   evaluationMeasure="crand", evaluationType="macro", evaluationAssign="micro",
-  xlim=c(0,1),ylim=c(0,1), type="shared")
+  xlim=c(0,1),ylim=c(0,1), shared=TRUE)
 }
 }

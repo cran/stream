@@ -9,22 +9,27 @@ A DSD class that reads a data stream from a file or any R connection.
 }
 
 \usage{
-DSD_ReadCSV(file, sep=",", k=NA, d=NA, take=NULL, 
-  class=NULL, loop=FALSE)
+DSD_ReadCSV(file, k=NA, d=NA, take=NULL, 
+  class=NULL, loop=FALSE, sep=",", header=FALSE, skip=0, ...)
 close_stream(dsd)
 }
 
 \arguments{
 	\item{file}{A file/URL or an open connection.}
-	\item{sep}{The character string that separates dimensions in data
-	points in the stream.}
 	\item{k}{Number of true clusters, if known.}
 	\item{d}{Number of dimensions (only used for print).}
 	\item{take}{indices of columns to extract from the file.}
 	\item{class}{column index for the class attribute/cluster label.}
 	\item{loop}{If enabled, the object will loop through the stream when
-	the end has been reached. If disabled, the object will warn the user
-	upon reaching the end.}
+	  the end has been reached. If disabled, the object will warn the user
+	  upon reaching the end.}
+	\item{sep}{The character string that separates dimensions in data
+	  points in the stream.}
+	\item{header}{Does the first line contain variable names?}
+	\item{skip}{the number of lines of the data file to skip before               
+    beginning to read data.}
+	\item{...}{Further arguments are passed on to \code{read.table}. 
+	  This can for example be used for encoding, quotes, etc.}
 	\item{dsd}{A object of class \code{DSD_ReadCSV}.}
 }
 
@@ -46,7 +51,7 @@ The position in the file can be reset to the beginning using
 \seealso{
 	\code{\link{DSD}},
 	\code{\link{reset_stream}},
-
+	\code{\link{read.table}}.
 }
 
 \examples{

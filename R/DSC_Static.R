@@ -25,7 +25,8 @@ DSC_Static <- function(x, type=c("auto", "micro", "macro"),
   if(type=="macro") macro <- TRUE
   else macro <- FALSE
   
-  centers <- get_centers(x, type)
+  ### make sure it is a data.frame
+  centers <- as.data.frame(get_centers(x, type))
   weights <- get_weights(x, type)
   
   if(!is.null(k_largest)) {

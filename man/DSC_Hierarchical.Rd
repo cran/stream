@@ -47,18 +47,18 @@ contains the following items:
 stream <- DSD_mlbenchGenerator("cassini")
 
 # Use hierarchical clustering to recluster micro-clusters
-tnn <- DSC_tNN(r=.1)
-update(tnn, stream, 500)
+dbstream <- DSC_DBSTREAM(r=.05)
+update(dbstream, stream, 500)
 
 # reclustering using single-link and specifying k
 hc <- DSC_Hierarchical(k=3, method="single")
-recluster(hc, tnn)
+recluster(hc, dbstream)
 hc
 plot(hc, stream, type="both")
 
 # reclustering by specifying height
 hc <- DSC_Hierarchical(h=.2, method="single")
-recluster(hc, tnn)
+recluster(hc, dbstream)
 hc
 plot(hc, stream, type="both")
 

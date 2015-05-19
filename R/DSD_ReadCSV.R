@@ -18,8 +18,10 @@
 
 
 # accepts an open connection
-DSD_ReadCSV <- function(file, sep=",", k=NA, d=NA,
-  take=NULL, class=NULL, loop=FALSE) {
+# ... goes to read.table
+DSD_ReadCSV <- function(file, k=NA, d=NA,
+  take=NULL, class=NULL, loop=FALSE, 
+  sep=",", header=FALSE, skip=0, ...) {
   
   # if the user passes a string, create a new connection and open it
   if (is(file, "character")) file <- file(file)
@@ -30,20 +32,18 @@ DSD_ReadCSV <- function(file, sep=",", k=NA, d=NA,
   # open the connection if its closed
   if (!isOpen(file)) open(file)
   
-  # seekable? get bytes_per_point + d
-  bytes_per_point <- NA
-  if(isSeekable(file)) {
-    dat <- data.frame()
-    tryCatch({
-      dat <- suppressWarnings(read.table(file=file, 
-        sep=sep, nrows=1, comment.char=""))
-    }, error = function(ex) {})
-    if(nrow(dat) >0) {
-      bytes_per_point <- seek(file)
-      seek(file, where = 0)
-      d <- ncol(dat)
-    }
-  }else if(loop) stop("Loop only allowed for seekable connections!")
+  # seekable?
+  if(loop && !isSeekable(file)) stop("Loop only allowed for seekable connections!")
+  
+  # skip
+  if(skip>0) readLines(file, n=skip)
+  
+  # header?
+  if(header) {
+    header <- as.character(read.table(text=readLines(con=file, n=1), 
+      sep=sep, as.is=TRUE, ...))
+    if(!is.null(take)) header <- header[take]  
+  }else header <- NULL
   
   # figure out d from take
   if(!is.null(take)) d <- length(take)
@@ -59,9 +59,11 @@ DSD_ReadCSV <- function(file, sep=",", k=NA, d=NA,
     file = file,
     sep = sep,
     take = take,
+    header = header,
+    read.table.args = list(...),
     class = class,
-    bytes_per_point = bytes_per_point,
-    loop = loop)
+    loop = loop,
+    skip = skip)
   class(l) <- c("DSD_ReadCSV", "DSD_R", "DSD_data.frame", "DSD")
   
   l
@@ -71,13 +73,23 @@ DSD_ReadCSV <- function(file, sep=",", k=NA, d=NA,
 get_points.DSD_ReadCSV <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE, ...) {
+  .nodots(...)
   
   outofpoints <- match.arg(outofpoints)
   n <- as.integer(n)  
   
   d <- data.frame()
   if(!isSeekable(x$file)) pos <- NA else pos <- seek(x$file)
-  d <- read.table(text=readLines(con=x$file, n=n), sep=x$sep, ...)
+  ### only text connections can do read.table
+  if(summary(x$file)$text == "text"){
+    d <- do.call(read.table, c(list(file=x$file, sep=x$sep, nrows=n), 
+      x$read.table.args))}
+  else{
+    ### need to get the data and wrap it into a textconnection (slow)
+    d <- do.call(read.table, c(list(text=readLines(con=x$file, n=n), sep=x$sep, 
+      nrows=n), 
+      x$read.table.args))
+  }
   
   if(nrow(d) < n) {
     if(!x$loop || !isSeekable(x$file)){
@@ -90,8 +102,8 @@ get_points.DSD_ReadCSV <- function(x, n=1,
     } else { ### looping
       while(nrow(d) < n) {
         seek(x$file, where=0) # resetting the connection
-        d2 <- read.table(text=readLines(con=x$file, 
-          n=n-nrow(d)), sep=x$sep, ...)
+        d2 <- do.call(read.table, c(list(text=readLines(con=x$file, n=n-nrow(d)), 
+          sep=x$sep), x$read.table.args))
         if(nrow(d2) < 1) stop("Empty stream!")
         
         d <- rbind(d, d2)
@@ -111,14 +123,23 @@ get_points.DSD_ReadCSV <- function(x, n=1,
     if(is.null(x$take) && !is.null(x$class)) d <- d[,-x$class, drop=FALSE]
   }  
   
+  if(!is.null(x$header)) colnames(d) <- x$header
+  
   if(cluster) attr(d, "cluster") <- cl
   if(class) d <- cbind(d, class = cl)
   d
 }
 
 reset_stream.DSD_ReadCSV <- function(dsd, pos=1) {
-  if(is.na(dsd$bytes_per_point)) stop("Underlying conneciton does not support seek!")
-  invisible(seek(dsd$file, where=(pos-1) * dsd$bytes_per_point))
+  pos <- as.integer(pos)
+  
+  if(!isSeekable(dsd$file)) stop("Underlying conneciton does not support seek!")
+  seek(dsd$file, where=0)
+  
+  if(dsd$skip>0) readLines(dsd$file, n=dsd$skip)
+  if(!is.null(dsd$header)) readLines(dsd$file, n=1)
+  if(pos>1) readLines(dsd$file, n=pos-1L) 
+  invisible(NULL)
 }
 
 close_stream <- function(dsd) {

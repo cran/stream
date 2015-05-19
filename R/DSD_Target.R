@@ -37,7 +37,9 @@ DSD_Target <- function(center_sd =.05, center_weight=.5,
 get_points.DSD_Target <- function(x, n=1, 
     outofpoints=c("stop", "warn", "ignore"), 
     cluster = FALSE, class=FALSE, ...) {
-    
+    .nodots(...)
+
+
     ### choose point type
     type <- sample(c(NA, 1:2), n, replace=TRUE, 
 	    prob=c(x$noise, (1-x$noise)*x$center_weight,

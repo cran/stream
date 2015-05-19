@@ -39,21 +39,21 @@ A vector containing the assignment of each point. \code{NA} means that a
 \examples{
 stream <- DSD_Gaussians(k=3, d=2, noise=.05)
 
-tnn <- DSC_tNN(r=.1, noise=.05)
-update(tnn, stream, n=100)
+dbstream <- DSC_DBSTREAM(r=.1, noise=.05)
+update(dbstream, stream, n=100)
 
 # find the assignment for the next 100 points to 
 # micro-clusters in dsc. This uses the model's assignemnt function
 points <- get_points(stream, n=100)
-a <- get_assignment(tnn, points)
+a <- get_assignment(dbstream, points)
 a
 
-# show the assigned points as blue circles and the unassigned points 
-# as blue dots
-plot(tnn, stream)
+# show the MC assignment areas. Assigned points as blue circles and 
+# the unassigned points as red dots
+plot(dbstream, stream, assignment= TRUE, type="none")
 points(points[!is.na(a),], col="blue")
-points(points[is.na(a),], col="blue", pch=20)
+points(points[is.na(a),], col="red", pch=20)
 
 # use nearest neighbor assignment instead 
-get_assignment(tnn, points, method="nn")
+get_assignment(dbstream, points, method="nn")
 }

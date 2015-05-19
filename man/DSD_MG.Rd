@@ -47,7 +47,7 @@ stream <- DSD_MG(dim = 2)
 stream  
   
 ### add two clusters
-c1 <- MGC_Random(density=50, center=c(50,50), parameter=1)
+c1 <- MGC_Random(density=50, center=c(50,50), parameter=1, randomness = )
 add_cluster(stream, c1)
 stream
   
@@ -97,10 +97,10 @@ c2 <- MGC_Linear(dim = 2, keyframelist = list(
 stream <- DSD_MG(dim = 2, c1, c2)
 stream
   
-tnn <- DSC_tNN(r=10, lambda=0.1)
+dbstream <- DSC_DBSTREAM(r=10, lambda=0.1)
   
 \dontrun{
-tnnPurity <- animate_cluster(tnn, stream, n=2500, type="both", 
-  xlim=c(-10,120), ylim=c(-10,120), evaluationMethod="purity", horizon=100)
+purity <- animate_cluster(dbstream, stream, n=2500, type="both", 
+  xlim=c(-10,120), ylim=c(-10,120), evaluationMeasure="purity", horizon=100)
 }
 }

@@ -24,6 +24,13 @@ DSO_Sample <- function(k = 100, biased = FALSE)
     class = c("DSO_Sample","DSO"))
 
 update.DSO_Sample <- function(object, dsd, n=1, verbose=FALSE, ...) {
+  
+  ### some matrix to be processed in one go
+  if(!is(dsd, "DSD")) { 
+    n <- nrow(dsd)
+    dsd <- DSD_Memory(dsd)
+  }
+  
   ### FIXME: we do not need to get all points if n is very large!
   object$RObj$update(get_points(dsd, n=n), verbose=verbose, ...)
 }

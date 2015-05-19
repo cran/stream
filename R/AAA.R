@@ -37,4 +37,11 @@
   form <- paste('(.{1,', width,'})(\\s|$)', sep='')
   gsub(form, '\\1\n', x)
 }
-  
+
+### nodots
+.nodots <- function(...) {
+  l <- list(...)
+  if(length(l) > 0L) stop("Unknown arguments: ", 
+    paste(names(l), "=",l, collapse=", "))
+}
+

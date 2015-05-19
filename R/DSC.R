@@ -36,6 +36,7 @@ get_weights <- function(x, type=c("auto", "micro", "macro"), scale=NULL, ...)
   UseMethod("get_weights")
 get_weights.default <- function(x, type=c("auto", "micro", "macro"), 
   scale=NULL, ...) {
+  .nodots(...)
   m <- rep(1, nclusters(x, type=type))
   if(!is.null(scale)) {
     if(length(unique(m)) ==1)  w <- rep(mean(scale), length(w))
@@ -171,7 +172,7 @@ plot.DSC <- function(x, dsd = NULL, n = 500,
     d <- get_points(dsd, n, cluster = TRUE)
     #	names(d) <- names(centers)
     # fix center names
-    names(centers) <- names(d)
+    colnames(centers) <- colnames(d)
     centers <- rbind(d, centers)
     
     col <- c(rep(col_points,n)[1:n], col)

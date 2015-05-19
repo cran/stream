@@ -52,7 +52,8 @@ DSD_Memory <- function(x, n, k=NA, loop=FALSE,
 get_points.DSD_Memory <- function(x, n=1, 
   outofpoints=c("stop", "warn", "ignore"), 
   cluster = FALSE, class = FALSE, ...) {
-  
+  .nodots(...)
+
   n <- as.integer(n)
   outofpoints <- match.arg(outofpoints)  
 
