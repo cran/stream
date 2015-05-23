@@ -11,10 +11,10 @@ namespace DStream_PKG {
 class MC {
 public:
   double weight;
-  int64_t t;
+  int t;
   Rcpp::NumericVector attraction;  // empty attraction
   
-  MC(double weight_, int64_t t_) : weight(weight_), t(t_) {}
+  MC(double weight_, int t_) : weight(weight_), t(t_) {}
   MC() : weight(0.0), t(0) {}
 /*  ~MC() {
     Rcpp::Rcout << "Destroying " << std::endl;
@@ -294,7 +294,7 @@ public:
   double epsilon;
   std::map<std::vector<double>, MC> mcs;
   //  std::map<std::pair<unsigned int,unsigned int>, Rel> rel;
-  int64_t t;
+  int t;
   Rcpp::NumericVector mins;
   Rcpp::NumericVector maxs;
   

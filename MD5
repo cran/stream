@@ -1,4 +1,4 @@
-113e615ec2f5b3250e25495b99259af3 *DESCRIPTION
+c61c2a377fa7acaa854b308778de17da *DESCRIPTION
 5f58805169807782b69ad26b1a68bdfb *NAMESPACE
 55ebc8ba2387742b4f557dcdf45517ab *R/AAA.R
 30d5c86af34b380d81d0c5ddb2a53c55 *R/DSC.R
@@ -52,10 +52,10 @@ eb2c8b93fe676a4e34152c3086566329 *R/kmeansW.R
 ffaf6e2eeee310c2fed0a3b6c47b3922 *R/write_stream.R
 7c297005e824b1563c0024d451ee42e7 *R/zzz.R
 5ac5a8612a5b5bf9f0fec4a7db32d2d9 *build/vignette.rds
-07d8a15cd59bfe12109b2587ff79e163 *inst/NEWS
+900a4768d4900cf29e257ed6821e5e67 *inst/NEWS
 9ff7e884a333006c05f4112d0ef25adf *inst/doc/stream.R
 3351d2eacf99e94a9c9a47a0b734bb47 *inst/doc/stream.Rnw
-059bc114e6c19c82dcbb3a8f0aa6274d *inst/doc/stream.pdf
+af46f56df609efe154ad9ac57944666f *inst/doc/stream.pdf
 09306cb8c17f99e575f7ded278fac83e *inst/examples/kddcup10000.data.gz
 a3847dff9ce733c77e7ebad77a78a14a *inst/tests/test-DSD.R
 a471b51dc1b0b4dfe7cedbab01f6d71f *man/DSC.Rd
@@ -108,7 +108,7 @@ d70b7a52d98c1c2ff7bc8b34d0d2360b *man/get_weights.Rd
 277d1a86ef972ad7a79ef3451944172c *man/update.Rd
 8da0931bb0f9f57ba794d80b49a357cd *man/write_stream.Rd
 e9115c7eab4f958fdf73a1adf98efc40 *src/DBSTREAM.cpp
-fc0f248eae16de8733540e811dadd341 *src/DStream.cpp
+2d09c3ae9825abb3b7a4d5df8c4286cf *src/DStream.cpp
 76f6343a3e0dd58c779da5b52326ce3b *src/NumericVector.cpp
 5c0a54f8b876e4fc5b379a6ddb9a4d71 *src/NumericVector.h
 799dcafb9ca2179640b22db9ff1190a7 *src/dist.h
