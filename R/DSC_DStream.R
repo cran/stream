@@ -98,7 +98,7 @@ dstream <- setRefClass("dstream",
       decay_factor <<- 2^(-lambda)
       
       micro <<- new(DStream, gridsize, decay_factor, gaptime,
-        Cl, as.integer(N), attraction, epsilon)
+        Cl, N, attraction, epsilon)
       
       .self
     }

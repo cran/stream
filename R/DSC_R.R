@@ -43,6 +43,7 @@ update.DSC_R <- function(object, dsd, n=1, verbose=FALSE,
   }
   
   n <- as.integer(n)
+  block <- as.integer(block)
   if(n>0) {
     if(!is(dsd, "DSD_data.frame"))
       stop("Cannot cluster stream (need a DSD_data.frame.)")
@@ -51,7 +52,7 @@ update.DSC_R <- function(object, dsd, n=1, verbose=FALSE,
     if(is.environment(object$macro)) object$macro$newdata <- TRUE
     
     ### TODO: Check data
-    total <- 0
+    if(verbose) total <- 0L
     for(bl in .make_block(n, block)) {
       object$RObj$cluster(get_points(dsd, bl), ...)
       if(verbose) {

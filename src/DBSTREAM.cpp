@@ -69,16 +69,16 @@ public:
     Rcpp::NumericMatrix c = all["mcs_centers"];
     Rcpp::NumericMatrix rr = all["rels"];
     Rcpp::NumericVector ids = c.attr("ids");
-      
+    
     for(int i=0; i<w.length(); i++) 
       mcs.push_back(MC(ids(i), w(i), c(i, Rcpp::_), t));
-  
+    
     for(int i=0; i<rr.nrow(); i++) {
       Rcpp::NumericVector r = rr(i, Rcpp::_);
       rel[std::make_pair(r(0), r(1))] = Rel(r(2), t);
     }
   }
-
+  
   
   
   
@@ -189,17 +189,17 @@ public:
         // point since last gap time
         std::set<int> removedMCs;
         it=mcs.begin();
-        while(it<mcs.end()) {
+        while(it!=mcs.end()) {
           if(it->weight * pow(decay_factor, t - it->t) <= w_min) {
             
             if(debug) Rcpp::Rcout << "\terase center "
-                                 << *it << std::endl;
-          
+                                  << *it << std::endl;
+            
             // for removing relations
             removedMCs.insert(it -> id);
-        
-            mcs.erase(it);  // erase deletes the object and moves the iterator
-          } else it++;
+            
+            mcs.erase(it++);  // erase deletes the object and moves the iterator
+          } else ++it;
         }
         
         // remove weak relationships
@@ -211,24 +211,24 @@ public:
           while(it_rel != rel.end()){
             if(removedMCs.count(it_rel->first.first) 
               || removedMCs.count(it_rel->first.second)) {
-            
-            if(debug) Rcpp::Rcout << "\terase relation because of MC ("
-                                 << it_rel->first.first << ", "
-                                 << it_rel->first.second
-                                 << ")" << std::endl;
-            rel.erase(it_rel++);  // it does not move to the next pos. (map)
-            
-            } else
-            
-            if (it_rel->second.weight * pow(decay_factor, t - it_rel->second.t)
-              < w_min * alpha) {
               
-              if(debug) Rcpp::Rcout << "\terase weak relation ("
-                                   << it_rel->first.first << ", "
-                                   << it_rel->first.second
-                                   << ")" << std::endl;
+              if(debug) Rcpp::Rcout << "\terase relation because of MC ("
+                                    << it_rel->first.first << ", "
+                                    << it_rel->first.second
+                                    << ")" << std::endl;
               rel.erase(it_rel++);  // it does not move to the next pos. (map)
-            } else it_rel++;
+              
+            } else
+              
+              if (it_rel->second.weight * pow(decay_factor, t - it_rel->second.t)
+                < w_min * alpha) {
+                
+                if(debug) Rcpp::Rcout << "\terase weak relation ("
+                                      << it_rel->first.first << ", "
+                                      << it_rel->first.second
+                                      << ")" << std::endl;
+                rel.erase(it_rel++);  // it does not move to the next pos. (map)
+              } else ++it_rel;
           }
         }
         
@@ -248,12 +248,12 @@ public:
         Rcpp::NumericVector dist = eucl(p);
         
         /* // only update the nearest neighbor
-        int winner = std::min_element(dist.begin(), dist.end()) - dist.begin();
-        
-        mcs[winner].weight *= pow(decay_factor, t - mcs[winner].t);
-        mcs[winner].weight++;
-        mcs[winner].t = t; 
-        */
+         int winner = std::min_element(dist.begin(), dist.end()) - dist.begin();
+         
+         mcs[winner].weight *= pow(decay_factor, t - mcs[winner].t);
+         mcs[winner].weight++;
+         mcs[winner].t = t; 
+         */
         
         // update all neighbors
         std::vector<int> inside; inside.reserve(dist.size());
@@ -342,7 +342,7 @@ public:
   int topID;
   
 private:
-
+  
   // calculate Euclidean distance of point p to all centers.
   inline Rcpp::NumericVector eucl(Rcpp::NumericVector& p) {
     int n = mcs.size();
@@ -370,30 +370,29 @@ private:
 
 
 //RCPP_EXPOSED_CLASS(DBSTREAM)
-
+using namespace Rcpp ;
 RCPP_MODULE(MOD_DBSTREAM){
-  using namespace Rcpp ;
   
   class_<DBSTREAM>("DBSTREAM")
-    // expose the default constructor
-    .constructor<double, double, int, bool, double>("Constructor(double r_, double decay_factor_, int gap_time_, bool shared_, double alpha_)")
-    .constructor<SEXP>("Deserialization constructor.")
-    
-    .field_readonly("r", &DBSTREAM::r)
-    .field_readonly("decay_factor", &DBSTREAM::decay_factor)
-    .field_readonly("gap_time", &DBSTREAM::gap_time)
-    .field_readonly("t", &DBSTREAM::t)
-    .field("alpha", &DBSTREAM::alpha)
-    
-    .method("centers", &DBSTREAM::getCenters, "Get MC centers with attribute ids.")
-    .method("weights", &DBSTREAM::getWeights, "Get MC weights.")
-    .method("rels", &DBSTREAM::getRel, "Get relationship weights as triplet matrix.")
-    .method("nClusters", &DBSTREAM::nClusters, "Get number of MCs.")
-    .method("getSharedDensity", &DBSTREAM::getSharedDensity, "Get shared density.")
-    .method("update", &DBSTREAM::update, "Updates the clustering with new data in a matrix.")
-    
-    .method("serializeR", &DBSTREAM::serializeR, "Serialize object into an R list.")
-    ;
+  // expose the default constructor
+  .constructor<double, double, int, bool, double>()
+  .constructor<SEXP>()
+  
+  .field_readonly("r", &DBSTREAM::r)
+  .field_readonly("decay_factor", &DBSTREAM::decay_factor)
+  .field_readonly("gap_time", &DBSTREAM::gap_time)
+  .field_readonly("t", &DBSTREAM::t)
+  .field("alpha", &DBSTREAM::alpha)
+  
+  .method("centers", &DBSTREAM::getCenters)
+  .method("weights", &DBSTREAM::getWeights)
+  .method("rels", &DBSTREAM::getRel)
+  .method("nClusters", &DBSTREAM::nClusters)
+  .method("getSharedDensity", &DBSTREAM::getSharedDensity)
+  .method("update", &DBSTREAM::update)
+  
+  .method("serializeR", &DBSTREAM::serializeR)
+  ;
 }
 
 }

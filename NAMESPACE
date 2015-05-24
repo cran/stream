@@ -5,7 +5,6 @@ import(methods)
 import(Rcpp)
 import(proxy)
 #import(birch) 
-import(hash) 
 
 importFrom(fpc, "cluster.stats")
 importFrom(MASS, "mvrnorm")

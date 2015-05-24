@@ -16,10 +16,10 @@ public:
   
   MC(double weight_, int t_) : weight(weight_), t(t_) {}
   MC() : weight(0.0), t(0) {}
-/*  ~MC() {
-    Rcpp::Rcout << "Destroying " << std::endl;
+  /*  ~MC() {
+   Rcpp::Rcout << "Destroying " << std::endl;
   }
- */
+   */
 };
 
 std::ostream& operator<<(std::ostream& os, MC const& obj) {
@@ -48,6 +48,7 @@ public:
   epsilon(epsilon_){
     t = 0;
     N_fixed = N!=0; // N=0 means that we update N
+    d = 0; // d is unknown
   }
   
   
@@ -81,7 +82,7 @@ public:
   
   Rcpp::List serializeR(){
     return Rcpp::List::create(
-    
+      
       Rcpp::Named("type") = "stream::DStream",
       Rcpp::Named("gridsize") = gridsize,
       Rcpp::Named("d") = d,
@@ -98,27 +99,32 @@ public:
       Rcpp::Named("cube_volume") = cube_volume,
       Rcpp::Named("mins") = mins,
       Rcpp::Named("maxs") = maxs //,
-      
-      // do MCs
-      //Rcpp::Named("mcs_centers") = getCenters(),
-      //Rcpp::Named("mcs_weights") = getWeights(),
-      //Rcpp::Named("rels") = getRel()
+    
+    // do MCs
+    //Rcpp::Named("mcs_centers") = getCenters(),
+    //Rcpp::Named("mcs_weights") = getWeights(),
+    //Rcpp::Named("rels") = getRel()
     );
   } 
   
   
   int nClusters() { return(mcs.size()); }
   
-  Rcpp::NumericMatrix getCenters(bool decode = TRUE) {
+  // FIXME: Rcpp does currently not support default values for methods!
+  //Rcpp::NumericMatrix getCenters(bool decode = TRUE) {
+  Rcpp::NumericMatrix getCenters(bool decode) {
     int n = mcs.size();
     Rcpp::NumericMatrix v(n, d);
-    std::map<std::vector<double>, MC>::iterator it;
     
-    int i=0;
-    for(it = mcs.begin(); it != mcs.end(); ++it, i++) {
-      Rcpp::NumericVector xx(it->first.begin(), it->first.end());
-      if(decode) xx = xx * gridsize + gridsize/2.0;
-      v(i, Rcpp::_) = xx;
+    if(n>0) {
+      std::map<std::vector<double>, MC>::iterator it;
+      
+      int i=0;
+      for(it = mcs.begin(); it != mcs.end(); ++it, i++) {
+        Rcpp::NumericVector xx(it->first.begin(), it->first.end());
+        if(decode) xx = xx * gridsize + gridsize/2.0;
+        v(i, Rcpp::_) = xx;
+      }
     }
     return v;
   }
@@ -162,7 +168,9 @@ public:
   }
   
   // update
-  void update(Rcpp::NumericMatrix& data, bool debug=FALSE) {
+  // FIXME: Rcpp does currently not support default values for methods!
+  //void update(Rcpp::NumericMatrix& data, bool debug=FALSE) {
+  void update(Rcpp::NumericMatrix& data, bool debug) {
     int n = data.nrow();
     std::map<std::vector<double>, MC>::iterator it;
     
@@ -190,8 +198,10 @@ public:
           }
           
           
-          for(it = mcs.begin(); it != mcs.end(); ++it) {
-            double df = pow(decay_factor, t-it->second.t);
+          double df;
+          it = mcs.begin();
+          while(it != mcs.end()) {
+            df = pow(decay_factor, t-it->second.t);
             if(it->second.weight * df
               < Cl*(1- df*decay_factor)/(N*(1-decay_factor))) {
               
@@ -200,8 +210,8 @@ public:
                 Rprint_grid(it->first);
                 Rcpp::Rcout << std::endl;
               }
-              mcs.erase(it);
-            }
+              mcs.erase(it++); // iterator becomes invalid after erase!
+            } else ++it;
           }
         }
         
@@ -305,12 +315,12 @@ private:
   
 };
 
+using namespace Rcpp ;
 
 RCPP_MODULE(MOD_DStream){
-  using namespace Rcpp ;
   
   class_<DStream>("DStream")
-    .constructor<double, double, int, double, double, bool, double>("Constructor with: double gridsize_, double decay_factor_, int gap_time_, double Cl, double N_, bool attraction, double epsilon")
+  .constructor<double, double, int, double, double, bool, double>()
   
   .field_readonly("gridsize", &DStream::gridsize)
   .field_readonly("decay_factor", &DStream::decay_factor)
@@ -321,12 +331,11 @@ RCPP_MODULE(MOD_DStream){
   .field_readonly("maxs", &DStream::maxs)
   
   
-  .method("centers", &DStream::getCenters, "Get MC centers with attribute ids.")
-  .method("weights", &DStream::getWeights, "Get MC weights.")
-  .method("nClusters", &DStream::nClusters, "Get number of MCs.")
-  .method("getAttraction", &DStream::getAttraction, "Get attraction.")
-  
-  .method("update", &DStream::update, "Updates the clustering with new data in a matrix.")
+  .method("centers", &DStream::getCenters)
+  .method("weights", &DStream::getWeights)
+  .method("nClusters", &DStream::nClusters)
+  .method("getAttraction", &DStream::getAttraction)
+  .method("update", &DStream::update)
   ;
 }
 
