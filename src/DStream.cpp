@@ -316,7 +316,6 @@ private:
 };
 
 using namespace Rcpp ;
-
 RCPP_MODULE(MOD_DStream){
   
   class_<DStream>("DStream")
@@ -337,6 +336,8 @@ RCPP_MODULE(MOD_DStream){
   .method("getAttraction", &DStream::getAttraction)
   .method("update", &DStream::update)
   ;
+}
+
 }
 
 /**** R
@@ -382,4 +383,3 @@ image(att)
 
 */
 
-}

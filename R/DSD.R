@@ -52,9 +52,15 @@ reset_stream.DSD <- function(dsd, pos=1) {
 ### helper
 print.DSD <- function(x, ...) {
   .nodots(...)
+  
+  k <- x[["k"]]
+  if(is.null(k)) k <- NA
+  d <- x[["d"]]
+  if(is.null(d)) d <- NA
+  
   cat(.line_break(x$description))
   cat("Class:", paste(class(x), collapse=", "), "\n") 
-  cat(paste('With', x$k, 'clusters', 'in', x$d, 'dimensions', '\n'))
+  cat(paste('With', k, 'clusters', 'in', d, 'dimensions', '\n'))
 }
 
 summary.DSD <- function(object, ...) print(object)

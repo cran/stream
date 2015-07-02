@@ -46,9 +46,10 @@ public:
   gap_time(gap_time_),
   shared(shared_),
   alpha(alpha_){
+    w_min = pow(decay_factor, gap_time);
+    w_removed = 0.0;
     t = 0;
     topID = 0;
-    w_min = pow(decay_factor, gap_time);
   }
   
   // Unserialization constructor
@@ -185,22 +186,33 @@ public:
         if(debug) Rcpp::Rcout << "cleanup at point " << ii+1 << " @ t = " 
                               << t << ":"<< std::endl;
         
+        if(debug) Rcpp::Rcout << "\t> MCs: " << mcs.size() << std::endl;
+        if(debug) Rcpp::Rcout << "\t> Rels: " << rel.size() << std::endl;
+        
+        w_removed *= pow(decay_factor, gap_time);
+        
         // remove clusters that reached 1 and then did not get at least one
         // point since last gap time
         std::set<int> removedMCs;
-        it=mcs.begin();
-        while(it!=mcs.end()) {
+        it = mcs.begin();
+        while(it != mcs.end()) {
           if(it->weight * pow(decay_factor, t - it->t) <= w_min) {
             
-            if(debug) Rcpp::Rcout << "\terase center "
+            if(debug) Rcpp::Rcout << "\terase "
                                   << *it << std::endl;
             
             // for removing relations
-            removedMCs.insert(it -> id);
+            removedMCs.insert(it->id);
             
-            mcs.erase(it++);  // erase deletes the object and moves the iterator
+            w_removed += it->weight * pow(decay_factor, t - it->t);
+            it = mcs.erase(it);  // erase deletes the object and moves the iterator
           } else ++it;
         }
+        
+        if(debug) Rcpp::Rcout << "\t> MCs removed: " <<  removedMCs.size() 
+          << std::endl;
+        if(debug) Rcpp::Rcout << "\t> Weight of removed MCs: " <<  w_removed 
+          << std::endl;
         
         // remove weak relationships
         
@@ -232,8 +244,8 @@ public:
           }
         }
         
-        if(debug) Rcpp::Rcout << "\t> points left " << mcs.size() << std::endl;
-        if(debug) Rcpp::Rcout << "\t> rels left " << rel.size() << std::endl;
+        if(debug) Rcpp::Rcout << "\t> MCs left: " << mcs.size() << std::endl;
+        if(debug) Rcpp::Rcout << "\t> Rels left: " << rel.size() << std::endl;
       }
       
       // process new data point
@@ -245,25 +257,13 @@ public:
         mcs.push_back(MC(topID++, 1.0, p, t));
       } else {
         
+        // find neighbors and try to move
+        std::vector<int> inside; //inside.reserve(dist.size());
+        std::vector<Rcpp::NumericVector> new_centers;
         Rcpp::NumericVector dist = eucl(p);
         
-        /* // only update the nearest neighbor
-         int winner = std::min_element(dist.begin(), dist.end()) - dist.begin();
-         
-         mcs[winner].weight *= pow(decay_factor, t - mcs[winner].t);
-         mcs[winner].weight++;
-         mcs[winner].t = t; 
-         */
-        
-        // update all neighbors
-        std::vector<int> inside; inside.reserve(dist.size());
-        std::vector<Rcpp::NumericVector> new_centers;
         for (int j = 0; j < dist.length(); j++) {
           if (dist[j] > r) continue;
-          mcs[j].weight *= pow(decay_factor, t - mcs[j].t);
-          mcs[j].weight++;
-          mcs[j].t = t;
-          
           inside.push_back(j);
           // Move centers
           // Gaussian neighborhood function
@@ -277,7 +277,7 @@ public:
           // SOM style update: Wv(s + 1) = Wv(s) + thea(u, v, s) alpha(s)(D(t) - Wv(s)),
           // where  alpha(s) is a monotonically decreasing learning coefficient
           // and D(t) is the input vector; theta(u, v, s) is the neighborhood function
-          if (debug)Rcpp::Rcout << "\ttry to move " << mcs[j];
+          if (debug) Rcpp::Rcout << "\ttry to move " << mcs[j];
           
           Rcpp::NumericVector nc = Rcpp::clone(mcs[j].center);
           nc = nc + partialweight * (p - nc);
@@ -289,19 +289,50 @@ public:
         
         if (inside.empty()) {
           // create new cluster
-          MC new_mc = MC(topID++, 1.0, p, t);
-          mcs.push_back(new_mc);
+          mcs.push_back(MC(topID++, 1.0, p, t));
           
-          if(debug)Rcpp::Rcout << "\tnew "
-                               << new_mc << std::endl;
+          if(debug) Rcpp::Rcout << "\tnew MC at "
+                               << p << std::endl;
           
         } else {
+         
+          // update weight 
+          
+          // all get the same weight
+          //double w = 1.0/inside.size();
+          for(std::vector<int>::iterator j = inside.begin(); 
+            j != inside.end(); ++j) {
+            
+            MC& mc = mcs[*j];
+            
+            mc.weight *= pow(decay_factor, t - mc.t);
+            mc.weight++;
+            //mc.weight += w;
+            mc.t = t;
+          }
+          
+          /*
+          // only the largest gets updated
+          MC& winner= mcs[*inside.begin()];
+          for(std::vector<int>::iterator j = inside.begin()+1; 
+            j != inside.end(); ++j) {
+            
+            MC& mc = mcs[*j];
+            if(mc.weight > winner.weight) winner = mc;
+          }  
+            
+          winner.weight *= pow(decay_factor, t - winner.t);
+          winner.weight++;
+          winner.t = t;
+          */
+          
+          
           // update cluster position?
           for (std::size_t i = 0; i < (new_centers.size()-1); i++) {
             for(std::size_t j = i+1; j < new_centers.size(); j++) {
               //if(sqrt(sum(pow(new_centers[i] - new_centers[j], 2.0))) < r) {
               if(sqrt(sum(pow(new_centers[i] - new_centers[j], 2.0))) < r * .9) {
-                goto NOMOVE;
+                goto SKIPMOVE;
               }
             }
           }
@@ -312,7 +343,7 @@ public:
             mcs[inside[i]].center = new_centers[i];
           }
           
-          NOMOVE:
+          SKIPMOVE:
             // Update relations
             if (shared && inside.size() >1) {
               for(std::size_t i=0; i<(inside.size()-1); i++) {
@@ -321,6 +352,8 @@ public:
                   if(rr.t>0) rr.weight *= pow(decay_factor, t-rr.t);
                   rr.t = t;
                   rr.weight++;
+                  //rr.weight+=.5;
+                  //rr.weight += w;
                 }
               }
             }
@@ -337,8 +370,9 @@ public:
   std::vector<MC> mcs;
   // key is always sorted: low/high id
   std::map<std::pair<int,int>, Rel> rel;
-  int t;
   double w_min;
+  double w_removed; // weight removed
+  int t;
   int topID;
   
 private:
@@ -347,9 +381,7 @@ private:
   inline Rcpp::NumericVector eucl(Rcpp::NumericVector& p) {
     int n = mcs.size();
     Rcpp::NumericVector dist(n);
-    int i;
-    
-    for (i = 0; i < n; i++) dist[i] = sqrt(sum(pow(p - mcs[i].center, 2.0)));
+    for (int i = 0; i < n; i++) dist[i] = sqrt(sum(pow(p - mcs[i].center, 2.0)));
     
     return dist;
   }
@@ -357,7 +389,6 @@ private:
   // Conversions from MC ID to index
   std::map<int,int> getIDTrans() {
     int n = mcs.size();
-    Rcpp::IntegerVector ids(n);
     std::map<int,int> trans;
     
     // Hint we use id+1 since 0 is reserved for not found
@@ -382,6 +413,7 @@ RCPP_MODULE(MOD_DBSTREAM){
   .field_readonly("decay_factor", &DBSTREAM::decay_factor)
   .field_readonly("gap_time", &DBSTREAM::gap_time)
   .field_readonly("t", &DBSTREAM::t)
+  .field_readonly("w_removed", &DBSTREAM::w_removed)
   .field("alpha", &DBSTREAM::alpha)
   
   .method("centers", &DBSTREAM::getCenters)

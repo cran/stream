@@ -24,8 +24,9 @@ DSD_mlbenchGenerator <- function(method, ...) {
     "friedman2","friedman3","hypercube", "peak","ringnorm",
     "shapes","simplex","smiley","spirals","threenorm",
     "twonorm","waveform","xor")
-  
-  
+ 
+  ### FIXME: It would be nice if we know k and d
+   
   if(missing(method)) {
     cat("Available generators are:\n")
     print(methods)
@@ -51,6 +52,7 @@ get_points.DSD_mlbenchGenerator <- function(x, n=1,
   .nodots(...)
 
   d <- do.call(paste("mlbench.", x$method,sep=""), c(list(n), x$variables))
+  if(is.null(d$classes)) d$classes <- rep(NA_integer_, times = n)
   
   ## the data order needs to be scrambled...
   if(n > 1) {

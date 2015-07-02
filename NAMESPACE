@@ -6,6 +6,11 @@ import(Rcpp)
 import(proxy)
 #import(birch) 
 
+importFrom(utils, head, read.table, write.table)
+importFrom(stats, runif, complete.cases, rnorm, prcomp, na.omit) 
+importFrom(graphics, plot, par, layout, title, pairs, points, lines, image)
+importFrom(grDevices, gray, gray.colors, rgb, col2rgb)
+
 importFrom(fpc, "cluster.stats")
 importFrom(MASS, "mvrnorm")
 importFrom(clusterGeneration, "genPositiveDefMat")

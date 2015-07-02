@@ -39,7 +39,7 @@ A vector containing the assignment of each point. \code{NA} means that a
 \examples{
 stream <- DSD_Gaussians(k=3, d=2, noise=.05)
 
-dbstream <- DSC_DBSTREAM(r=.1, noise=.05)
+dbstream <- DSC_DBSTREAM(r=.1)
 update(dbstream, stream, n=100)
 
 # find the assignment for the next 100 points to 

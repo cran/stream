@@ -11,7 +11,7 @@
 
 \usage{
 DSC_DBSTREAM(r, lambda = 0.001, gaptime = 1000L, 
-  noise = 0.1, shared_density = FALSE, alpha=0.1, k=0, minweight = 0)
+  Cm = 3, shared_density = FALSE, alpha=0.1, k=0, minweight = 0)
 get_shared_density(x, use_alpha = TRUE)  
 change_alpha(x, alpha)  
 }
@@ -21,8 +21,7 @@ change_alpha(x, alpha)
 	\item{lambda}{The lambda used in the fading function.}
 	\item{gaptime}{weak micro-clusters (and weak shared density entries) 
     are removed every \code{gaptime} points.}
-	\item{noise}{The proportion of noise points in the data that will 
-	  be removed while clustering.}
+	\item{Cm}{ minimum weight for a micro-cluster. }
   \item{shared_density}{Record shared density information. If set to \code{TRUE}
     then shared density is used for reclustering, otherwise reachability is
     used (overlapping clusters with less than \eqn{r*(1-alpha)} distance 
@@ -32,8 +31,8 @@ change_alpha(x, alpha)
     points between to 
     clusters to warrant combining them (a suitable value for 2D data is .3). 
     For reachability clustering it is a distance factor.}
-  \item{minweight}{The minimum number of weight a micro-cluster
-    needs to have.}
+  \item{minweight}{The proportion of the total weight a macro-cluster
+    needs to have not to be noise (between 0 and 1).}
   \item{x}{A DSC_DBSTREAM object to get the shared density information from.}
   \item{use_alpha}{only return shared density if it exceeds alpha.}
 }
@@ -76,9 +75,9 @@ An object of class \code{DSC_DBSTREAM}
 set.seed(0)
 stream <- DSD_Gaussians(k = 3, noise = 0.05)
 
-# create clusterer with r = .1
-dbstream <- DSC_DBSTREAM(r = .1, noise = 0.05)
-update(dbstream, stream, 500)
+# create clusterer with r = 0.05
+dbstream <- DSC_DBSTREAM(r = .05)
+update(dbstream, stream, 10000)
 dbstream 
 
 # check micro-clusters
@@ -94,15 +93,15 @@ plot(dbstream, stream, type = "both", assignment = TRUE)
 
 
 # DBSTREAM with shared density 
-dbstream <- DSC_DBSTREAM(r = .1, noise = 0.05, shared_density = TRUE)
-update(dbstream, stream, 500)
+dbstream <- DSC_DBSTREAM(r = .05, shared_density = TRUE, Cm=5)
+update(dbstream, stream, 10000)
 dbstream
 plot(dbstream, stream, type = "both")
 # plot the shared density graph
 plot(dbstream, stream, type = "both", shared_density = TRUE)
 
 # change alpha
-change_alpha(dbstream, .3)
+change_alpha(dbstream, .36)
 plot(dbstream, stream, type = "both", shared_density = TRUE)
 plot(dbstream, stream, type = "micro", shared_density = TRUE)
 plot(dbstream, stream, type = "micro", shared_density = TRUE, assignment = TRUE)
