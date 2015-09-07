@@ -24,6 +24,10 @@ and \code{get_weights()} to get the cluster weights
 (if implemented). \code{get_centers()} and \code{get_weights()}
 are typically overwritten by subclasses of \code{DSC}. \code{DSC_R} 
 provides these functions for R-based DSC implementations.
+
+Since \code{DSC} objects often contain external pointers, regular saving
+and reading operations will fail. Use \code{saveDSC()} and \code{readDSC()} 
+which will serialize the objects first appropriately.
 }
 
 \seealso{
@@ -38,5 +42,7 @@ provides these functions for R-based DSC implementations.
 	\code{\link{nclusters}},
 	\code{\link[stream]{plot}},
 	\code{\link{prune_clusters}},
-	\code{\link{recluster}}
+	\code{\link{recluster}},
+	\code{\link{readDSC}},
+	\code{\link{saveDSC}}
 }

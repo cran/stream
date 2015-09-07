@@ -17,11 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-DSC_DBSTREAM <- function(r, lambda = 1e-3,  gaptime=1000L, Cm=3, 
+DSC_DBSTREAM <- function(r, 
+  lambda = 1e-3,  gaptime=1000L, Cm=3, metric = "Euclidean", 
   shared_density = FALSE, alpha = 0.1, k = 0, minweight = 0) {
   
   dbstream <- dbstream$new(r, lambda, as.integer(gaptime), 
-    Cm, shared_density, alpha, k, minweight)
+    Cm, shared_density, alpha, k, minweight, metric)
   
   macro <- new.env()
   macro$newdata <- TRUE
@@ -40,25 +41,28 @@ DSC_DBSTREAM <- function(r, lambda = 1e-3,  gaptime=1000L, Cm=3,
 dbstream <- setRefClass("dbstream",
   fields = list(
     ### parameters (micro-clustering)
-    r			      = "numeric",
-    lambda			= "numeric",
-    gaptime		= "integer",
-    Cm			  = "numeric", 
+    r			        = "numeric",
+    lambda			  = "numeric",
+    gaptime		    = "integer",
+    Cm			      = "numeric", 
     
     ### used internally
-    decay_factor = "numeric",
+    decay_factor  = "numeric",
     
     ### Macro-clustering
-    shared_density		= "logical",
+    shared_density= "logical",
     ### alpha: intersection factor (area of the intersection)
-    alpha			= "numeric",
+    alpha			    = "numeric",
     ### k: number of macro-clusters (alternative to alpha)
-    k			= "integer",
+    k			        = "integer",
     ### minweights: min. weight for macro-clusters 	
-    minweight		= "numeric",
-    
+    minweight		  = "numeric",
+    metric        = "integer",
+    metric_name   = "character",
+       
     ### micro-clusters
-    micro = "ANY"
+    micro         = "ANY",
+    serial        = "ANY"
   ),
   
   
@@ -70,46 +74,57 @@ dbstream <- setRefClass("dbstream",
       Cm		    = 3,
       shared_density = FALSE,
       alpha 		= 0.1,
-      k		      = 0,
-      minweight	= 0
+      k		      = 0L,
+      minweight	= 0,
+      metric    = "Euclidean"
     ) {
       
-      if(alpha <0 || alpha>1) stop("alpha needs to be in [0,1]")
-      if(Cm <0) stop("Cm needs to be in >=0")
-      if(lambda <0) stop("lambda needs to be >=0")
-      if(minweight <0 ||minweight>1) stop("minweight needs to be in [0,1]")
+      if(alpha < 0 || alpha > 1) stop("alpha needs to be in [0,1]")
+      if(Cm < 0) stop("Cm needs to be in >=0")
+      if(lambda < 0) stop("lambda needs to be >=0")
+      if(minweight < 0 ||minweight > 1) stop("minweight needs to be in [0,1]")
       
       gaptime <<- as.integer(gaptime)
-      if(gaptime<1) stop("gaptime needs to be 1, 2, 3,...")
+      if(gaptime < 1L) stop("gaptime needs to be 1, 2, 3,...")
+  
+      metrics <- c("euclidean", "manhattan", "maximum")
+      m <- pmatch(tolower(metric), metrics) - 1L
+      if(is.na(m)) stop("Unknow metric! Available metrics: ", 
+        paste(metrics, collapse = ", "))
+      metric <<- m
+      metric_name <<- metrics[m+1L]
+       
+      if(shared_density && m != 0L) 
+        stop("Shared density only works in Euclidean space!")
       
-      r			<<- r
-      lambda		<<- lambda
-      Cm		<<- Cm
+      
+      r			  <<- r
+      lambda	<<- lambda
+      Cm		  <<- Cm
       alpha		<<- alpha
-      minweight		<<- minweight
-      shared_density		<<- shared_density
-      decay_factor	<<- 2^(-lambda)
+      minweight		    <<- minweight
+      shared_density	<<- shared_density
+      decay_factor	  <<- 2^(-lambda)
       
-      if(is.null(k)) k		<<- 0L
-      else k		<<- as.integer(k)
+      if(is.null(k)) k <<- 0L
+      else           k <<- as.integer(k)
       
       micro <<- new(DBSTREAM, r, decay_factor, gaptime, 
-        shared_density, alpha)
+        shared_density, alpha, m)
 
       .self
     }
-    
   )
 )
 
-
 dbstream$methods(list(
+  
   # overload copy
   copy = function(...) {
     #callSuper(...)
     ### copy S4 object
     n <- dbstream$new(r, lambda, gaptime, Cm, shared_density, alpha,
-      k, minweight)
+      k, minweight, metric)
     
     ### copy Rcpp object  
     n$micro <- new(DBSTREAM, micro$serializeR())
@@ -117,10 +132,20 @@ dbstream$methods(list(
     n  
   },
   
-  cluster = function(newdata, debug = FALSE) {
+  cache = function(){ 
+    serial <<- micro$serializeR()
+  },
+  
+  uncache = function() {
+    micro <<- new(DBSTREAM, serial)
+    serial <<- NULL
+  },
+  
+  
+  cluster = function(newdata, debug = FALSE, assignments = FALSE) {
     'Cluster new data.' ### online help
     
-    micro$update(as.matrix(newdata), debug)
+    micro$update(as.matrix(newdata), debug, assignments)
   },
   
   # find strong MCs
@@ -232,7 +257,7 @@ dbstream$methods(list(
     }else{ ### use adjacent clusters overlap by alpha (packing factor)
       ### create a distance between 0 and inf 
       ### (<1 means reachable, i.e., assignment areas overlap)
-      d_pos <- dist(mcs, method="Euclidean")/r -1
+      d_pos <- dist(mcs, method=metric_name)/r -1
       
       ### alpha = 0 -> 1    reachability at r
       ### alpha = 1 -> 0     highest packing
@@ -291,16 +316,6 @@ microToMacro.DSC_DBSTREAM <- function(x, micro=NULL){
   assignment
 }
 
-get_shared_density <- function(x, use_alpha=TRUE) 
-  x$RObj$get_shared_density(use_alpha=use_alpha)
-
-
-change_alpha <- function(x, alpha) {
-  x$RObj$alpha <- alpha
-  x$RObj$micro$alpha <- alpha
-  x$macro$newdata <- TRUE ### so macro clustering is redone
-}
-
 ### special plotting for DSC_DBSTREAM
 ### FIXME: only show edges that really are used
 plot.DSC_DBSTREAM <- function(x, dsd = NULL, n = 500,
@@ -311,6 +326,7 @@ plot.DSC_DBSTREAM <- function(x, dsd = NULL, n = 500,
 #  cex =1,
 #  pch=NULL,
 #  ...,
+  dim = NULL,
   method="pairs",
   type=c("auto", "micro", "macro", "both", "none"),
   shared_density=FALSE, use_alpha=TRUE, assignment=FALSE, ...) {
@@ -319,7 +335,7 @@ plot.DSC_DBSTREAM <- function(x, dsd = NULL, n = 500,
   
   if(is.null(col_points)) col_points <- .points_col
   
-  if(type=="none") r <- plot(dsd, col=col_points, n=n, ...)
+  if(type=="none") r <- plot(dsd, col=col_points, n=n, dim = dim, ...)
   #r <- NextMethod()
   else r <- plot.DSC(x=x, dsd=dsd, n=n, col_points=col_points, 
     method=method, type=type, ...)
@@ -344,8 +360,8 @@ plot.DSC_DBSTREAM <- function(x, dsd = NULL, n = 500,
   if(shared_density) {  
     if(!x$RObj$shared_density) stop("No shared density available!")
     
-    if(ncol(p)>2 && method!="scatter") stop("Only available 
-    to plot 2D data or the first 2 dimensions!")
+    if(ncol(p)>2 && !(!is.null(dim) && length(dim)!=2) && method != "scatter") 
+      stop("Only available to plot 2D data or the first 2 dimensions!")
     
     if(nrow(p)>0) {
       #points(p, col="black")
@@ -370,8 +386,8 @@ plot.DSC_DBSTREAM <- function(x, dsd = NULL, n = 500,
   }
 }
 
-get_assignment.DSC_DBSTREAM <- function(dsc, points, type=c("auto", "micro", "macro"), 
-  method=c("auto", "model", "nn"), ...) {
+get_assignment.DSC_DBSTREAM <- function(dsc, points, 
+  type=c("auto", "micro", "macro"), method=c("auto", "model", "nn"), ...) {
   
   type <- match.arg(type)
   method<- match.arg(method)
@@ -382,7 +398,7 @@ get_assignment.DSC_DBSTREAM <- function(dsc, points, type=c("auto", "micro", "ma
   c <- get_centers(dsc, type="micro", ...)
   
   if(nrow(c)>0L) {
-    dist <- dist(points, c, method="Euclidean")
+    dist <- dist(points, c, method=dsc$RObj$metric_name)
     # Find the minimum distance and save the class
     assignment <- apply(dist, 1L, which.min)
     
@@ -400,20 +416,30 @@ get_assignment.DSC_DBSTREAM <- function(dsc, points, type=c("auto", "micro", "ma
   assignment
 }
 
+### DBSTREAM specific functions
 
-if(FALSE) {
-  set.seed(0)
-  stream <- DSD_Gaussians(k=3, Cm=3)
-  stream <- DSD_Memory(stream, 1000000)
+get_shared_density <- function(x, use_alpha=TRUE) 
+  x$RObj$get_shared_density(use_alpha=use_alpha)
+
+
+change_alpha <- function(x, alpha) {
+  x$RObj$alpha <- alpha
+  x$RObj$micro$alpha <- alpha
+  x$macro$newdata <- TRUE ### so macro clustering is redone
+}
+
+get_cluster_assignments <- function(x) {
+  if(length(x$RObj$micro$last) < 1) 
+    stop("Run update with assignments = TRUE first.")
+ 
+  ### remove weak MCS
+  strong <- x$RObj$strong_mcs()
+  last <- x$RObj$micro$last
+  ids <- attr(x$RObj$micro$centers(), "ids")
+  last[last %in% ids[!strong]] <- NA
+  ids <- ids[strong]
   
-  tnn <- DSC_tNN(r=.1, Cm=3, shared=TRUE)
-  system.time(update(tnn, stream, 1000))
-  reset_stream(stream)
-  plot(tnn, type="both", stream, assign=T, shared=T, xlim=c(0,1), ylim=c(0,1))
-  
-  reset_stream(stream)
-  db <- DSC_DBSTREAM(r=.1, Cm=3, shared=T)
-  system.time(update(db, stream, 1000000))
-  reset_stream(stream)
-  plot(db, type="both", stream, assign=T, shared=T, xlim=c(0,1), ylim=c(0,1))
-  }
+  last <- match(last, ids)
+    
+  structure(last, ids = ids)
+}

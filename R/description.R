@@ -16,21 +16,18 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+## extract the description field for stream objects
 
-## wrapper for recluster functions
-
-recluster <- function(macro, micro, type="auto", ...) UseMethod("recluster")
-
-recluster.DSC <- function(macro, micro, type="auto", ...) {
-    stop(gettextf("recluster not implemented for class '%s'.", 
-		    paste(class(macro), collapse=", ")))
+.desc <- function(x) {
+  if(is.list(x) && !is.null(x$description) && is.character(x$description))
+    x$description
+  else stop("This object does not have a description field!")
 }
 
-### reclustering is done with a DSC_Macro object!
-recluster.DSC_Macro <- function(macro, micro, type="auto", ...) {
-    cen <- get_centers(micro, type=type)
-    dsd <- DSD_Memory(cen)
-    weight <- get_weights(micro, scale=NULL, type=type)
-    update(macro, dsd, n=nrow(cen), weight=weight, ...)
-}
+description <- function(x, ...) UseMethod("description")
 
+description.default <- function(x, ...) 
+  stop("description() not implemented for this class")
+description.DSC <- function(x, ...) .desc(x) 
+description.DSD <- function(x, ...) .desc(x)
+description.DSO <- function(x, ...) .desc(x)

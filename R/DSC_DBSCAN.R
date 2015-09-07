@@ -75,10 +75,7 @@ DBSCAN$methods(
     
     if(!weighted) weight <- NULL
     
-    ### internal dbscan uses weights
-    DBSCAN <- .dbscan(data, eps, MinPts = MinPts, scale = FALSE, 
-      method = "hybrid", seeds = TRUE, showplot = FALSE, countmode = NULL,
-      weight=weight)
+    DBSCAN <- dbscan::dbscan(data, eps = eps, minPts = MinPts, weights = weight)
     
     assignment <<- DBSCAN$cluster
     

@@ -6,11 +6,13 @@ import(Rcpp)
 import(proxy)
 #import(birch) 
 
-importFrom(utils, head, read.table, write.table)
-importFrom(stats, runif, complete.cases, rnorm, prcomp, na.omit) 
-importFrom(graphics, plot, par, layout, title, pairs, points, lines, image)
-importFrom(grDevices, gray, gray.colors, rgb, col2rgb)
+importFrom(utils, "head", "read.table", "write.table")
+importFrom(stats, "runif", "complete.cases", "rnorm", "prcomp", "na.omit") 
+importFrom(graphics, "plot", "par", "layout", "title", "pairs", "points", 
+  "lines", "image")
+importFrom(grDevices, "gray", "gray.colors", "rgb", "col2rgb")
 
+importFrom(dbscan, "dbscan")
 importFrom(fpc, "cluster.stats")
 importFrom(MASS, "mvrnorm")
 importFrom(clusterGeneration, "genPositiveDefMat")
@@ -116,6 +118,8 @@ export(
   ### DSC_DBSTREAM
   get_shared_density,
   change_alpha,
+  get_cluster_assignments,
+  
   ### DSC_DStream
   get_attraction,
   
@@ -123,7 +127,12 @@ export(
   get_microclusters,
   get_microweights,
   get_macroclusters,
-  get_macroweights
+  get_macroweights,
+
+  saveDSC,
+  readDSC,
+  
+  description
 )
 
 ### update
@@ -193,6 +202,11 @@ S3method(get_copy, DSC_R)
 
 S3method(print, stream_eval)
 
+### description
+S3method(description, DSD)
+S3method(description, DSC)
+S3method(description, DSO)
+
 ### DSD_MGC
 S3method(add_cluster, DSD_MG)
 S3method(reset_stream, DSD_MG)
@@ -205,3 +219,4 @@ S3method(print, MGC_Linear)
 S3method(add_keyframe, MGC_Linear)
 S3method(get_keyframes, MGC_Linear)
 S3method(remove_keyframe, MGC_Linear)
+

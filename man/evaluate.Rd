@@ -12,11 +12,11 @@
 \usage{
 evaluate(dsc, dsd, measure, n = 100, type=c("auto", "micro", "macro"), 
   assign="micro", assignmentMethod=c("auto", "model", "nn"), 
-  noise = c("class", "ignor"), ...)
-evaluate_cluster(dsc, dsd, macro=NULL, measure, n = 1000,
+  noise = c("class", "exclude"), ...)
+evaluate_cluster(dsc, dsd, measure, n = 1000,
   type=c("auto", "micro", "macro"), 
   assign="micro", assignmentMethod=c("auto", "model", "nn"),
-  horizon=100, verbose=FALSE, noise = c("class", "ignor"), ...)
+  horizon=100, verbose=FALSE, noise = c("class", "exclude"), ...)
 }
 
 \arguments{
@@ -30,11 +30,11 @@ evaluate_cluster(dsc, dsd, macro=NULL, measure, n = 1000,
 	\item{assign}{Assign points to micro or macro-clusters?} 
 	\item{assignmentMethod}{ How are points assigned to clusters for 
     evaluation (see \code{get_assignment})?}
-	\item{macro}{A DSC_macro object for reclustering.}
 	\item{horizon}{Evaluation is done using horizon many previous points
     (see detail section).}
 	\item{verbose}{report progress?}
-	\item{noise}{how to handle noise (as a separate class or ignor). }
+	\item{noise}{how to handle noise (treat as a separate class or exclude 
+	  from evaluation). }
 	\item{...}{Unused arguments are ignored.}
 }
 
@@ -45,10 +45,11 @@ evaluate_cluster(dsc, dsd, macro=NULL, measure, n = 1000,
   the majority class several 
 	evaluation measures can be computed.
   
-  For \code{evaluate_cluster} the most commonly used measure introduced 
-  by Aggarwal et al (2003)
-  is applied. The data points used for evaluation are taken from the previously 
-  clustered horizon. Many evaluation measures are calculated with code from the
+  For \code{evaluate_cluster} the most commonly used method
+  of prequential error estimation (see Gama, Sebastiao and Rodrigues; 2013). 
+  The data points in the horizon are first used to calculate the 
+  evaluation measire and then they are used for updating the cluster model.
+  Many evaluation measures are calculated with code from the
   packages \pkg{cluster}, \pkg{clue} and \pkg{fpc}. Detailed documentation can 
   be found in these packages (see Section See Also.)
   
@@ -154,9 +155,7 @@ the clustering algorithm was able to adapt to the changing stream.
 }
 
 \references{
-C. C. Aggarwal, J. Han, J. Wang, P. S. Yu (2003). A Framework for 
-Clustering Evolving Data Streams. Proceedings of the 29th International 
-Conference on Very Large Data Bases - Volume 29. 
+Joao Gama, Raquel Sebastiao, Pedro Pereira Rodrigues (2013). On evaluating stream learning algorithms. Machine Learning, March 2013, Volume 90, Issue 3, pp 317-346.
 
 F. Cao, M. Ester, W. Qian, A. Zhou (2006). Density-Based Clustering over an Evolving Data Stream with Noise. Proceeding of the 2006 SIAM Conference on Data Mining, 326-337.  
   
@@ -232,8 +231,8 @@ evaluate_cluster(dstream, stream, type="macro", assign="micro",
 # animate the clustering process
 reset_stream(stream)
 dstream <- DSC_DStream(gridsize=0.05, lambda=0.1)
-animate_cluster(dstream, stream, n=5000, horizon=100, 
-  evaluationMeasure=c("crand"), evaluationType="macro", evaluationAssign="micro",
-  type="both", xlim=c(0,1), ylim=c(0,1))
+animate_cluster(dstream, stream, horizon=100, n=5000,  
+  measure=c("crand"), type="macro", assign="micro",
+  plot.args = list(type="both", xlim=c(0,1), ylim=c(0,1)))
 }
 }

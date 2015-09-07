@@ -6,8 +6,7 @@ connection.}
 
 \usage{
 	write_stream(dsd, file, n=100, block=100000L, 
-	class=FALSE, sep=",", 
-	col.names=FALSE, row.names=FALSE, ...)
+	class=FALSE, append = FALSE, sep=",", header=FALSE, row.names=FALSE, ...)
 }
 
 \arguments{
@@ -17,7 +16,9 @@ connection.}
 	\item{block}{Write stream in blocks to improve file I/O speed.}
 	\item{class}{Save the class/cluster labels of the points as the last column.}
 	\item{sep}{The character that will separate attributes in a data point.}
-	\item{col.names}{A flag that determines if column names will be output.}
+	\item{append}{Append the data to an existing file.}
+	\item{header}{A flag that determines if column names will be output 
+	  (equivalent to \code{col.names} in \code{write.table()}).}
 	\item{row.names}{A flag that determines if row names will be output.}
 	\item{...}{Additional parameters that are passed to \code{write.table()}.}
 }
@@ -37,7 +38,9 @@ There is no value returned from this operation.
 \examples{
 # creating data and writing it to disk
 stream <- DSD_Gaussians(k=3, d=5)
-write_stream(stream, file="data.txt", n=100, class=TRUE)
+write_stream(stream, file="data.txt", n=10, class=TRUE)
+
+#file.show("data.txt")
 
 # clean up
 file.remove("data.txt")

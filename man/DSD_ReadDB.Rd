@@ -47,14 +47,14 @@ head(points)
 dbWriteTable(con, "gaussians", points)
   
 ### prepare a query result set  
-res <- dbSendQuery(con, "SELECT V1, V2, class FROM gaussians")
+res <- dbSendQuery(con, "SELECT X1, X2, class FROM gaussians")
 res
   
 ### create a stream interface to the result set  
 stream <- DSD_ReadDB(res, k=3, class = 3)
 
 ### get points
-get_points(stream, 5)  
+get_points(stream, 5, class = TRUE)  
 plot(stream)
   
 ### clean up  

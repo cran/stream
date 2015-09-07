@@ -17,81 +17,90 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
-animate_cluster <- function(dsc, dsd, macro=NULL, n=1000,
-  wait=.1, horizon=100,
-  evaluationMeasure=NULL, evaluationType="auto", evaluationAssign="micro", 
-  evaluationAssignmentMethod="auto", ...) {
+## show data and evaluation measure animation (uses prequential error estimation)
+## goes to plot (top plot) for now
+animate_cluster <- function(dsc, dsd, measure, horizon=100, n=1000,
+  type=c("auto", "micro", "macro"), assign="micro", 
+  assignmentMethod=c("auto","model", "nn"),
+  noise = c("class", "ignor"),
+  wait=.1, plot.args = NULL, ...) { 
   
-  cluster.ani(dsc, dsd, macro, n, wait, horizon, 
-    evaluationMeasure, evaluationType, evaluationAssign, 
-    evaluationAssignmentMethod, ...)
+  assignmentMethod <- match.arg(assignmentMethod)
+  noise <- match.arg(noise)
+  type <- get_type(dsc, type)  
+  
+  cluster.ani(dsc, dsd, measure, horizon, n, type, assign, 
+    assignmentMethod, noise, wait, plot.args, ...) 
 }
 
-animate_data <- function(dsd, n=1000, 
-  wait=.1, horizon=100, ...) {
-  
-  cluster.ani(NULL, dsd, NULL, n, wait, horizon, NULL,...)
+animate_data <- function(dsd, horizon=100, n=1000, wait=.1, 
+  plot.args = NULL, ...) { 
+  cluster.ani(NULL, dsd, NULL, horizon, n, NULL, NULL, NULL, NULL, 
+    wait, plot.args, ...)
 }
 
 
-cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
-  wait=.1, horizon=100, 
-  evaluationMeasure=NULL, evaluationType="auto", evaluationAssign="micro", 
-  evaluationAssignmentMethod="auto", ...) {
+## work horse
+cluster.ani <- function(dsc, dsd, measure, horizon, n, type, assign, 
+  assignmentMethod, noise, wait, plot.args, ...){
   
-  if(evaluationType=="auto") {
-    if(is.null(macro) && !is(dsc, "DSC_Macro")) evaluationType <- "macro"
-    else evaluationType <- "micro"
-  }
-  
-  #cat("Evaluation results for ", attr(x, "type"),"-clusters.\n", sep="")
-  #cat("Points were assigned to ", attr(x, "assign"),"-clusters.\n\n", sep="")
+  if(is.null(plot.args)) plot.args <- list()
+  plot.args <- c(plot.args, list(...))
+   
+  if(!is.null(measure) && length(measure)!=1) 
+    stop("animate_cluster can only use a single measure!")
+   
+  rounds <- n %/% horizon 
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
-  
   animation::ani.record(reset = TRUE)
   
-  rounds <- n %/% horizon 
-  
-  if(!is.null(evaluationMeasure)) {
+  ## setup layout for dsc + eval measure plotting (animate_cluster)
+  if(!is.null(dsc)) {
     layout(matrix(c(1,2), 2, 1, byrow = TRUE), heights=c(3,1.5))
-    evaluation <- data.frame(points=seq(from=1, by=horizon, length.out=rounds), 
-      measure=NA_real_)
+    evaluation <- data.frame(points=seq(from=1, by=horizon, length.out=rounds))
+    evaluation[[measure]] <- NA_real_
   }
   
   for(i in 1:rounds) {
     d <- DSD_Memory(dsd, n=horizon, loop=FALSE)
     
     if(!is.null(dsc)) {
-      cl <- update(dsc, d, horizon)
-      
-      if(!is.null(macro)) cl <- recluster(macro, dsc)
-      
-      if(!is.null(evaluationMeasure)) {
+      ## for animate_cluster
+       
+      ## evaluate first
+      if(!is.null(measure)) {
         reset_stream(d)
-        evaluation[i,2] <- evaluate(cl, d,
-          measure=evaluationMeasure, type=evaluationType, 
-          assign=evaluationAssign, assignmentMethod=evaluationAssignmentMethod,
-          n=horizon)
+        evaluation[i,2] <- evaluate(dsc, d, measure, horizon, 
+          type, assign, assignmentMethod, noise, ...)
       }
-      
+        
+      ## then cluster 
       reset_stream(d)
-      if(!is.null(evaluationMeasure)) par(mar=c(4.1,4.1,2.1,2.1))
-      plot(cl, d, n=horizon, ...)        
+      update(dsc, d, horizon)
       
-      if(!is.null(evaluationMeasure)){
+      ## then do plotting 
+      if(!is.null(measure)) par(mar=c(4.1,4.1,2.1,2.1))
+      reset_stream(d)
+      ## no warnings for 0 clusters        
+      suppressWarnings(do.call(plot, c(list(dsc, d, n=horizon), plot.args))) 
+      
+      if(!is.null(measure)){
         par(mar=c(2.1,4.1,1.1,2.1))
-        plot(evaluation, type="l", col="blue",
-          #ylim=c(0,1), 
-          ann=FALSE) 
-        title(ylab=evaluationMeasure)        
+        
+        if(all(is.na(evaluation[,2]))) 
+          plot(evaluation, type="l", col="blue", ylim = c(0,1))
+        else { 
+          plot(evaluation, type="l", col="blue",
+            #ylim=c(0,1), 
+            ann=FALSE) 
+          title(ylab=measure)        
+        }
       }
-      
-    }else{
-      ### plot just data
-      plot(d, n=horizon, ...)
+     
+    }else{  ## plot just data for animate_data
+      suppressWarnings(do.call(plot, c(list(d, n=horizon), plot.args))) 
     }
     
     animation::ani.record()
@@ -99,8 +108,6 @@ cluster.ani <- function(dsc=NULL, dsd, macro=NULL, n=1000,
     
   }
   
-  if(!is.null(evaluationMeasure)) {
-    colnames(evaluation) <- c("points", evaluationMeasure)
-    evaluation
-  }else invisible(NULL)
+  if(!is.null(measure)) evaluation
+  else invisible(NULL)
 }

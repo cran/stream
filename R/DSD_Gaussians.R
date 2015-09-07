@@ -120,6 +120,8 @@ get_points.DSD_Gaussians <- function(x, n=1,
   }
   
   data <- as.data.frame(data)
+  colnames(data) <- paste0("X", 1:ncol(data))
+  
   if(cluster) attr(data, "cluster") <- clusterOrder
   if(class) data <- cbind(data, class = clusterOrder)
 

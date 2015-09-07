@@ -6,12 +6,12 @@
 }
 
 \usage{
-recluster(macro, dsc, type="auto", ...)
+recluster(macro, micro, type="auto", ...)
 }
 
 \arguments{
   \item{macro}{a macro clustering algorithm (class "DSC_Macro")}
-  \item{dsc}{a DSC object containing micro-clusters. }
+  \item{micro}{a DSC object containing micro-clusters. }
   \item{type}{controls which clustering is used from \code{dsc} 
     (typically micro-clusters).}
   \item{...}{additional arguments passed on.}

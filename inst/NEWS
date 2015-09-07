@@ -1,7 +1,25 @@
+Changes in version 1.2-0 (09/06/15)
+    * generic and methods for description() added to exact descriptions from
+        DSD, DSC and DSO objects.
+    * write_stream() gained parameter append and now throws an error if it 
+	would overwrite a file.
+    * DSC objects can now be saved and loaded using saveDSC and readDSC.  
+    * we use now DBSCAN from package dbscan.
+    * DSC_DBSTREAM gained parameter metric and now also supports 
+        Manhattan and Maximum norm. 
+    * DSC_DBSTREAM gained parameter assignments and function 
+        get_cluster_assignments() to retrieve the MC assignment of the
+        clustered data points.
+    * cleaned up interface for animate_cluster() and animate_data().
+    * DSD_ReadCSV was completely rewritten to be more reliable. Lost argument d 
+        which is now figured out automatically.
+    * write_stream has now an argument called header (former name was col.names)
+        to be consistent with DSD_ReadCSV.
+
 Changes in version 1.1-5 (07/02/15)
     * NAMESPACE now imports non-standard packages correctly.
     * DSC_DBSTREAM uses now Cm instead of noise.
-    * Fixed iterator bug for DSC_DBSTREAM.
+    * fixed iterator bug for DSC_DBSTREAM.
     * evaluate gaines argument noise to control if noise is ignored
 
 Changes in version 1.1-4 (05/24/15)

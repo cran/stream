@@ -2,8 +2,7 @@
 #include "NumericVector.h"
 #include "dist.h"
 
-// FIXME: check t for overflow!
-// FIMXE: finish serialization
+// FIMXE: add attraction to serealization
 
 namespace DStream_PKG {
 
@@ -73,11 +72,16 @@ public:
     mins = all["mins"]; 
     maxs = all["maxs"]; 
     
-    // FIXME: create MCs
+    Rcpp::NumericVector w = all["mcs_weights"];
+    Rcpp::NumericMatrix c = all["mcs_centers"];
     
-    //for(int i=0; i<w.length(); i++) 
-    //    mcs.push_back(MC(ids(i), w(i), c(i, Rcpp::_), t));
-    
+    // recreate MCs
+    for(int i=0; i<w.length(); i++) { 
+      Rcpp::NumericVector grid = c(i, Rcpp::_);
+      std::vector<double> gg = Rcpp::as<std::vector<double> >(grid);
+      mcs.insert(std::pair<std::vector<double>, MC>(gg, MC(w(i), t)));
+    } 
+    // add attraction 
   }
   
   Rcpp::List serializeR(){
@@ -98,12 +102,11 @@ public:
       Rcpp::Named("eps") = eps,
       Rcpp::Named("cube_volume") = cube_volume,
       Rcpp::Named("mins") = mins,
-      Rcpp::Named("maxs") = maxs //,
+      Rcpp::Named("maxs") = maxs,
     
-    // do MCs
-    //Rcpp::Named("mcs_centers") = getCenters(),
-    //Rcpp::Named("mcs_weights") = getWeights(),
-    //Rcpp::Named("rels") = getRel()
+      Rcpp::Named("mcs_centers") = getCenters(FALSE),
+      Rcpp::Named("mcs_weights") = getWeights()
+      // attraction
     );
   } 
   
@@ -320,6 +323,7 @@ RCPP_MODULE(MOD_DStream){
   
   class_<DStream>("DStream")
   .constructor<double, double, int, double, double, bool, double>()
+  .constructor<SEXP>()
   
   .field_readonly("gridsize", &DStream::gridsize)
   .field_readonly("decay_factor", &DStream::decay_factor)
@@ -335,6 +339,7 @@ RCPP_MODULE(MOD_DStream){
   .method("nClusters", &DStream::nClusters)
   .method("getAttraction", &DStream::getAttraction)
   .method("update", &DStream::update)
+  .method("serializeR", &DStream::serializeR)
   ;
 }
 

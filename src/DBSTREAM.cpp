@@ -7,6 +7,8 @@
 
 namespace DBSTREAM_PKG {
 
+enum dist_metric { EUCLIDEAN = 0, MANHATTAN = 1, MAXIMUM = 2 };
+
 // Micro-cluster
 class MC {
 public:
@@ -40,19 +42,20 @@ public:
 class DBSTREAM {
 public:
   DBSTREAM(double r_, double decay_factor_, int gap_time_,
-    bool shared_, double alpha_) :
+    bool shared_, double alpha_, int metric_ = 0) :
   r(r_),
   decay_factor(decay_factor_),
   gap_time(gap_time_),
   shared(shared_),
-  alpha(alpha_){
+  alpha(alpha_) {
     w_min = pow(decay_factor, gap_time);
     w_removed = 0.0;
     t = 0;
-    topID = 0;
+    topID = 1;
+    metric = (dist_metric) metric_;   // 0 = Euclidean
   }
   
-  // Unserialization constructor
+  // Deserialization constructor
   //DBSTREAM(Rcpp::List& all) {
   DBSTREAM(SEXP all_) {
     Rcpp::List all(all_);
@@ -65,23 +68,23 @@ public:
     t = all["t"];
     w_min = all["w_min"];
     topID = all["topID"];
+    metric = (dist_metric) (int) all["metric"];
     
     Rcpp::NumericVector w = all["mcs_weights"]; 
     Rcpp::NumericMatrix c = all["mcs_centers"];
     Rcpp::NumericMatrix rr = all["rels"];
     Rcpp::NumericVector ids = c.attr("ids");
     
+    // recreate MCs
     for(int i=0; i<w.length(); i++) 
       mcs.push_back(MC(ids(i), w(i), c(i, Rcpp::_), t));
     
+    // recreate Rels
     for(int i=0; i<rr.nrow(); i++) {
       Rcpp::NumericVector r = rr(i, Rcpp::_);
       rel[std::make_pair(r(0), r(1))] = Rel(r(2), t);
     }
   }
-  
-  
-  
   
   Rcpp::List serializeR(){
     return Rcpp::List::create(
@@ -94,6 +97,7 @@ public:
       Rcpp::Named("t") = t,
       Rcpp::Named("w_min") = w_min,
       Rcpp::Named("topID") = topID,
+      Rcpp::Named("metric") = (int) metric,
       Rcpp::Named("mcs_centers") = getCenters(),
       Rcpp::Named("mcs_weights") = getWeights(),
       Rcpp::Named("rels") = getRel()
@@ -169,9 +173,14 @@ public:
   
   
   // update
-  void update(Rcpp::NumericMatrix& data, bool debug) {
+  void update(Rcpp::NumericMatrix& data, 
+    bool debug = FALSE, bool assignments = FALSE) {
+    
     int n = data.nrow();
     std::vector<MC>::iterator it;
+    
+    if (assignments) last = Rcpp::IntegerVector(n);
+    else last = Rcpp::IntegerVector(0);   // clear last
     
     for (int ii=0; ii<n; ii++) {
       t++;
@@ -252,15 +261,17 @@ public:
       if (debug) Rcpp::Rcout << "point " << ii+1 << ":" << std::endl;
       Rcpp::NumericVector p = data(ii, Rcpp::_);
       
-      // fist cluster
+      // first cluster
       if (!mcs.size()) {
+        if (assignments) last[ii] = topID;
         mcs.push_back(MC(topID++, 1.0, p, t));
+        
       } else {
         
         // find neighbors and try to move
         std::vector<int> inside; //inside.reserve(dist.size());
         std::vector<Rcpp::NumericVector> new_centers;
-        Rcpp::NumericVector dist = eucl(p);
+        Rcpp::NumericVector dist = center_dist(p);
         
         for (int j = 0; j < dist.length(); j++) {
           if (dist[j] > r) continue;
@@ -288,9 +299,11 @@ public:
         }
         
         if (inside.empty()) {
+          if(assignments) last[ii] = topID;
           // create new cluster
           mcs.push_back(MC(topID++, 1.0, p, t));
           
+            
           if(debug) Rcpp::Rcout << "\tnew MC at "
                                << p << std::endl;
           
@@ -311,6 +324,14 @@ public:
             mc.t = t;
           }
           
+          if(assignments) {
+            // find winner
+            Rcpp::NumericVector ds = dist[Rcpp::IntegerVector(inside.begin(), 
+              inside.end())];
+            int min = std::min_element(ds.begin(), ds.end()) - ds.begin(); 
+            last[ii] = mcs[inside[min]].id;
+          }
+          
           /*
           // only the largest gets updated
           MC& winner= mcs[*inside.begin()];
@@ -327,36 +348,28 @@ public:
           */
           
           
-          // update cluster position?
-          for (std::size_t i = 0; i < (new_centers.size()-1); i++) {
-            for(std::size_t j = i+1; j < new_centers.size(); j++) {
-              //if(sqrt(sum(pow(new_centers[i] - new_centers[j], 2.0))) < r) {
-              if(sqrt(sum(pow(new_centers[i] - new_centers[j], 2.0))) < r * .9) {
-                goto SKIPMOVE;
+          // update cluster position? 
+          if (check_dist(new_centers)) {
+            for (std::size_t i = 0; i < new_centers.size(); i++) 
+              mcs[inside[i]].center = new_centers[i];
+            
+            if (debug) 
+              Rcpp::Rcout << "\tNO COLLISIONS - centers moved!" << std::endl;
+          }
+          
+          // Update relations
+          if (shared && inside.size() >1) {
+            for(std::size_t i=0; i<(inside.size()-1); i++) {
+              for(std::size_t j=i+1; j<inside.size(); j++) {
+                Rel& rr = rel[std::make_pair(mcs[inside[i]].id, mcs[inside[j]].id)];
+                if(rr.t>0) rr.weight *= pow(decay_factor, t-rr.t);
+                rr.t = t;
+                rr.weight++;
+                //rr.weight+=.5;
+                //rr.weight += w;
               }
             }
           }
-          
-          if (debug) Rcpp::Rcout << "\tNO COLLISION centers moved!" << std::endl;
-          
-          for (std::size_t i = 0; i < new_centers.size(); i++) {
-            mcs[inside[i]].center = new_centers[i];
-          }
-          
-          SKIPMOVE:
-            // Update relations
-            if (shared && inside.size() >1) {
-              for(std::size_t i=0; i<(inside.size()-1); i++) {
-                for(std::size_t j=i+1; j<inside.size(); j++) {
-                  Rel& rr = rel[std::make_pair(mcs[inside[i]].id, mcs[inside[j]].id)];
-                  if(rr.t>0) rr.weight *= pow(decay_factor, t-rr.t);
-                  rr.t = t;
-                  rr.weight++;
-                  //rr.weight+=.5;
-                  //rr.weight += w;
-                }
-              }
-            }
         }
       }
     }
@@ -368,24 +381,73 @@ public:
   bool shared;
   double alpha;
   std::vector<MC> mcs;
-  // key is always sorted: low/high id
+  // Note: key is always sorted: low/high id
   std::map<std::pair<int,int>, Rel> rel;
   double w_min;
-  double w_removed; // weight removed
+  double w_removed;           // weight removed
   int t;
-  int topID;
+  int topID;                  // id for the next MC
+  Rcpp::IntegerVector last;   // MC assignment of the recently clustered points 
+  dist_metric metric;
   
 private:
   
-  // calculate Euclidean distance of point p to all centers.
-  inline Rcpp::NumericVector eucl(Rcpp::NumericVector& p) {
+  // calculate distance of point p to all centers.
+  inline Rcpp::NumericVector center_dist(Rcpp::NumericVector& p) {
+    
     int n = mcs.size();
+    
     Rcpp::NumericVector dist(n);
-    for (int i = 0; i < n; i++) dist[i] = sqrt(sum(pow(p - mcs[i].center, 2.0)));
+    
+    if(metric == EUCLIDEAN) 
+      for (int i = 0; i < n; i++)  
+        dist[i] = sqrt(sum(pow(p - mcs[i].center, 2)));
+    
+    else if(metric == MANHATTAN)
+      for (int i = 0; i < n; i++)  
+        dist[i] = sum(abs(p - mcs[i].center));
+    
+    else { // MAXIMUM
+      Rcpp::NumericVector diff;
+      for (int i = 0; i < n; i++) {  
+        diff = abs(p - mcs[i].center);
+        dist[i] = *std::max_element(diff.begin(), diff.end());
+      }
+    }
     
     return dist;
   }
   
+  // check if all points are at least factor * r apart from each other
+  inline bool check_dist(std::vector<Rcpp::NumericVector> ps) {
+   
+   std::size_t i, j;
+   double factor = .9;
+    
+    if (metric == EUCLIDEAN) {
+      for (i = 0; i < (ps.size()-1); i++) 
+        for (j = i+1; j < ps.size(); j++) 
+          if (sqrt(sum(pow(ps[i] - ps[j], 2.0))) < r * factor) return false;
+          
+    } else if (metric == MANHATTAN) {
+      for (i = 0; i < (ps.size()-1); i++) 
+        for (j = i+1; j < ps.size(); j++) 
+          if (sum(abs(ps[i] - ps[j])) < r * factor) return false;
+          
+    } else { // MAXIMUM 
+      Rcpp::NumericVector diff;
+      for (i = 0; i < (ps.size()-1); i++) 
+        for (j = i+1; j < ps.size(); j++) {
+          diff = abs(ps[i] - ps[j]);
+          if (*std::max_element(diff.begin(), diff.end()) < r * factor) 
+            return false;
+        }
+    }          
+    
+    return true;
+  }
+  
+
   // Conversions from MC ID to index
   std::map<int,int> getIDTrans() {
     int n = mcs.size();
@@ -406,7 +468,7 @@ RCPP_MODULE(MOD_DBSTREAM){
   
   class_<DBSTREAM>("DBSTREAM")
   // expose the default constructor
-  .constructor<double, double, int, bool, double>()
+  .constructor<double, double, int, bool, double, int>()
   .constructor<SEXP>()
   
   .field_readonly("r", &DBSTREAM::r)
@@ -415,6 +477,7 @@ RCPP_MODULE(MOD_DBSTREAM){
   .field_readonly("t", &DBSTREAM::t)
   .field_readonly("w_removed", &DBSTREAM::w_removed)
   .field("alpha", &DBSTREAM::alpha)
+  .field_readonly("last", &DBSTREAM::last)
   
   .method("centers", &DBSTREAM::getCenters)
   .method("weights", &DBSTREAM::getWeights)

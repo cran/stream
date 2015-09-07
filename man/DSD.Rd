@@ -1,6 +1,10 @@
 \name{DSD}
 \alias{DSD}
 \alias{DSD_R}
+\alias{description}
+\alias{description}
+\alias{DSD_R}
+\alias{DSD_R}
 \title{Data Stream Data Generator Base Classes}
 \description{Abstract base classes for DSD (Data Stream Data
 Generator).}

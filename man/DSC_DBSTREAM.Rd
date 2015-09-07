@@ -3,17 +3,20 @@
 \alias{DBSTREAM}
 \alias{dbstream}
 \alias{get_shared_density}
+\alias{get_cluster_assignments}
 \alias{change_alpha}
-\title{DBSTREAM clustering algorihtm}
+\title{DBSTREAM clustering algorithm}
 \description{
     Implements a simple density-based stream clustering algorithm that assigns data points
   to micro-clusters with a given radius and implements shared-density-based reclustering.}
 
 \usage{
 DSC_DBSTREAM(r, lambda = 0.001, gaptime = 1000L, 
-  Cm = 3, shared_density = FALSE, alpha=0.1, k=0, minweight = 0)
+  Cm = 3, metric = "Euclidean", shared_density = FALSE, 
+  alpha=0.1, k=0, minweight = 0)
 get_shared_density(x, use_alpha = TRUE)  
-change_alpha(x, alpha)  
+change_alpha(x, alpha)
+get_cluster_assignments(x)
 }
 
 \arguments{
@@ -22,6 +25,7 @@ change_alpha(x, alpha)
 	\item{gaptime}{weak micro-clusters (and weak shared density entries) 
     are removed every \code{gaptime} points.}
 	\item{Cm}{ minimum weight for a micro-cluster. }
+	\item{metric}{ metric used to calculate distances. }
   \item{shared_density}{Record shared density information. If set to \code{TRUE}
     then shared density is used for reclustering, otherwise reachability is
     used (overlapping clusters with less than \eqn{r*(1-alpha)} distance 
@@ -47,13 +51,15 @@ the new data point.
 Although DSC_DBSTREAM is a micro clustering algorithm, macro clusters
 and weights are available.
 
+\code{get_cluster_assignments()} can be used to extract the MC assignment for 
+each data point clustered during the last update operation (note: update needs
+to be called with \code{assignments = TRUE} and the block size needs to be large 
+enough). The function returns the MC index (in the current set of MCs obtained 
+  with, e.g., \code{get_centers()}) and as an attribute the permanent MC ids.
+
 \code{plot()} for DSC_DBSTREAM has two extra logical parameters called \code{assignment}
-  and \code{shared_density} which show the assignment area and
-  the shared density graph, rexpectively.
-
-  Note that \code{DSC_DBSTREAM} can at this point not be saved to disk using
-  save() or saveRDS(). This functionality will be added later!
-
+and \code{shared_density} which show the assignment area and
+the shared density graph, respectively.
 }
 
 \value{
@@ -119,4 +125,20 @@ microToMacro(dbstream)
 evaluate(dbstream, stream, measure="purity")
 evaluate(dbstream, stream, measure="cRand", type="macro")
 }
+
+
+# use DBSTREAM for conventional clustering (with assignments = TRUE)
+data("iris")
+dbstream <- DSC_DBSTREAM(r = 1)
+update(dbstream, iris[,-5], assignments = TRUE)
+dbstream
+
+cl <- get_cluster_assignments(dbstream)
+cl
+
+# micro-clusters
+plot(iris[,-5], col = cl, pch = cl)
+
+# macro-clusters
+plot(iris[,-5], col = microToMacro(dbstream, cl))
 }
