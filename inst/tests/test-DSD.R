@@ -1,4 +1,5 @@
 library("testthat")
+setwd(tempdir())
 
 df <- data.frame(x=runif(100), y=runif(100), 
   assignment=sample(1:3, 100, replace=TRUE))

@@ -1,5 +1,4 @@
 %\documentclass[10pt,a4paper]{article}
-%\documentclass{jss}
 \documentclass[nojss]{jss}
 
 \usepackage[utf8]{inputenc}
@@ -283,7 +282,6 @@ and clustering a large, high-dimensional data set.
 Section~\ref{sec:conclusion} concludes the paper.
 %%%
 
-\pagebreak[1]
 \section{Data stream mining} \label{sec:mining}
 
 Due to advances in data gathering techniques, it is often the case that data is
@@ -948,7 +946,7 @@ using \code{method="pc"}.
 plot(stream, n = 500, method = "pc")
 @
 
-\begin{figure} 
+\begin{figure}[t] 
 \centering 
 \includegraphics[width=.8\linewidth]{stream-static}
 \caption{Plotting 500 data points from the data stream.} 
@@ -1254,15 +1252,6 @@ and subsetting with \code{"["} can be used.
 
 \section{Data stream task (DST)} \label{sec:dst}
 
-\begin{figure} 
-\centering 
-\includegraphics[width=\linewidth]{dst_uml} 
-\caption{Overview of the data stream task (DST) class structure with subclasses
-for data stream operators (DSO), clustering (DSC),
-classification (DSClass) and frequent pattern mining (DSFPM).}
-\label{figure:dst} 
-\end{figure}
-
 After choosing a DSD class to use as the data stream source, the next step in
 the workflow is to define a data stream task (DST).  In \pkg{stream}, a DST
 refers to any data mining task that can be applied to data streams.  The design
@@ -1274,6 +1263,15 @@ the actual implementations of
 data stream operators (DSO),
 clustering (DSC), classification (DSClass) or frequent pattern mining (DSFPM) are typically quite different and the benefit of sharing methods
 would be minimal.    
+
+\begin{figure} 
+\centering 
+\includegraphics[width=\linewidth]{dst_uml} 
+\caption{Overview of the data stream task (DST) class structure with subclasses
+for data stream operators (DSO), clustering (DSC),
+classification (DSClass) and frequent pattern mining (DSFPM).}
+\label{figure:dst} \end{figure}
+
 
 DST classes implement mutable objects which
 can be changed without creating a copy. This is more 
@@ -1421,11 +1419,12 @@ Reclustering (the offline component of data stream clustering)
 is performed with 
 
 \begin{center}
-\code{recluster(macro, dsc, type="auto", ...)}.
+\code{recluster(macro, micro, type="auto", ...)},
 \end{center}
 
+where \code{micro} and \code{macro} are objects of class \code{DSC}.
 Here the centers
-in \code{dsc} are used as pseudo-points by the \code{DSC_macro} object \code{macro}.
+in \code{micro} are used as pseudo-points by the \code{DSC_macro} object \code{macro}.
 After reclustering the macro-clusters can be inspected (using \code{get_centers()}, etc.) and
 the assignment of micro-clusters to macro-clusters is available via 
 \code{microToMacro()}.
@@ -1440,17 +1439,20 @@ are currently available:
 %\item
 %StreamKM++ \citep{stream:Ackermann+Lammersen+Maertens+Raupach:2010}
 
-\item\code{DSC_CluStream} (\pkg{streamMOA}) implements the \emph{CluStream} algorithm 
+\item\code{DSC_CluStream} (\pkg{streamMOA}) interfaces the
+    MOA implementation of the \emph{CluStream} algorithm 
 by \cite{stream_clust:Aggarwal:2003}. The algorithm maintains a user-specified number of
 micro-clusters. The number of clusters is held constant by merging and removing 
 clusters. The suggested reclustering method is weighted $k$-means.
 
-\item\code{DSC_ClusTree} (\pkg{streamMOA}) implements the 
+\item\code{DSC_ClusTree} (\pkg{streamMOA}) interfaces the
+    MOA implementation of the
 \emph{ClusTree} algorithm by \cite{stream:Kranen+Assent+Baldauf+Seidl:2009}. The algorithm organizes micro-clusters in a tree structure for faster access and
 automatically adapts micro-cluster sizes based on the variance of the assigned
 data points. Either $k$-means or reachability from DBSCAN can be used for reclustering.
 
-\item\code{DSC_DenStream} (\pkg{streamMOA}) is the \emph{DenStream} algorithm by 
+\item\code{DSC_DenStream} (\pkg{streamMOA}) interfaces MOA's implementation 
+    of the \emph{DenStream} algorithm by 
 \cite{stream_clust:Cao:2006}. DenStream estimates the density of  micro-clusters
 in a user-specified neighborhood. To suppress noise, it also organizes micro-clusters based on their weight as core and outlier micro-clusters. Core Micro-clusters are reclustered using reachability from DBSCAN.
 
@@ -1490,8 +1492,8 @@ method, in \pkg{stream} any available method can be applied.
 For reclustering, the following clustering algorithms 
 are currently available as subclasses of \code{DSC_Macro}:
 \begin{itemize}
-\item \code{DSC_DBSCAN} implements 
-    the weighted version of DBSCAN by \cite{Ester96adensity-based}
+\item \code{DSC_DBSCAN} interfaces 
+    the weighted version of DBSCAN~\citep{Ester96adensity-based}
     implemented in package \pkg{dbscan}~\citep{stream:Hahsler:2015b}.
 \item \code{DSC_Hierarchical} interfaces \proglang{R}'s \code{hclust} function.
 \item \code{DSC_Kmeans} interface \proglang{R}'s $k$-means implementation and a version of $k$-means where the data points (micro-clusters) are weighted by the micro-cluster weights, i.e., a micro-cluster representing more data points has more weight.
@@ -1615,7 +1617,7 @@ data points represented by each micro-cluster. In Figure~\ref{figure:cluster}(b)
 the micro-clusters are shown as dense grid cells (density is coded with gray values).
 
 
-\pagebreak[4]
+%\pagebreak[4]
 \section{Evaluation of data stream clustering}\label{sec:evaluation}
 \subsection{Introduction}
 Evaluation of data stream mining is an important issue.
@@ -1648,10 +1650,11 @@ how well an algorithm is able to learn static structures in a data
 stream which does not exhibit concept drift
 is performed in \pkg{stream} via
 
+
 \begin{center}
 \code{evaluate(dsc, dsd, measure, n = 100, type = c("auto", "micro", "macro"),}\\
-\code{assign = "micro"), assignmentMethod = c("auto", "model", "nn"),\\
-noise = c("class", "exclude"), ...)},
+\code{assign = "micro", assignmentMethod = c("auto", "model", "nn"),}\\
+\code{noise = c("class", "exclude"), ...)},
 \end{center}
 
 where \code{dsc} is the evaluated clustering.
@@ -1797,8 +1800,6 @@ the data that is used for evaluation.
 The approach described next might be more appropriate for
 streams which exhibit significant concept drift.
 
-this approach might not be ideal.
-
 \subsection{Evaluation of clustering of dynamic data streams}
 
 For dynamic data streams it is important to evaluate how well the clustering
@@ -1877,6 +1878,7 @@ all evaluation measures for \code{evaluate()} described above can be used.
 %to re-cluster the
 %micro-clusters generated by each algorithm into final clusters.
 
+\pagebreak[4]
 \subsection{Example: Evaluating clustering results} \label{examples:evaluation}
 
 In this example we will show how to calculate evaluation measures,
@@ -1963,7 +1965,7 @@ head(ev)
 Note that the first row in the results contains \code{NA} for the purity
 measure. This is the case since 
 we started evaluation with a new, empty clustering and
-for evaluating the first horizon, no prior clusters 
+for evaluating the first horizon no prior clusters 
 were available.
 
 <<evaluation, fig=TRUE, include=FALSE, height=4>>= 
@@ -2480,7 +2482,7 @@ sapply(algorithms, FUN=function(a) {
 We need to be careful with the comparison of these numbers, since they depend 
 heavily on the number of micro-clusters with more clusters leading to a
 better value. We can compare purity here since 
-we have set the parameters such that
+we have set the clustering parameters such that
 the number 
 of micro-clusters is very close.
 All algorithms produce very good values 
@@ -2573,8 +2575,10 @@ algorithms <- list(
 
 We apply \code{evaluate_cluster()} to each of the clustering algorithms, and
 we evaluate and
-cluster 5000 data points. For the evaluation we use the corrected Rand index 
-with a horizon of 250 points. This produces a list with $5000/250=20$ 
+cluster 5000 data points
+using the prequential evaluation method with a horizon of 250 points. 
+The chosen evaluation measure is the corrected Rand index. 
+This produces a list with $5000/250=20$ 
 evaluations for each algorithm.
 
 <<>>=
@@ -2596,7 +2600,7 @@ To plot the results we first get the positions at which the
 evaluation measure was calculated from the 
 first element in the evaluation list and then extract a matrix with the 
 corrected Rand index values. Note that the first evaluation values are 
-again \code{NA}.
+again \code{NA} since we start with empty clusterings.
 
 <<>>=
 Position <- evaluation[[1]][ , "points"]
@@ -2769,6 +2773,8 @@ Science Foundation as a research experience for undergraduates (REU) under
 contract number IIS-0948893.
 Part of this work was also supported by the National 
 Human Genome Research Institute under contract number R21HG005912.
+
+\pagebreak[4]
 \bibliography{stream}
 
 \end{document}

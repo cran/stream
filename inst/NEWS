@@ -1,3 +1,6 @@
+Changes in version 1.2-1 (09/08/15)
+    * fixed problem with failing test under Windows.
+
 Changes in version 1.2-0 (09/06/15)
     * generic and methods for description() added to exact descriptions from
         DSD, DSC and DSO objects.
