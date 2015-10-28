@@ -292,7 +292,7 @@ dstream$methods(list(
           assignment <- cutree(hc, h=0-1e-9)
           
           maxk <- min(k, nrow(a))
-          ### not enought components?
+          ### not enough components?
           if(length(unique(assignment)) < maxk) assignment <- cutree(hc, k=maxk)
           
           ### FIXME: If k>number of connected components then components would

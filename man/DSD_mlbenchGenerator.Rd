@@ -33,6 +33,11 @@ in from the function or created internally. They include:
         \code{\link{DSD}}
 }
 
+\author{
+    John Forrest
+}
+
+
 \examples{
 stream <- DSD_mlbenchGenerator(method="cassini")
 

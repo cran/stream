@@ -31,6 +31,11 @@ Returns an object of class
 	\code{\link{DSC_Static}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # 3 clusters with 10% noise
 stream <- DSD_Gaussians(k=3, noise=0.1)

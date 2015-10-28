@@ -36,6 +36,10 @@ the data base connection.
   \code{\link[DBI]{dbGetQuery}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 ### create a data base with a table with 3 Gaussians
 library("RSQLite")

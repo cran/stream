@@ -37,16 +37,20 @@
   "vi"
 )
 
+## this also contains info and noise
 .eval_measures_int  <- c(
   ## info
-  "numMicroClusters", "numMacroClusters",
+  "numMicroClusters", "numMacroClusters", "numClasses",
+  
+  ## noise
+  "noisePredicted", "noiseActual", "noisePrecision", 
+  
   ## internal
   "SSQ",
   "silhouette"
 )
 
 .eval_measures_ext  <- c(
-  "numClasses",
   # external
   "precision", "recall", "F1",
   "purity", 
@@ -225,13 +229,16 @@ evaluate_cluster <- function(dsc, dsd, measure,
   if(is.null(actual) && ! measure %in% .eval_measures_int) 
     stop("Evaluation measure not available for streams without cluster labels!")
   
-  
   res <- switch(measure,
-    numMicroClusters	    = if(is(try(n <- nclusters(dsc, type="micro"), 
+    numMicroClusters	= if(is(try(n <- nclusters(dsc, type="micro"), 
       silent=TRUE), "try-error")) NA_integer_ else n,
-    numMacroClusters	    = if(is(try(n <- nclusters(dsc, type="macro"), 
+    numMacroClusters	= if(is(try(n <- nclusters(dsc, type="macro"), 
       silent=TRUE), "try-error")) NA_integer_ else n,
-    numClasses	    = numClasses(actual),
+    numClasses	      = numClasses(actual),
+   
+    noisePredicted	= sum(predict == 0L),
+    noiseActual	    = sum(actual == 0L),
+    noisePrecision	= sum(predict == 0L & actual == 0L)/sum(predict == 0L),
     
     SSQ  	     = ssq(points, actual, predict, centers),
     silhouette = silhouette(points, actual, predict),
@@ -369,7 +376,7 @@ ssq <- function(points, actual, predict, centers) {
   if(!is.null(actual)) points <- points[actual != 0L,]
   
   assign_dist <- apply(dist(points, centers), 1, min)
-  ssq <- sum(assign_dist^2)
+  sum(assign_dist^2)
 }
 
 silhouette <- function(points, actual, predict) {
@@ -380,7 +387,7 @@ silhouette <- function(points, actual, predict) {
   points <- points[!noise,]
   predict <- predict[!noise]
   
-  if(any(predict==0)) warning("silhouette: ", sum(predict==0), " non-noise points were predicted noise incorrectly and form their own cluster.")
+#  if(any(predict==0)) warning("silhouette: ", sum(predict==0), " non-noise points were predicted noise incorrectly and form their own cluster.")
   
   ## points that are predicted as noise but are not are its own group!
   

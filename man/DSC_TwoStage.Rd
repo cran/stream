@@ -29,6 +29,10 @@ An object of class \code{DSC_TwoStage} (subclass of  \code{DSC}, \code{DSC_Macro
 	\code{\link{DSC_Macro}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3)
 

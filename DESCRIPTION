@@ -1,6 +1,6 @@
 Package: stream
-Version: 1.2-1
-Date: 2015-9-8
+Version: 1.2-2
+Date: 2015-10-28
 Title: Infrastructure for Data Stream Mining
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
                 email = "mhahsler@lyle.smu.edu"),
@@ -8,19 +8,19 @@ Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
             person("John", "Forrest", role = c("aut", "cph")))
 Description: A framework for data stream modeling and associated data mining tasks such as clustering and classification. The development of this package was supported in part by NSF IIS-0948893 and NIH R21HG005912.
 Depends: R (>= 2.13.0), methods, proxy (>= 0.4-7)
-Imports: animation, clue, cluster, clusterGeneration, fpc, dbscan (>=
-        0.9-2), MASS, mlbench, Rcpp (>= 0.11.4), utils, stats,
-        graphics, grDevices
-Suggests: DBI, RSQLite, testthat, rJava
+Imports: animation, clue, cluster, clusterGeneration, dbscan (>=
+        0.9-2), fpc, graphics, grDevices, MASS, mlbench, Rcpp (>=
+        0.11.4), stats, utils
+Suggests: DBI, rJava, RSQLite, testthat
 URL: http://lyle.smu.edu/IDA/TRACDS/
 BugReports: https://r-forge.r-project.org/projects/clusterds/
 LinkingTo: Rcpp
 License: GPL-3
 NeedsCompilation: yes
-Packaged: 2015-09-08 16:04:02 UTC; hahsler
+Packaged: 2015-10-28 16:37:29 UTC; hahsler
 Author: Michael Hahsler [aut, cre, cph],
   Matthew Bolanos [aut, cph],
   John Forrest [aut, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2015-09-09 09:17:24
+Date/Publication: 2015-10-28 19:41:43

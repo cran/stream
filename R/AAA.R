@@ -41,7 +41,7 @@
 ### nodots
 .nodots <- function(...) {
   l <- list(...)
-  if(length(l) > 0L) stop("Unknown arguments: ", 
+  if(length(l) > 0L) warning("Unknown arguments: ", 
     paste(names(l), "=",l, collapse=", "))
 }
 

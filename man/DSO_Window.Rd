@@ -39,6 +39,10 @@ Zhu, Y. and Shasha, D. (2002). StatStream: Statistical Monitoring of Thousands
 of Data Streams in Real Time, Intl. Conference of Very Large Data Bases (VLDB'02).
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, d=2, noise=0.05)
 

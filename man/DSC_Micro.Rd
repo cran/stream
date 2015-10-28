@@ -11,3 +11,8 @@ results in an error.
 \seealso{
 	\code{\link{DSC}}
 }
+
+\author{
+    Michael Hahsler
+}
+

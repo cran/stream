@@ -63,6 +63,12 @@ created internally. They include:
 Jain and Dubes(1988) Algorithms for clustering data, 
 Prentice-Hall, Inc., Upper Saddle River, NJ, USA.
 }
+
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # create data stream with three clusters in 3-dimensional data space
 stream1 <- DSD_Gaussians(k=3, d=3)

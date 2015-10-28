@@ -33,8 +33,9 @@ evaluate_cluster(dsc, dsd, measure, n = 1000,
 	\item{horizon}{Evaluation is done using horizon many previous points
     (see detail section).}
 	\item{verbose}{report progress?}
-	\item{noise}{how to handle noise (treat as a separate class or exclude 
-	  from evaluation). }
+	\item{noise}{how to handle noise points in the data. Options are
+	  to  treat as a separate class (default) or 
+	  to exclude them from evaluation. }
 	\item{...}{Unused arguments are ignored.}
 }
 
@@ -60,11 +61,25 @@ evaluate_cluster(dsc, dsd, measure, n = 1000,
 		\item	\code{"numClasses"} number of classes
 	}
   
+  The following noise-related items are available:  
+	\itemize{
+	  \item	\code{"noisePredicted"} Number data points predicted as noise  
+	  \item	\code{"noiseActual"} Number of data points which are actually noise
+	  \item	\code{"noisePrecision"} Precision of the predicting noise
+	  (i.e., number of correctly predicted noise points over the total number of 
+	  points predicted as noise)
+	}
+  
+  
   The following internal evaluation measures are available:
 	\itemize{
-		\item	\code{"SSQ"} sum of squares (actual noise points are excluded) 
-		\item	\code{"silhouette"} average silhouette width (points that are actual noise and 
-      predicted to be noise are excluded) (\pkg{cluster}) 
+		\item	\code{"SSQ"} within cluster sum of squares. Assigns each non-noise 
+	  point to its nearest center from
+	  the clustering and calculates the sum of squares 
+		\item	\code{"silhouette"} average silhouette width (actual noise points   
+		  which stay unassigned by the clustering algorithm are removed; regular 
+		  points that are unassigned by the clustering algorithm 
+		  will form their own noise cluster) (\pkg{cluster}) 
 	  \item \code{"average.between"} average distance between clusters (\pkg{fpc})        
 	  \item \code{"average.within"} average distance within clusters (\pkg{fpc})          
 	  \item \code{"max.diameter"} maximum cluster diameter (\pkg{fpc})    
@@ -196,7 +211,11 @@ Clustering of Data Streams at Multiple Resolutions, 3(3).
             \code{\link[fpc]{cluster.stats}} in \pkg{fpc},
             \code{\link[cluster]{silhouette}} in \pkg{cluster}.
 }
- 
+
+\author{
+    Michael Hahsler, Matthew Boanos and John Forrest
+}
+
 
 \examples{
 stream <- DSD_Gaussians(k=3, d=2)

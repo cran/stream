@@ -25,6 +25,11 @@ An integer; the number of micro- or macro-clusters in the clustering.
 	\code{\link{DSC}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # setting up the objects
 stream <- DSD_Gaussians(k=3)

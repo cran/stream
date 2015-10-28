@@ -40,6 +40,11 @@ object (subclass of
 
 %\references{
 %}
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # create data stream with three clusters in 3D
 stream <- DSD_Cubes(k=3, d=3)

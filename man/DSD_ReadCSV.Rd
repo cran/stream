@@ -61,6 +61,10 @@ The position in the file can be reset to the beginning using
 	\code{\link{read.table}}.
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 # creating data and writing it to disk
 stream <- DSD_Gaussians(k=3, d=5)

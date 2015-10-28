@@ -40,6 +40,10 @@ Returns a \code{DSD_Memory} object
 	\code{\link{reset_stream}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 # store 1000 points from a stream
 stream <- DSD_Gaussians(k=3, d=2)

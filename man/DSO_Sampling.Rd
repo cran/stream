@@ -50,6 +50,10 @@ McLeod, A.I., Bellhouse, D.R. (1983): A Convenient Algorithm for Drawing a Simpl
 Aggarwal C. (2006) On Biased Reservoir Sampling in the Presence of Stream Evolution. International Conference on Very Large Databases (VLDB'06). 607-618.
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, noise=0.05)
 

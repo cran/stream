@@ -102,6 +102,10 @@ Li Tu and Yixin Chen. 2009. Stream data clustering based on grid density and att
 	\code{\link{DSC_Micro}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_BarsAndGaussians(noise=.05)
 plot(stream)

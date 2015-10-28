@@ -53,6 +53,11 @@ model), call \code{get_centers()} on the DSC object.
 	\code{\link{animation}} for producing an animation of the clustering process.
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Gaussians(k=3)
 dstream <- DSC_DStream(gridsize=.05)  

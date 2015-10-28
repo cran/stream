@@ -40,6 +40,11 @@ created internally. They include:
 	\code{\link{DSD}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # create data stream with three clusters in 2D
 stream <- DSD_Target()

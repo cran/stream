@@ -43,6 +43,10 @@ it is used for (re)clustering, the old clustering is deleted.
 	\code{\link{DSC_Macro}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, noise=0)
 

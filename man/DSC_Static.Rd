@@ -34,6 +34,10 @@ The list also contains either
 	\code{\link{DSC_Macro}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, noise=0.05)
 

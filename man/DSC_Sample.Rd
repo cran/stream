@@ -54,6 +54,11 @@ McLeod, A.I., Bellhouse, D.R. (1983): A Convenient Algorithm for Drawing a Simpl
 Aggarwal C. (2006) On Biased Reservoir Sampling in the Presence of Stream Evolution. International Conference on Very Large Databases (VLDB'06). 607-618.
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Gaussians(k=3, noise=0.05)
 
@@ -71,15 +76,15 @@ plot(kmeans, stream, type="both")
 
 # sample from an evolving stream
 stream <- DSD_Benchmark(1)
-sample <- DSC_Sample(k=100)
-update(sample, stream, 2000)
+sample <- DSC_Sample(k=20)
+update(sample, stream, 1000)
 plot(sample, stream)
 # Note: the clusters move from left to right and the sample keeps many 
 # outdated points
   
 # use a biased sample to keep more recent data points 
 stream <- DSD_Benchmark(1)
-sample <- DSC_Sample(k=100, biased=TRUE)
-update(sample, stream, 2000)
+sample <- DSC_Sample(k=20, biased=TRUE)
+update(sample, stream, 1000)
 plot(sample, stream)
 }

@@ -14,3 +14,8 @@ data stream clustering \code{DSC}, classification on data streams
 	\code{\link{DSClassify}},
 	\code{\link{DSFP}}
 }
+
+\author{
+    Michael Hahsler
+}
+

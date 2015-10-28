@@ -12,3 +12,8 @@ streams. Currently,
 \seealso{
 	\code{\link{DST}}
 }
+
+\author{
+    Michael Hahsler
+}
+

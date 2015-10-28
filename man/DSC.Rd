@@ -46,3 +46,8 @@ which will serialize the objects first appropriately.
 	\code{\link{readDSC}},
 	\code{\link{saveDSC}}
 }
+
+\author{
+    Michael Hahsler
+}
+

@@ -32,6 +32,11 @@ underlying connection.
 	\code{\link{DSD_Memory}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # initializing the objects
 stream <- DSD_Gaussians(k=3, d=2)

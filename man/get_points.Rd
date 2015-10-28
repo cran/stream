@@ -36,6 +36,11 @@ Returns a matrix of \code{x$d} columns and \code{n} rows.
 	\code{\link{DSD}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Gaussians()
 get_points(stream, 100)

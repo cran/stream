@@ -25,6 +25,11 @@ A vector of the same length as \code{micro} with the macro-cluster ids.
 \seealso{
 \code{\link{DSC_Macro}}
 }
+
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, d=2, noise=0.05, p=c(.2,.4,.6))
 

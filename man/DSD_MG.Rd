@@ -40,6 +40,10 @@ remove_cluster(x, i)
   \code{\link{MGC_Function}}, \code{\link{MGC_Linear}}, \code{\link{MGC_Noise}}, \code{\link{MGC_Random}} for details on the different \code{MGC} objects.
 }
 
+\author{
+    Matthew Bolanos
+}
+
 
 \examples{
 ### create an empty DSD_MG

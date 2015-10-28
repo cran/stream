@@ -42,6 +42,11 @@ contains the following items:
 	\code{\link{DSC_Macro}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # Cassini dataset
 stream <- DSD_mlbenchGenerator("cassini")

@@ -26,6 +26,11 @@ Returns a \code{DSD} object.
 	\code{\link{DSD}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Benchmark(i=1)
 \dontrun{

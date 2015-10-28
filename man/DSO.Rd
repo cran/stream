@@ -22,3 +22,8 @@ the stream. The result of the operator can be optained via
 	\code{\link{DSO_Window}},
 	\code{\link{DSO_Sample}}
 }
+
+\author{
+    Michael Hahsler
+}
+

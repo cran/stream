@@ -69,8 +69,8 @@ get_points.DSD_Memory <- function(x, n=1,
   n_left <- nrow(x$strm) - x$state$counter + 1L
   
   if(n_left < n && !x$loop) {
-    if(outofpoints == "stop") stop("Not enought data points left in stream!")
-    if(outofpoints == "warn") warning("Not enought data points left in stream! Remaining points returned!")
+    if(outofpoints == "stop") stop("Not enough data points left in stream! Only ", n_left," are available.")
+    if(outofpoints == "warn") warning("Not enough data points left in stream! Remaining points returned.")
     n <- n_left
   }
 

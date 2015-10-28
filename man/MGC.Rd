@@ -63,6 +63,12 @@ An \code{MGC_Noise} allows for a creation of noise within a \code{DSD_MG}.
 \seealso{
 \code{\link{DSD_MG}} for details on how to use an \code{MGC} within a \code{DSD}
 }
+
+\author{
+    Matthew Bolanos
+}
+
+
 \examples{
 ### Two static clusters
 stream <- DSD_MG(dim=2,

@@ -31,6 +31,11 @@ Internally the call is delegated to the appropriate
 	\code{\link{DSC}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Gaussians(k=3, d=2)
 dstream <- DSC_DStream(gridsize=.1)

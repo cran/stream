@@ -77,13 +77,18 @@ An object of class \code{DSC_DBSTREAM}
 	\code{\link{DSC_Micro}}
 }
 
+\author{
+    Michael Hahsler and Matthew Bolanos
+}
+
+
 \examples{
 set.seed(0)
 stream <- DSD_Gaussians(k = 3, noise = 0.05)
 
 # create clusterer with r = 0.05
 dbstream <- DSC_DBSTREAM(r = .05)
-update(dbstream, stream, 10000)
+update(dbstream, stream, 1000)
 dbstream 
 
 # check micro-clusters
@@ -100,34 +105,26 @@ plot(dbstream, stream, type = "both", assignment = TRUE)
 
 # DBSTREAM with shared density 
 dbstream <- DSC_DBSTREAM(r = .05, shared_density = TRUE, Cm=5)
-update(dbstream, stream, 10000)
+update(dbstream, stream, 1000)
 dbstream
 plot(dbstream, stream, type = "both")
-# plot the shared density graph
-plot(dbstream, stream, type = "both", shared_density = TRUE)
-
-# change alpha
-change_alpha(dbstream, .36)
+# plot the shared density graph (several options)
 plot(dbstream, stream, type = "both", shared_density = TRUE)
 plot(dbstream, stream, type = "micro", shared_density = TRUE)
 plot(dbstream, stream, type = "micro", shared_density = TRUE, assignment = TRUE)
 plot(dbstream, stream, type = "none", shared_density = TRUE, assignment = TRUE)
-
-
 
 # see how micro and macro-clusters relate
 # each microcluster has an entry with the macro-cluster id
 # Note: unassigned micro-clusters (noise) have an NA
 microToMacro(dbstream)
 
-# evaluate first using macro and then using micro-clusters
-\dontrun{
+# do some evaluation
 evaluate(dbstream, stream, measure="purity")
 evaluate(dbstream, stream, measure="cRand", type="macro")
-}
 
-
-# use DBSTREAM for conventional clustering (with assignments = TRUE)
+# use DBSTREAM for conventional clustering (with assignments = TRUE so we can
+# later retrieve the cluster assignments for each point)
 data("iris")
 dbstream <- DSC_DBSTREAM(r = 1)
 update(dbstream, iris[,-5], assignments = TRUE)

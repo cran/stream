@@ -36,6 +36,11 @@ A vector containing the assignment of each point. \code{NA} means that a
 	\code{\link{DSC}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 stream <- DSD_Gaussians(k=3, d=2, noise=.05)
 

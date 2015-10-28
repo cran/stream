@@ -25,5 +25,10 @@ A deep copy of the original DSC.
 	\code{\link{DSC}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 %\examples{
 %}

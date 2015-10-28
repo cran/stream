@@ -36,6 +36,11 @@ is also of class \code{DSD_Memory}.
 	\code{\link{reset_stream}}
 }
 
+\author{
+    Michael Hahsler and Matthew Bolanos
+}
+
+
 \examples{
 stream <- DSD_mlbenchData("Shuttle")
 stream

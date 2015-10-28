@@ -29,6 +29,11 @@ The object macro is altered and contains the clustering.
 %\seealso{
 %}
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 set.seed(0)
 ### create a data stream and a micro-clustering

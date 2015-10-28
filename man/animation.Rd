@@ -49,6 +49,9 @@ Animations are recorded using the library animation and can be replayed
   See \code{\link[animation]{ani.replay}} for replaying and saving animations.
 }
 
+\author{
+    Michael Hahsler
+}
 
 \examples{
 \dontrun{

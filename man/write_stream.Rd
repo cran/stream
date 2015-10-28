@@ -35,6 +35,11 @@ There is no value returned from this operation.
 	\code{\link{DSD}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # creating data and writing it to disk
 stream <- DSD_Gaussians(k=3, d=5)

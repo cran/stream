@@ -39,6 +39,10 @@ both are abstract classes.
   \code{\link{write_stream}}
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 # create data stream with three clusters in 3-dimensional space 
 stream <- DSD_Gaussians(k=3, d=3)

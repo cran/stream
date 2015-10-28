@@ -47,6 +47,10 @@ contains the following items:
 Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad. Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96). AAAI Press. pp. 226-231.
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_mlbenchGenerator("cassini")
 

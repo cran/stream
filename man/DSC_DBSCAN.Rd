@@ -45,6 +45,10 @@ An object of class \code{DSC_DBSCAN} (a subclass of \code{DSC},
 Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad. Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96). AAAI Press. pp. 226-231.
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 # 3 clusters with 5% noise
 stream <- DSD_Gaussians(k=3, d=2, noise=0.05)

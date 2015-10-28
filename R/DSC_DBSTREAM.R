@@ -231,7 +231,7 @@ dbstream$methods(list(
         ### find connected components
         assignment <- cutree(hc, h=1-1e-9)
         
-        ### not enought components?
+        ### not enough components?
         if(length(unique(assignment)) < k) assignment <- cutree(hc, k=k)
         
         ### only take the largest k...

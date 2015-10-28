@@ -38,6 +38,10 @@
   
 }
 
+\author{
+    Michael Hahsler
+}
+
 \examples{
 stream <- DSD_Gaussians(k=3, d=3)
 plot(stream)

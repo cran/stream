@@ -27,6 +27,11 @@ Returns a \code{DSD_UniformNoise} object.(subclass of \code{DSD_R},
 	\code{\link{DSD}}
 }
 
+\author{
+    Michael Hahsler
+}
+
+
 \examples{
 # create data stream with three clusters in 2D
 stream <- DSD_UniformNoise(d=2)
