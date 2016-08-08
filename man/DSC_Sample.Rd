@@ -69,7 +69,7 @@ sample
 # plot micro-clusters
 plot(sample, stream)
 
-# reclustering (Kmeans is sufficient because DSC_Sample does not return weights)
+# reclustering
 kmeans <- DSC_Kmeans(3)
 recluster(kmeans, sample)
 plot(kmeans, stream, type="both")
