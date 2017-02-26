@@ -1,6 +1,6 @@
 Package: stream
-Version: 1.2-3
-Date: 2016-08-07
+Version: 1.2-4
+Date: 2017-02-25
 Title: Infrastructure for Data Stream Mining
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
                 email = "mhahsler@lyle.smu.edu"),
@@ -17,10 +17,10 @@ BugReports: https://github.com/mhahsler/stream/issues
 LinkingTo: Rcpp
 License: GPL-3
 NeedsCompilation: yes
-Packaged: 2016-08-07 20:15:17 UTC; hahsler
+Packaged: 2017-02-26 01:30:42 UTC; hahsler
 Author: Michael Hahsler [aut, cre, cph],
   Matthew Bolanos [aut, cph],
   John Forrest [aut, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2016-08-08 00:46:06
+Date/Publication: 2017-02-26 16:24:25
