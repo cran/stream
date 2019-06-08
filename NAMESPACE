@@ -4,9 +4,8 @@ useDynLib(stream, .registration = TRUE)
 import(methods)
 import(Rcpp)
 import(proxy)
-#import(birch)
 
-importFrom(utils, "head", "read.table", "write.table")
+importFrom(utils, "head", "read.table", "write.table", "installed.packages")
 importFrom(stats, "runif", "complete.cases", "rnorm", "prcomp", "na.omit")
 importFrom(graphics, "plot", "par", "layout", "title", "pairs", "points",
   "lines", "image")
@@ -37,6 +36,8 @@ export(
 	DSC_DBSTREAM,
   DSC_Window,
   DSC_BICO,
+  DSC_evoStream,
+  DSC_EA,
 
   DSC_Kmeans,
 	DSC_DBSCAN,
