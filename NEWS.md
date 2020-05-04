@@ -1,3 +1,9 @@
+# stream 1.3-2 (05/04/20)
+
+## Bug Fixes
+* DBSTREAM: Fixed array index bug (reported by MatthiasCarnein) 
+* BIRCH: Fixed C++ this pointer problem.
+
 # stream 1.3-1 (06/07/19)
 
 ## New Features
