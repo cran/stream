@@ -1,3 +1,12 @@
+# stream 1.5-0 (09/07/21)
+
+## New Features
+* DSC implementations are now registered using DSC_registry.
+
+## Bug Fixes
+* Fixed get_assignment.DSC_TwoStage when new data is available (reported by 
+ozlempoyraz).
+
 # stream 1.4-0 (12/01/20)
 
 ## New Features

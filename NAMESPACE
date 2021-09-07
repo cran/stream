@@ -2,6 +2,7 @@ useDynLib(stream, .registration = TRUE)
 
 import(Rcpp)
 import(proxy)
+import(registry)
 
 importFrom(methods, "is", "new")
 importFrom(utils, "head", "read.table", "write.table")
@@ -18,11 +19,11 @@ importFrom(mlbench, "mlbench.2dnormals","mlbench.cassini","mlbench.circle",
     "mlbench.waveform","mlbench.xor")
 
 # we use these with ::
-#importFrom(dbscan, "dbscan")
-#importFrom(fpc, "cluster.stats")
-#importFrom(MASS, "mvrnorm")
-#importFrom(clusterGeneration, "genPositiveDefMat")
-#importFrom(clue, "as.cl_hard_partition", "cl_agreement", "cl_ensemble")
+importFrom(dbscan, "dbscan")
+importFrom(fpc, "cluster.stats")
+importFrom(MASS, "mvrnorm")
+importFrom(clusterGeneration, "genPositiveDefMat")
+importFrom(clue, "as.cl_hard_partition", "cl_agreement", "cl_ensemble")
 
 export(
 	# DSC
@@ -145,7 +146,9 @@ export(
   saveDSC,
   readDSC,
 
-  description
+  description,
+
+  DSC_registry
 )
 
 ### update
