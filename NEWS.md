@@ -1,3 +1,14 @@
+# stream 1.5-1 (05/09/22)
+
+## Changes
+* Removed registry in favor of using R Studio auto-complete.
+* Outlier detector are now in class DSOutlier class.
+* We use now roxygen2 for man pages.
+* Abstract classes have now constructors.
+
+## Bug Fixes
+* Fixed typo in BIRCH interface: treshold -> threshold (by dinarior)
+
 # stream 1.5-0 (09/07/21)
 
 ## New Features

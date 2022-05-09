@@ -2,10 +2,15 @@
 % Please edit documentation in R/DSC_EA.R
 \name{DSC_EA}
 \alias{DSC_EA}
-\title{Evolutionary Algorithm}
+\title{Reclustering using an Evolutionary Algorithm}
 \usage{
-DSC_EA(k, generations = 2000, crossoverRate = 0.8,
-  mutationRate = 0.001, populationSize = 100)
+DSC_EA(
+  k,
+  generations = 2000,
+  crossoverRate = 0.8,
+  mutationRate = 0.001,
+  populationSize = 100
+)
 }
 \arguments{
 \item{k}{number of macro-clusters}
@@ -16,16 +21,25 @@ DSC_EA(k, generations = 2000, crossoverRate = 0.8,
 
 \item{mutationRate}{mutation rate for the evolutionary algorithm}
 
-\item{populationSize}{number of solutions that the evolutionary algorithm maintains}
+\item{populationSize}{number of solutions that the evolutionary algorithm
+maintains}
 }
 \description{
-Reclustering using an evolutionary algorithm.
-This approach was designed for \code{evoStream} but can also be used for other micro-clustering algorithms.
-The evolutionary algorithm uses existing clustering solutions and creates small variations of them by combining and randomly modfiying them.
-The modified solutions can yield better partitions and thus can improve the clustering over time.
-The evolutionary algorithm is incremental, which allows to improve existing macro-clusters instead of recomputing them every time.
+Macro Clusterer.
+}
+\details{
+Reclustering using an evolutionary algorithm. This approach was designed for
+\code{evoStream} but can also be used for other micro-clustering algorithms.
+
+The evolutionary algorithm uses existing clustering solutions and creates
+small variations of them by combining and randomly modfiying them. The
+modified solutions can yield better partitions and thus can improve the
+clustering over time. The evolutionary algorithm is incremental, which
+allows to improve existing macro-clusters instead of recomputing them every
+time.
 }
 \examples{
+
 stream <- DSD_Memory(DSD_Gaussians(k = 3, d = 2), 1000)
 
 ## online algorithm
@@ -58,9 +72,11 @@ update(dbstream, stream, n = 1000)
 recluster(EA, dbstream)
 reset_stream(stream)
 plot(EA, stream)
+
 }
 \references{
-Carnein M. and Trautmann H. (2018), "evoStream - Evolutionary Stream Clustering Utilizing Idle Times", Big Data Research.
+Carnein M. and Trautmann H. (2018), "evoStream - Evolutionary
+Stream Clustering Utilizing Idle Times", Big Data Research.
 }
 \author{
 Matthias Carnein \email{Matthias.Carnein@uni-muenster.de}

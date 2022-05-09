@@ -386,15 +386,7 @@ plot(dstream, stream, grid = TRUE)
 
 
 ###################################################
-### code chunk number 52: stream.Rnw:1878-1881
-###################################################
-DSC_registry
-
-head(DSC_registry$get_entries(), n = 3)
-
-
-###################################################
-### code chunk number 53: stream.Rnw:2238-2242
+### code chunk number 52: stream.Rnw:2228-2232
 ###################################################
 library("stream")
 stream <- DSD_Gaussians(k = 3, d = 2, noise = .05)
@@ -403,19 +395,19 @@ update(dstream, stream, n = 2000)
 
 
 ###################################################
-### code chunk number 54: stream.Rnw:2250-2251
+### code chunk number 53: stream.Rnw:2240-2241
 ###################################################
 evaluate(dstream, stream, n = 100)
 
 
 ###################################################
-### code chunk number 55: stream.Rnw:2262-2263
+### code chunk number 54: stream.Rnw:2252-2253
 ###################################################
 evaluate(dstream, stream, measure = c("purity", "crand"), n = 500)
 
 
 ###################################################
-### code chunk number 56: stream.Rnw:2304-2310
+### code chunk number 55: stream.Rnw:2294-2300
 ###################################################
 set.seed(1000)
 stream <- DSD_Benchmark(1)
@@ -426,14 +418,14 @@ head(ev)
 
 
 ###################################################
-### code chunk number 57: evaluation
+### code chunk number 56: evaluation
 ###################################################
 plot(ev[ , "points"], ev[ , "purity"], type = "l",
   ylab = "Avg. Purity", xlab = "Points")
 
 
 ###################################################
-### code chunk number 58: stream.Rnw:2343-2348 (eval = FALSE)
+### code chunk number 57: stream.Rnw:2333-2338 (eval = FALSE)
 ###################################################
 ## set.seed(1000)
 ## stream <- DSD_Benchmark(1)
@@ -443,7 +435,7 @@ plot(ev[ , "points"], ev[ , "purity"], type = "l",
 
 
 ###################################################
-### code chunk number 59: stream.Rnw:2378-2385
+### code chunk number 58: stream.Rnw:2368-2375
 ###################################################
 library("stream")
 set.seed(1000)
@@ -455,13 +447,13 @@ dstream
 
 
 ###################################################
-### code chunk number 60: recluster
+### code chunk number 59: recluster
 ###################################################
 plot(dstream, stream, type = "both")
 
 
 ###################################################
-### code chunk number 61: recluster2
+### code chunk number 60: recluster2
 ###################################################
 km <- DSC_Kmeans(k = 3, weighted = TRUE)
 recluster(km, dstream)
@@ -470,20 +462,20 @@ plot(km, stream, type = "both")
 
 
 ###################################################
-### code chunk number 62: stream.Rnw:2446-2447
+### code chunk number 61: stream.Rnw:2436-2437
 ###################################################
 evaluate(km, stream, measure = c("purity", "crand", "SSQ"), n = 1000)
 
 
 ###################################################
-### code chunk number 63: stream.Rnw:2452-2454
+### code chunk number 62: stream.Rnw:2442-2444
 ###################################################
 evaluate(km, stream, c(measure = "purity", "crand", "SSQ"), n = 1000,
   assign = "macro")
 
 
 ###################################################
-### code chunk number 64: stream.Rnw:2477-2480
+### code chunk number 63: stream.Rnw:2467-2470
 ###################################################
 points <- get_points(stream, n = 100)
 assignment <- get_assignment(dstream, points, type = "macro")
@@ -491,7 +483,7 @@ assignment
 
 
 ###################################################
-### code chunk number 65: silhouette
+### code chunk number 64: silhouette
 ###################################################
 assignment[is.na(assignment)] <- 0L
 library("cluster")
@@ -499,7 +491,7 @@ plot(silhouette(assignment, dist = dist(points)))
 
 
 ###################################################
-### code chunk number 66: stream.Rnw:2515-2527
+### code chunk number 65: stream.Rnw:2505-2517
 ###################################################
 library("stream")
 CustomCallback <- function() {
@@ -516,7 +508,7 @@ CustomCallback <- function() {
 
 
 ###################################################
-### code chunk number 67: stream.Rnw:2534-2544
+### code chunk number 66: stream.Rnw:2524-2534
 ###################################################
 evaluate_callback.CustomCallback <- function(cb_obj, dsc, measure, points,
                                              actual, predict, outliers,
@@ -531,7 +523,7 @@ evaluate_callback.CustomCallback <- function(cb_obj, dsc, measure, points,
 
 
 ###################################################
-### code chunk number 68: stream.Rnw:2555-2561
+### code chunk number 67: stream.Rnw:2545-2551
 ###################################################
 stream <- DSD_Gaussians(k = 3, d = 2, p = c(0.2, 0.4, 0.4))
 km <- DSC_Kmeans(3)
@@ -542,7 +534,7 @@ evaluate_with_callbacks(km, stream, type="macro", n=500,
 
 
 ###################################################
-### code chunk number 69: data_bng
+### code chunk number 68: data_bng
 ###################################################
 set.seed(1000)
 library("stream")
@@ -552,7 +544,7 @@ plot(stream)
 
 
 ###################################################
-### code chunk number 70: stream.Rnw:2755-2763
+### code chunk number 69: stream.Rnw:2745-2753
 ###################################################
 algorithms <- list(
   'Sample' = DSC_TwoStage(micro = DSC_Sample(k = 100),
@@ -565,7 +557,7 @@ algorithms <- list(
 
 
 ###################################################
-### code chunk number 71: stream.Rnw:2773-2777
+### code chunk number 70: stream.Rnw:2763-2767
 ###################################################
 for(a in algorithms) {
   reset_stream(stream)
@@ -574,13 +566,13 @@ for(a in algorithms) {
 
 
 ###################################################
-### code chunk number 72: stream.Rnw:2782-2783
+### code chunk number 71: stream.Rnw:2772-2773
 ###################################################
 sapply(algorithms, nclusters, type = "micro")
 
 
 ###################################################
-### code chunk number 73: microclusters
+### code chunk number 72: microclusters
 ###################################################
 op <- par(no.readonly = TRUE)
 layout(mat = matrix(1:length(algorithms), ncol = 2))
@@ -592,7 +584,7 @@ par(op)
 
 
 ###################################################
-### code chunk number 74: microclusters_assignment
+### code chunk number 73: microclusters_assignment
 ###################################################
 op <- par(no.readonly = TRUE)
 layout(mat = matrix(1:length(algorithms), ncol = 2))
@@ -605,7 +597,7 @@ par(op)
 
 
 ###################################################
-### code chunk number 75: stream.Rnw:2861-2868
+### code chunk number 74: stream.Rnw:2851-2858
 ###################################################
 sapply(algorithms, FUN=function(a) {
   reset_stream(stream, pos = 1001)
@@ -617,7 +609,7 @@ sapply(algorithms, FUN=function(a) {
 
 
 ###################################################
-### code chunk number 76: macroclusters
+### code chunk number 75: macroclusters
 ###################################################
 op <- par(no.readonly = TRUE)
 layout(mat=matrix(1:length(algorithms), ncol = 2))
@@ -629,7 +621,7 @@ par(op)
 
 
 ###################################################
-### code chunk number 77: stream.Rnw:2912-2918
+### code chunk number 76: stream.Rnw:2902-2908
 ###################################################
 sapply(algorithms, FUN = function(a) {
   reset_stream(stream, pos = 1001)
@@ -640,14 +632,14 @@ sapply(algorithms, FUN = function(a) {
 
 
 ###################################################
-### code chunk number 78: stream.Rnw:2940-2942
+### code chunk number 77: stream.Rnw:2930-2932
 ###################################################
 set.seed(0)
 stream <- DSD_Memory(DSD_Benchmark(1), n = 5000)
 
 
 ###################################################
-### code chunk number 79: stream.Rnw:2952-2960
+### code chunk number 78: stream.Rnw:2942-2950
 ###################################################
 algorithms <- list(
   'Sample' = DSC_TwoStage(micro = DSC_Sample(k = 100, biased = TRUE),
@@ -660,7 +652,7 @@ algorithms <- list(
 
 
 ###################################################
-### code chunk number 80: stream.Rnw:2971-2976
+### code chunk number 79: stream.Rnw:2961-2966
 ###################################################
 evaluation <- lapply(algorithms, FUN = function(a) {
   reset_stream(stream)
@@ -670,7 +662,7 @@ evaluation <- lapply(algorithms, FUN = function(a) {
 
 
 ###################################################
-### code chunk number 81: stream.Rnw:2992-2995
+### code chunk number 80: stream.Rnw:2982-2985
 ###################################################
 Position <- evaluation[[1]][ , "points"]
 cRand <- sapply(evaluation, FUN = function(x) x[ , "cRand"])
@@ -678,7 +670,7 @@ head(cRand)
 
 
 ###################################################
-### code chunk number 82: dynamic
+### code chunk number 81: dynamic
 ###################################################
 matplot(Position, cRand, type = "l", lwd = 2)
 legend("bottomleft", legend = names(evaluation),
@@ -686,13 +678,13 @@ legend("bottomleft", legend = names(evaluation),
 
 
 ###################################################
-### code chunk number 83: dynamic_box
+### code chunk number 82: dynamic_box
 ###################################################
 boxplot(cRand, las = 2, cex.axis = .8)
 
 
 ###################################################
-### code chunk number 84: stream.Rnw:3053-3061 (eval = FALSE)
+### code chunk number 83: stream.Rnw:3043-3051 (eval = FALSE)
 ###################################################
 ## library("stream")
 ## con <- gzcon(
@@ -705,7 +697,7 @@ boxplot(cRand, las = 2, cex.axis = .8)
 
 
 ###################################################
-### code chunk number 85: stream.Rnw:3067-3069 (eval = FALSE)
+### code chunk number 84: stream.Rnw:3057-3059 (eval = FALSE)
 ###################################################
 ## dstream <- DSC_DStream(gridsize = .5, gaptime = 10000L, lambda = .01)
 ## update(dstream, stream2, n = 4000000, verbose = TRUE)
