@@ -2,49 +2,71 @@
 % Please edit documentation in R/recluster.R
 \name{recluster}
 \alias{recluster}
+\alias{recluster.DSC_Macro}
 \title{Re-clustering micro-clusters}
 \usage{
 recluster(macro, micro, type = "auto", ...)
+
+\method{recluster}{DSC_Macro}(macro, micro, type = "auto", ...)
 }
 \arguments{
-\item{macro}{a macro clustering algorithm (class "DSC_Macro")}
+\item{macro}{an empty \link{DSC_Macro}.}
 
-\item{micro}{a DSC object containing micro-clusters.}
+\item{micro}{an updated \link{DSC_Micro} with micro-clusters.}
 
-\item{type}{controls which clustering is used from \code{dsc} (typically
-micro-clusters).}
+\item{type}{controls which clustering is used from \code{micro}. Typically
+\code{auto}.}
 
 \item{...}{additional arguments passed on.}
 }
 \value{
-The object macro is altered and contains the clustering.
+The object \code{macro} is altered in place and contains the clustering.
 }
 \description{
-Use a macro clustering algorithm to recluster micro-clusters into a final
-clustering.
+Use an *\strong{offline} macro clustering algorithm to recluster micro-clusters into a final
+clusters.
 }
 \details{
 Takes centers and weights of the micro-clusters and applies the macro
 clustering algorithm.
+
+See \link{DSC_TwoStage} for a convenient combination of micro and macro clustering.
 }
 \examples{
-
 set.seed(0)
 ### create a data stream and a micro-clustering
-stream <- DSD_Gaussians(k=3, d=3)
+stream <- DSD_Gaussians(k = 3, d = 3)
 
-sample <- DSC_Sample(k=50)
+### sample can be seen as a simple online clusterer where the sample points
+### are the micro clusters.
+sample <- DSC_Sample(k = 50)
 update(sample, stream, 500)
 sample
-  
+
 ### recluster using k-means
-kmeans <- DSC_Kmeans(k=3)
+kmeans <- DSC_Kmeans(k = 3)
 recluster(kmeans, sample)
 
 ### plot clustering
-plot(kmeans, stream, main="Macro-clusters (Sampling + k-means)")
-
+plot(kmeans, stream, type = "both", main = "Macro-clusters (Sampling + k-means)")
+}
+\seealso{
+Other DSC: 
+\code{\link{DSC_Macro}()},
+\code{\link{DSC_Micro}()},
+\code{\link{DSC_R}()},
+\code{\link{DSC_Static}()},
+\code{\link{DSC_TwoStage}()},
+\code{\link{DSC}()},
+\code{\link{animate_cluster}()},
+\code{\link{evaluate.DSC}},
+\code{\link{get_assignment}()},
+\code{\link{plot.DSC}()},
+\code{\link{predict}()},
+\code{\link{prune_clusters}()},
+\code{\link{read_saveDSC}}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC}

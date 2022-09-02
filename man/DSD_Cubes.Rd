@@ -26,25 +26,44 @@ contains the minimum values and the second column contains the maximum
 values for noise.}
 }
 \value{
-Returns a \code{DSD_Cubes} object (subclass of \code{DSD_R},
-\code{DSD}).
+Returns a \code{DSD_Cubes} object (subclass of \link{DSD_R}, \link{DSD}).
 }
 \description{
 A data stream generator that produces a data stream with static (hyper)
 cubes filled uniformly with data points.
 }
 \examples{
-
 # create data stream with three clusters in 3D
-stream <- DSD_Cubes(k=3, d=3)
+stream <- DSD_Cubes(k = 3, d = 3, noise = 0.05)
 
-# plotting the data
+get_points(stream, n = 5)
+
 plot(stream)
-
 }
 \seealso{
-\code{\link{DSD}}
+Other DSD: 
+\code{\link{DSD_BarsAndGaussians}()},
+\code{\link{DSD_Benchmark}()},
+\code{\link{DSD_Gaussians}()},
+\code{\link{DSD_MG}()},
+\code{\link{DSD_Memory}()},
+\code{\link{DSD_Mixture}()},
+\code{\link{DSD_NULL}()},
+\code{\link{DSD_ReadDB}()},
+\code{\link{DSD_ReadStream}()},
+\code{\link{DSD_Target}()},
+\code{\link{DSD_UniformNoise}()},
+\code{\link{DSD_mlbenchData}()},
+\code{\link{DSD_mlbenchGenerator}()},
+\code{\link{DSD}()},
+\code{\link{DSF}()},
+\code{\link{animate_data}()},
+\code{\link{close_stream}()},
+\code{\link{get_points}()},
+\code{\link{plot.DSD}()},
+\code{\link{reset_stream}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSD}

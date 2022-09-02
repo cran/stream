@@ -6,9 +6,12 @@
 \alias{d-stream}
 \alias{D-Stream}
 \alias{get_attraction}
+\alias{plot.DSC_DStream}
+\alias{DSOutlier_DStream}
 \title{D-Stream Data Stream Clustering Algorithm}
 \usage{
 DSC_DStream(
+  formula = NULL,
   gridsize,
   lambda = 0.001,
   gaptime = 1000L,
@@ -22,8 +25,33 @@ DSC_DStream(
 )
 
 get_attraction(x, relative = FALSE, grid_type = "dense", dist = FALSE)
+
+\method{plot}{DSC_DStream}(
+  x,
+  dsd = NULL,
+  n = 500,
+  type = c("auto", "micro", "macro", "both"),
+  grid = FALSE,
+  grid_type = "used",
+  assignment = FALSE,
+  ...
+)
+
+DSOutlier_DStream(
+  formula = NULL,
+  gridsize,
+  lambda = 0.001,
+  gaptime = 1000L,
+  Cm = 3,
+  Cl = 0.8,
+  outlier_multiplier = 2
+)
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{gridsize}{Size of grid cells.}
 
 \item{lambda}{Fading constant used function to calculate the decay factor
@@ -70,10 +98,26 @@ weight).}
 \item{grid_type}{the attraction between what grid types should be returned?}
 
 \item{dist}{make attraction symmetric and transform into a distance.}
+
+\item{dsd}{a \link{DSD} data stream object.}
+
+\item{n}{number of plots taken from \code{dsd} to plot.}
+
+\item{type}{Plot micro clusters (\code{type = "micro"}), macro clusters (\code{type = "macro"}),
+both micro and macro clusters (\code{type = "both"}), outliers(\code{type = "outliers"}),
+or everything together (\code{type = "all"}). \code{type = "auto"} leaves to the class of DSC to decide.}
+
+\item{grid}{logical; show the D-Stream grid instead of circles for micro-clusters.}
+
+\item{assignment}{logical; show assignment area of micro-clusters.}
+
+\item{...}{further argument are passed on.}
+
+\item{outlier_multiplier}{multiplier for assignment grid width to declare outliers.}
 }
 \value{
-An object of class \code{DSC_DStream} (subclass of \code{DSC},
-\code{DSC_R}, \code{DSC_Micro}).
+An object of class \code{DSC_DStream} (subclass of \link{DSC},
+\link{DSC_R}, \link{DSC_Micro}).
 }
 \description{
 Micro Clusterer with reclustering.
@@ -88,33 +132,35 @@ Every gaptime number of points sporadic grid cells are removed.
 
 For reclustering D-Stream (2007 version) merges adjacent dense grids to form
 macro-clusters and then assigns adjacent transitional grids to
-macro-clusters. This behavior is implemented as \code{attraction=FALSE}.
+macro-clusters. This behavior is implemented as \code{attraction = FALSE}.
 
 The 2009 version of the algorithm adds the concept of attraction between
-grids cells. If \code{attraction=TRUE} is used then the algorithm produces
+grids cells. If \code{attraction = TRUE} is used then the algorithm produces
 macro-clusters based on attraction between dense adjacent grids (uses
 \code{Cm2} which in the original algorithm is equal to \code{Cm}).
 
-For many functions (e.g., \code{get_centers()}, \code{plot()}), D-Stream
+For many functions (e.g., \code{\link[=get_centers]{get_centers()}}, \code{\link[=plot]{plot()}}), D-Stream
 adds a parameter \code{grid_type} with possible values of \code{"dense"},
 \code{"transitional"}, \code{"sparse"}, \code{"all"} and \code{"used"}. This
 only returns the selected type of grid cells. \code{"used"} includes dense
 and adjacent transitional cells which are used in D-Stream for reclustering.
-
-For plot D-Stream also provides extra parameters \code{"grid"} and
+For \code{plot()} D-Stream also provides extra parameters \code{"grid"} and
 \code{"grid_type"} to show micro-clusters as grid cells (density represented
 by gray values).
 
-Note that \code{DSC_DStream} can at this point not be saved to disk using
+\code{DSOutlier_DStream} classifies points that do not fall into a dense grid cell as
+outlier/noise. Parameter \code{outlier_multiplier} specifies
+how far the point needs to be away from a dense cell to be classified as an outlier by multiplying the grid
+size.
+
+Note that \code{DSC_DStream} currently cannot be saved to disk using
 save() or saveRDS(). This functionality will be added later!
 }
 \examples{
-
-stream <- DSD_BarsAndGaussians(noise=.05)
+stream <- DSD_BarsAndGaussians(noise = .05)
 plot(stream)
 
-# we set Cm=.8 to pick up the lower density clusters
-dstream1 <- DSC_DStream(gridsize=1, Cm=1.5)
+dstream1 <- DSC_DStream(gridsize = 1, Cm = 1.5)
 update(dstream1, stream, 1000)
 dstream1
 
@@ -124,31 +170,30 @@ head(get_centers(dstream1))
 
 # plot (DStream provides additional grid visualization)
 plot(dstream1, stream)
-plot(dstream1, stream, grid=TRUE)
+plot(dstream1, stream, grid = TRUE)
 
 # look only at dense grids
-nclusters(dstream1, grid_type="dense")
-plot(dstream1, stream, grid=TRUE, grid_type="dense")
+nclusters(dstream1, grid_type = "dense")
+plot(dstream1, stream, grid = TRUE, grid_type = "dense")
 
 # look at transitional and sparse cells
-plot(dstream1, stream, grid=TRUE, grid_type="transitional")
-plot(dstream1, stream, grid=TRUE, grid_type="sparse")
+plot(dstream1, stream, grid = TRUE, grid_type = "transitional")
+plot(dstream1, stream, grid = TRUE, grid_type = "sparse")
 
 ### Macro-clusters
 # standard D-Stream uses reachability
-nclusters(dstream1, type="macro")
-get_centers(dstream1, type="macro")
-plot(dstream1, stream, type="both", grid=TRUE)
-evaluate(dstream1, stream, measure="crand", type="macro")
+nclusters(dstream1, type = "macro")
+get_centers(dstream1, type = "macro")
+plot(dstream1, stream, type = "macro")
+evaluate_static(dstream1, stream, measure = "crand", type = "macro")
 
 # use attraction for reclustering
-dstream2 <- DSC_DStream(gridsize=1, attraction=TRUE, Cm=1.5)
+dstream2 <- DSC_DStream(gridsize = 1, attraction = TRUE, Cm = 1.5)
 update(dstream2, stream, 1000)
 dstream2
 
-plot(dstream2, stream, type="both", grid=TRUE)
-evaluate(dstream2, stream, measure="crand", type="macro")
-
+plot(dstream2, stream, grid = TRUE)
+evaluate_static(dstream2, stream, measure = "crand", type = "macro")
 }
 \references{
 Yixin Chen and Li Tu. 2007. Density-based clustering for
@@ -161,8 +206,27 @@ attraction. \emph{ACM Transactions on Knowledge Discovery from Data,} 3(3),
 Article 12 (July 2009), 27 pages.
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Micro}}
+Other DSC_Micro: 
+\code{\link{DSC_BICO}()},
+\code{\link{DSC_BIRCH}()},
+\code{\link{DSC_DBSTREAM}()},
+\code{\link{DSC_Micro}()},
+\code{\link{DSC_Sample}()},
+\code{\link{DSC_Window}()},
+\code{\link{DSC_evoStream}()}
+
+Other DSC_TwoStage: 
+\code{\link{DSC_DBSTREAM}()},
+\code{\link{DSC_TwoStage}()},
+\code{\link{DSC_evoStream}()}
+
+Other DSOutlier: 
+\code{\link{DSC_DBSTREAM}()},
+\code{\link{DSOutlier}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC_Micro}
+\concept{DSC_TwoStage}
+\concept{DSOutlier}

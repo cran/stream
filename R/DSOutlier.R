@@ -16,83 +16,73 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-### FIXME: Should go to get_assignments
-# for the \code{points} data frame. Points are assigned to an outlier only if
-# they are inside \code{outlier_threshold} distance from its position. This
-# implementation is heavily dependent on the Euclidean distance measure and
-# should be overwritten by concrete outlier detection clusterer
-# implementations. } }
-
-
-#' Abstract Class for Outlier Detection Clusterers
+#' Abstract Class for Data Stream Outlier Detectors
 #'
-#' The abstract class for all outlier detection clusterers. Cannot be
-#' instantiated. An implementation is available in package
-#' \pkg{streamMOA}.
+#' The abstract class for all data stream outlier detectors. Cannot be
+#' instantiated. Some [DSC] implementations also implement outlier/noise
+#' detection.
 #'
-#' @param x The DSC object.
-#' @param outlier_correlated_id ids of outliers.
+#' [plot()] has an extra logical argument to specify if outliers should be plotted
+#' as red crosses.
+#'
+#' @family DST
+#' @family DSOutlier
+#'
 #' @param ... further arguments.
 #' @docType class
 #' @examples
 #' DSOutlier()
-#' @author Dalibor Krleža
+#'
+#' #' @examples
+#' set.seed(1000)
+#' stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.1, noise_separation = 5)
+#'
+#' outlier_detector <- DSOutlier_DBSTREAM(r = .05, outlier_multiplier = 2)
+#' update(outlier_detector, stream, 500)
+#' outlier_detector
+#'
+#' points <- get_points(stream, 20)
+#' points
+#'
+#' # Outliers are predicted as class NA
+#' predict(outlier_detector, points)
+#'
+#' # Plot new points from the stream. Predicted outliers are marked with a red x.
+#' plot(outlier_detector, stream)
+#'
+#' evaluate_static(outlier_detector, stream, measure =
+#'   c("noiseActual", "noisePredicted", "noisePrecision", "outlierJaccard"))
+#'
+#' # use a different detector
+#' outlier_detector2 <- DSOutlier_DStream(gridsize = .05, Cl = 0.5, outlier_multiplier = 2)
+#' update(outlier_detector2, stream, 500)
+#' plot(outlier_detector2, stream)
+#'
+#' evaluate_static(outlier_detector2, stream, measure =
+#'   c("noiseActual", "noisePredicted", "noisePrecision", "outlierJaccard"))
+#' @author Michael Hahsler
+#' @export
 DSOutlier <- abstract_class_generator("DSOutlier")
 
-#' @describeIn DSOutlier Clean Outliers from the Outlier Detecting Clusterer
-#' @export clean_outliers
-clean_outliers <- function(x, ...)
-  UseMethod("clean_outliers")
-clean_outliers.default <- function(x, ...) {
-  stop(gettextf(
-    "clean_outlier not implemented for class '%s'.",
-    paste(class(x), collapse = ", ")
-  ))
-}
-clean_outliers.DSOutlier <- clean_outliers.default
+#' @export
+plot.DSOutlier <- function(x,
+  dsd = NULL,
+  n = 500,
+  col_points = NULL,
+  type = "none",
+  pch = 4L,
+  ...,
+  outliers = TRUE) {
 
-#' @describeIn DSOutlier Re-checks the outlier having `outlier_correlated_id`.
-#' If this object is still an outlier, the method
-#' returns TRUE.
-#' @export recheck_outlier
-recheck_outlier <- function(x, outlier_correlated_id, ...)
-  UseMethod("recheck_outlier")
-recheck_outlier.default <- function(x, outlier_correlated_id, ...) {
-  stop(gettextf(
-    "recheck_outlier not implemented for class '%s'.",
-    paste(class(x), collapse = ", ")
-  ))
-}
-recheck_outlier.DSOutlier <- recheck_outlier.default
+  if(outliers) {
+    if (!is.null(dsd) && inherits(dsd, "DSD"))
+      dsd <- get_points(dsd, n, info = FALSE)
+    pr <- predict(x, dsd)
+    col_points <-  ifelse(!is.na(pr[[".class"]]), .points_col, .outlier_col)
+    pch <-  ifelse(!is.na(pr[[".class"]]), 1L, pch)
+  }
 
-#' @describeIn DSOutlier Returns spatial positions of all current outliers.
-#' @export get_outlier_position
-get_outlier_positions <- function(x, ...)
-  UseMethod("get_outlier_positions")
-get_outlier_positions.default <- function(x, ...) {
-  stop(gettextf(
-    "check_outlier not implemented for class '%s'.",
-    paste(class(x), collapse = ", ")
-  ))
-}
-get_outlier_positions.DSOutlier <- get_outlier_positions.default
-
-#' @describeIn DSOutlier Returns the current number
-#' of outliers.
-#' @export noutliers
-noutliers <- function(x, ...)
-  UseMethod("noutliers")
-noutliers.default <- function(x, ...) {
-  stop(gettextf(
-    "noutliers not implemented for class '%s'.",
-    paste(class(x), collapse = ", ")
-  ))
-}
-noutliers.DSOutlier <- function(x, ...) {
-  nrow(get_outlier_positions(x))
+  plot.DSC(x, dsd = dsd, col_points = col_points, pch = pch, type = type, ...)
 }
 
-print.DSOutlier <- function(x, ...) {
-  cat(.line_break(paste(x$description)))
-  cat("Class:", paste(class(x), collapse = ", "), "\n")
-}
+

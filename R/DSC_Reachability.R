@@ -1,6 +1,6 @@
 #######################################################################
 # stream -  Infrastructure for Data Stream Mining
-# Copyright (C) 2013 Michael Hahsler, Matthew Bolanos, John Forrest 
+# Copyright (C) 2013 Michael Hahsler, Matthew Bolanos, John Forrest
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,71 +20,85 @@
 
 
 #' Reachability Micro-Cluster Reclusterer
-#' 
+#'
 #' Macro Clusterer.
 #' Implementation of reachability clustering (based on DBSCAN's concept of
 #' reachability) to recluster a set of micro-clusters.
-#' 
-#' 
+#'
+#'
 #' Two micro-clusters are directly reachable if they are within each other's
 #' epsilon-neighborhood (i.e., the distance between the centers is less then
 #' epsilon). Two micro-clusters are reachable if they are connected by a chain
 #' of pairwise directly reachable micro-clusters.  All mutually reachable
 #' micro-clusters are put in the same cluster.
-#' 
-#' Reachability uses internally \code{DSC_Hierarchical} with single link.
-#' 
-#' Note that this clustering cannot be updated iteratively and every time it is
+#'
+#' Reachability uses internally [DSC_Hierarchical] with single link.
+#'
+#' [update()] and [`recluster()`] invisibly return the assignment of the data points
+#' to clusters.
+#'
+#' **Note** that this clustering cannot be updated iteratively and every time it is
 #' used for (re)clustering, the old clustering is deleted.
-#' 
+#'
+#' @family DSC_Macro
+#'
+#' @param formula `NULL` to use all features in the stream or a model [formula] of the form `~ X1 + X2`
+#'   to specify the features used for clustering. Only `.`, `+` and `-` are currently
+#'   supported in the formula.
 #' @param epsilon radius of the epsilon-neighborhood.
 #' @param min_weight micro-clusters with a weight less than this will be
 #' ignored for reclustering.
 #' @param description optional character string to describe the clustering
 #' method.
-#' @return An object of class \code{DSC_Reachability}. The object contains the
+#' @return An object of class `DSC_Reachability`. The object contains the
 #' following items:
-#' 
+#'
 #' \item{description}{The name of the algorithm in the DSC object.}
 #' \item{RObj}{The underlying R object.}
 #' @author Michael Hahsler
-#' @seealso \code{\link{DSC}}, \code{\link{DSC_Macro}}
-#' @references Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
+#' @references
+#' Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
 #' (1996). A density-based algorithm for discovering clusters in large spatial
 #' databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad.
-#' \emph{Proceedings of the Second International Conference on Knowledge
-#' Discovery and Data Mining (KDD-96).} AAAI Press. pp. 226-231.
+#' _Proceedings of the Second International Conference on Knowledge
+#' Discovery and Data Mining (KDD-96)._ AAAI Press. pp. 226-231.
 #' @examples
-#' 
-#' stream <- DSD_mlbenchGenerator("cassini")
-#' 
-#' # Recluster micro-clusters from DSC_Sample with reachability
-#' sample <- DSC_Sample(k = 200)
-#' update(sample, stream, 1000)
-#' 
-#' reach <- DSC_Reachability(epsilon=0.3)
-#' recluster(reach, sample)
-#' 
-#' plot(reach, stream, type="both")
-#' 
-#' # For comparison we using reachability clustering directly on data points
-#' # Note: reachability is not a data stream clustering algorithm taking O(n^2)
-#' # time and space.
-#' reach <- DSC_Reachability(epsilon=0.2)
-#' update(reach, stream, 500)
-#' reach
-#' plot(reach, stream)
-#' 
-#' @export DSC_Reachability
-DSC_Reachability <- function(epsilon, min_weight=NULL, description=NULL) {
-  
-  hierarchical <- hierarchical$new( 
-    h=epsilon, method="single", min_weight=min_weight)
-  
-  if(is.null(description)) description <- "Reachability"
-  
-  l <- list(description = description, RObj = hierarchical)
-  class(l) <- c("DSC_Reachability", "DSC_Hierarchical", "DSC_Macro", "DSC_R", "DSC")
-  l
-}
+#' #' # 3 clusters with 5% noise
+#' stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
+#'
+#' # Use a moving window for "micro-clusters and recluster with DBSCAN (macro-clusters)
+#' cl <- DSC_TwoStage(
+#'   micro = DSC_Window(horizon = 100),
+#'   macro = DSC_Reachability(eps = .05)
+#' )
+#'
+#' update(cl, stream, 500)
+#' cl
+#'
+#' plot(cl, stream)
+#' @export
+DSC_Reachability <-
+  function(formula = NULL,
+    epsilon,
+    min_weight = NULL,
+    description = NULL) {
+    hierarchical <- hierarchical$new(h = epsilon,
+      method = "single",
+      min_weight = min_weight)
 
+    if (is.null(description))
+      description <- "Reachability"
+
+    l <-
+      list(description = description,
+        formula = formula,
+        RObj = hierarchical)
+
+    class(l) <-
+      c("DSC_Reachability",
+        "DSC_Hierarchical",
+        "DSC_Macro",
+        "DSC_R",
+        "DSC")
+    l
+  }

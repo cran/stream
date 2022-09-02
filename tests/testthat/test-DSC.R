@@ -1,60 +1,88 @@
 library("testthat")
 library("stream")
 
-setwd(tempdir())
+short_desc <- function(x)
+  strsplit(description(x), " ")[[1L]][1L]
 
-### read and reload write some DSCs (see if Cpp serialization works)
 set.seed(0)
-stream <- DSD_Gaussians(k = 3, noise = 0.05)
+stream <-
+  DSD_Gaussians(d = 2, k = 3, noise = 0.05) %>% DSD_Memory(n = 1500)
 
-######################################################################
-context("DSC_DBSTREAM")
+algorithms <- list(
+  DSC_DBSTREAM(r = .1),
+  DSC_DStream(
+    gridsize = .1,
+    Cm = 1,
+    gaptime = 100
+  ),
+  DSC_evoStream(r = .45),
+  DSC_Kmeans(k = 3),
+  DSC_Hierarchical(k = 3),
+  DSC_Reachability(epsilon = .1),
+  DSC_DBSCAN(eps = .05),
+  DSC_BICO(k = 3),
+  DSC_BIRCH(
+    threshold = .1,
+    branching = 8,
+    maxLeaf = 20
+  ),
+  DSC_EA(k = 3, generations = 10),
+  DSC_Sample(k = 10),
+  DSC_Window(horizon = 10)
+)
+names(algorithms) <- sapply(algorithms, short_desc)
 
-# create clusterer with r = 0.05
-dbstream <- DSC_DBSTREAM(r = .05)
-update(dbstream, stream, 10000)
-dbstream
+context("DSC update")
 
-saveDSC(dbstream, file="dbstream.Rds")
-db <- readDSC("dbstream.Rds")
-db
+up <- lapply(
+  algorithms,
+  FUN = function(a) {
+    if (interactive())
+      cat(paste("update:", short_desc(a)), "\n")
+    reset_stream(stream)
+    u <- update(a, stream, n = 1000L, assignment = TRUE)
+    expect_true(is.null(u) ||
+        (is.data.frame(u) &&
+            nrow(u) == 1000L && !is.null(u[[".class"]])))
+    u
+  }
+)
 
-expect_equal(dbstream$RObj$micro, db$RObj$micro)
-expect_equal(dbstream$macro, db$macro)
+### Add: check the result
+if (interactive()) {
+  print(algorithms)
+  str(up)
+}
 
-# cleanup
-unlink("dbstream.Rds")
+context("DSC evaluate")
 
-######################################################################
-context("DSC_TwoStage")
+ms <-
+  c(
+    "numMicroClusters",
+    "numMacroClusters",
+    "noiseActual",
+    "noisePredicted",
+    "purity",
+    "CRand"
+  )
 
-dbstream <- DSC_TwoStage(micro=DSC_DBSTREAM(r = .05),
-			  macro = DSC_Kmeans(k=3))
-update(dbstream, stream, 10000)
-dbstream
+evals <- sapply(
+  algorithms,
+  FUN = function(a) {
+    if (interactive())
+      cat(paste("evaluate:", short_desc(a)), "\n")
+    reset_stream(stream, pos = 1001)
+    e <- evaluate_static(a,
+      stream,
+      measure = ms,
+      type = "micro",
+      n = 500)
+    expect_equal(length(e), length(ms))
+    e
+  }
+)
 
-saveDSC(dbstream, file="dbstream.Rds")
-db <- readDSC("dbstream.Rds")
-db
-
-expect_equal(dbstream$RObj$micro, db$RObj$micro)
-expect_equal(dbstream$macro, db$macro)
-
-
-######################################################################
-context("DSC_DSTREAM")
-
-dstream <- DSC_DStream(grid = .1)
-update(dstream, stream, 10000)
-dstream
-
-saveDSC(dstream, file="dstream.Rds")
-ds <- readDSC("dstream.Rds")
-ds
-
-expect_equal(dstream$RObj$micro, ds$RObj$micro)
-expect_equal(dstream$macro, ds$macro)
-
-# cleanup
-unlink(c("dbstream.Rds", "dstream.Rds"))
+if (interactive()) {
+  print(round(evals, 2))
+}
 

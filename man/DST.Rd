@@ -2,21 +2,64 @@
 % Please edit documentation in R/DST.R
 \name{DST}
 \alias{DST}
+\alias{description}
+\alias{description.DST}
 \title{Conceptual Base Class for All Data Stream Mining Tasks}
 \usage{
 DST(...)
+
+description(x, ...)
+
+\method{description}{DST}(x, ...)
 }
 \arguments{
 \item{...}{Further arguments.}
+
+\item{x}{an object of a concrete implementation of a DST.}
 }
 \description{
-Conceptual base class for all data stream mining tasks. Current tasks are data
-stream clustering \link{DSC}, outlier detection \link{DSOutlier}, classification on data streams
-\link{DSClassify} and frequent pattern mining on data streams \link{DSFP}.
+Conceptual base class for all data stream mining tasks.
 }
+\details{
+Base class for data stream mining tasks. Types of \code{DST} are
+\itemize{
+\item \link{DSC} for data stream clustering.
+\item \link{DSAggregate} to aggregate data streams (e.g., with a sliding window).
+\item \link{DSFP} frequent pattern mining for data stream clustering.
+\item \link{DSClassifier} classification for data streams.
+\item \link{DSOutlier} outlier detection for data streams.
+}
+
+The common interface for all \link{DST} classes consists of
+\itemize{
+\item \code{\link[=update]{update()}}
+\item \code{\link[=predict]{predict()}}
+}
+
+and the methods in the Methods Section below.
+}
+\section{Methods (by generic)}{
+\itemize{
+\item \code{description(DST)}: Get a description of the task as a character string.
+
+}}
 \examples{
 DST()
+}
+\seealso{
+Other DST: 
+\code{\link{DSAggregate}()},
+\code{\link{DSClassifier}()},
+\code{\link{DSC}()},
+\code{\link{DSF_Scale}()},
+\code{\link{DSOutlier}()},
+\code{\link{DST_Runner}()},
+\code{\link{DST_WriteStream}()},
+\code{\link{evaluate}},
+\code{\link{predict}()},
+\code{\link{update}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DST}

@@ -7,8 +7,7 @@
 DSD_BarsAndGaussians(angle = NULL, noise = 0)
 }
 \arguments{
-\item{angle}{rotation in degrees. \code{NULL} will produce a random
-rotation.}
+\item{angle}{rotation in degrees. \code{NULL} will produce a random rotation.}
 
 \item{noise}{The amount of noise that should be added to the output.}
 }
@@ -20,17 +19,38 @@ A data stream generator which creates the shape of two bars and two
 Gaussians clusters with different density.
 }
 \examples{
-
 # create data stream with three clusters in 2D
-stream <- DSD_BarsAndGaussians(noise=0.1)
+stream <- DSD_BarsAndGaussians(noise = 0.1)
 
-# plotting the data
+get_points(stream, n = 10)
 plot(stream)
-
 }
 \seealso{
-\code{\link{DSD}}
+\link{DSD}
+
+Other DSD: 
+\code{\link{DSD_Benchmark}()},
+\code{\link{DSD_Cubes}()},
+\code{\link{DSD_Gaussians}()},
+\code{\link{DSD_MG}()},
+\code{\link{DSD_Memory}()},
+\code{\link{DSD_Mixture}()},
+\code{\link{DSD_NULL}()},
+\code{\link{DSD_ReadDB}()},
+\code{\link{DSD_ReadStream}()},
+\code{\link{DSD_Target}()},
+\code{\link{DSD_UniformNoise}()},
+\code{\link{DSD_mlbenchData}()},
+\code{\link{DSD_mlbenchGenerator}()},
+\code{\link{DSD}()},
+\code{\link{DSF}()},
+\code{\link{animate_data}()},
+\code{\link{close_stream}()},
+\code{\link{get_points}()},
+\code{\link{plot.DSD}()},
+\code{\link{reset_stream}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSD}

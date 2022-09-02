@@ -20,19 +20,40 @@ Returns a \code{DSD_UniformNoise} object.(subclass of \code{DSD_R},
 This generator produces uniform noise in a d-dimensional unit (hyper) cube.
 }
 \examples{
-
 # create data stream with three clusters in 2D
-stream <- DSD_UniformNoise(d=2)
-plot(stream, n=100)
+stream <- DSD_UniformNoise(d = 2)
+get_points(stream, n = 5)
+plot(stream, n = 100)
 
-# specify a different range for each dimension 
-stream <- DSD_UniformNoise(d=3, range=rbind(c(0,1), c(0,10), c(0,5)))
-plot(stream, n=100)
-
+# specify a different range for each dimension
+stream <- DSD_UniformNoise(d = 3,
+  range = rbind(c(0, 1), c(0, 10), c(0, 5)))
+plot(stream, n = 100)
 }
 \seealso{
-\code{\link{DSD}}
+Other DSD: 
+\code{\link{DSD_BarsAndGaussians}()},
+\code{\link{DSD_Benchmark}()},
+\code{\link{DSD_Cubes}()},
+\code{\link{DSD_Gaussians}()},
+\code{\link{DSD_MG}()},
+\code{\link{DSD_Memory}()},
+\code{\link{DSD_Mixture}()},
+\code{\link{DSD_NULL}()},
+\code{\link{DSD_ReadDB}()},
+\code{\link{DSD_ReadStream}()},
+\code{\link{DSD_Target}()},
+\code{\link{DSD_mlbenchData}()},
+\code{\link{DSD_mlbenchGenerator}()},
+\code{\link{DSD}()},
+\code{\link{DSF}()},
+\code{\link{animate_data}()},
+\code{\link{close_stream}()},
+\code{\link{get_points}()},
+\code{\link{plot.DSD}()},
+\code{\link{reset_stream}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSD}

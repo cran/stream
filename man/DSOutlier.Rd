@@ -3,51 +3,72 @@
 \docType{class}
 \name{DSOutlier}
 \alias{DSOutlier}
-\alias{clean_outliers}
-\alias{recheck_outlier}
-\alias{get_outlier_positions}
-\alias{noutliers}
-\title{Abstract Class for Outlier Detection Clusterers}
+\title{Abstract Class for Data Stream Outlier Detectors}
 \usage{
 DSOutlier(...)
-
-clean_outliers(x, ...)
-
-recheck_outlier(x, outlier_correlated_id, ...)
-
-get_outlier_positions(x, ...)
-
-noutliers(x, ...)
 }
 \arguments{
 \item{...}{further arguments.}
-
-\item{x}{The DSC object.}
-
-\item{outlier_correlated_id}{ids of outliers.}
 }
 \description{
-The abstract class for all outlier detection clusterers. Cannot be
-instantiated. An implementation is available in package
-\pkg{streamMOA}.
+The abstract class for all data stream outlier detectors. Cannot be
+instantiated. Some \link{DSC} implementations also implement outlier/noise
+detection.
 }
-\section{Functions}{
-\itemize{
-\item \code{clean_outliers}: Clean Outliers from the Outlier Detecting Clusterer
-
-\item \code{recheck_outlier}: Re-checks the outlier having \code{outlier_correlated_id}.
-If this object is still an outlier, the method
-returns TRUE.
-
-\item \code{get_outlier_positions}: Returns spatial positions of all current outliers.
-
-\item \code{noutliers}: Returns the current number
-of outliers.
-}}
-
+\details{
+\code{\link[=plot]{plot()}} has an extra logical argument to specify if outliers should be plotted
+as red crosses.
+}
 \examples{
 DSOutlier()
+
+#' @examples
+set.seed(1000)
+stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.1, noise_separation = 5)
+
+outlier_detector <- DSOutlier_DBSTREAM(r = .05, outlier_multiplier = 2)
+update(outlier_detector, stream, 500)
+outlier_detector
+
+points <- get_points(stream, 20)
+points
+
+# Outliers are predicted as class NA
+predict(outlier_detector, points)
+
+# Plot new points from the stream. Predicted outliers are marked with a red x.
+plot(outlier_detector, stream)
+
+evaluate_static(outlier_detector, stream, measure =
+  c("noiseActual", "noisePredicted", "noisePrecision", "outlierJaccard"))
+
+# use a different detector
+outlier_detector2 <- DSOutlier_DStream(gridsize = .05, Cl = 0.5, outlier_multiplier = 2)
+update(outlier_detector2, stream, 500)
+plot(outlier_detector2, stream)
+
+evaluate_static(outlier_detector2, stream, measure =
+  c("noiseActual", "noisePredicted", "noisePrecision", "outlierJaccard"))
+}
+\seealso{
+Other DST: 
+\code{\link{DSAggregate}()},
+\code{\link{DSClassifier}()},
+\code{\link{DSC}()},
+\code{\link{DSF_Scale}()},
+\code{\link{DST_Runner}()},
+\code{\link{DST_WriteStream}()},
+\code{\link{DST}()},
+\code{\link{evaluate}},
+\code{\link{predict}()},
+\code{\link{update}()}
+
+Other DSOutlier: 
+\code{\link{DSC_DBSTREAM}()},
+\code{\link{DSC_DStream}()}
 }
 \author{
-Dalibor Krleža
+Michael Hahsler
 }
+\concept{DSOutlier}
+\concept{DST}

@@ -14,38 +14,66 @@ reset function.}
 1).}
 }
 \description{
-Resets the counter in a DSD object to the beginning or any other position in
+Resets the position in a \link{DSD} object to the beginning or, if available, any other position in
 the stream.
 }
 \details{
 Resets the counter of the stream object. For example, for \link{DSD_Memory},
 the counter stored in the environment variable is moved back to 1. For
-\link{DSD_ReadCSV} objects, this is done by calling \code{seek()} on the
+\link{DSD_ReadCSV} objects, this is done by calling \code{\link[=seek]{seek()}} on the
 underlying connection.
+
+\code{reset_stream()} is implemented for:
+\itemize{
+\item \link{DSD}
+\item \link{DSD_MG}
+\item \link{DSD_Memory}
+\item \link{DSD_ReadStream}
+\item \link{DSF}
+\item \link{DSF_Convolve}
+}
 }
 \examples{
-
 # initializing the objects
-stream <- DSD_Gaussians(k=3, d=2)
+stream <- DSD_Gaussians()
 replayer <- DSD_Memory(stream, 100)
 replayer
 
 p <- get_points(replayer, 50)
 replayer
 
-# reset replayer to the begining of the stream
+# reset replayer to the beginning of the stream
 reset_stream(replayer)
 replayer
 
 # set replayer to position 21
-reset_stream(replayer, pos=21)
+reset_stream(replayer, pos = 21)
 replayer
-
 }
 \seealso{
-\link{DSD_ReadCSV}, \link{DSD_MG},
-\link{DSD_ScaleStream}, \link{DSD_Memory}
+Other DSD: 
+\code{\link{DSD_BarsAndGaussians}()},
+\code{\link{DSD_Benchmark}()},
+\code{\link{DSD_Cubes}()},
+\code{\link{DSD_Gaussians}()},
+\code{\link{DSD_MG}()},
+\code{\link{DSD_Memory}()},
+\code{\link{DSD_Mixture}()},
+\code{\link{DSD_NULL}()},
+\code{\link{DSD_ReadDB}()},
+\code{\link{DSD_ReadStream}()},
+\code{\link{DSD_Target}()},
+\code{\link{DSD_UniformNoise}()},
+\code{\link{DSD_mlbenchData}()},
+\code{\link{DSD_mlbenchGenerator}()},
+\code{\link{DSD}()},
+\code{\link{DSF}()},
+\code{\link{animate_data}()},
+\code{\link{close_stream}()},
+\code{\link{get_points}()},
+\code{\link{plot.DSD}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSD}

@@ -25,88 +25,80 @@
 # a cluster method in the RObj
 #######
 
-#' Abstract Class for Macro Clusterers
+#' Abstract Class for Macro Clusterers (Offline Component)
 #'
-#' Abstract class for all DSC Macro Clusterers. `DSC_Macro` cannot be instantiated.
+#' Abstract class for all DSC Macro Clusterers which recluster micro-clusters **offline** into final
+#' clusters called macro-clusters.
 #'
-#' `DSC_Macro` provide [microToMacro] that returns the assignment of Micro-cluster IDs to Macro-cluster IDs.
+#' Data stream clustering algorithms typically consists of an **online component**
+#' that creates micro-clusters (implemented as [DSC_Micro]) and
+#' and **offline components** which is used to recluster micro-clusters into
+#' final clusters called macro-clusters.
+#' The function [recluster()] is used extract micro-clusters from a [DSC_Micro] and
+#' create macro-clusters with a `DSC_Macro`.
+#'
+#' Available clustering methods can be found in the See Also section below.
+#'
+#' [microToMacro()] returns the assignment of Micro-cluster IDs to Macro-cluster IDs.
+#'
+#' For convenience, a [DSC_Micro] and `DSC_Macro` can be combined using [DSC_TwoStage].
+#'
+#' `DSC_Macro` cannot be instantiated.
+#'
+#' @family DSC_Macro
+#' @family DSC
 #'
 #' @param ... further arguments.
-#' @aliases DSC_Macro
 #' @author Michael Hahsler
-#' @seealso [DSC]
+#' @export
 DSC_Macro <- abstract_class_generator("DSC")
 
-#' Translate Micro-cluster IDs to Macro-cluster IDs
-#'
-#' Returns the assignment of micro-cluster ids to macro-cluster ids for a `DSC_Macro`
-#' object.
-#'
-#' @name microToMacro
-#' @param x a \code{DSC_Macro} object that also contains information about
+#' @export
+get_centers.DSC_Macro <-
+  function(x, type = c("auto", "micro", "macro"), ...) {
+    type <- match.arg(type)
+    if (type == "auto")
+      type <- "macro"
+
+    if (type == "macro")
+      return(get_macroclusters(x, ...))
+    else
+      return(get_microclusters(x, ...))
+  }
+
+#' @export
+get_weights.DSC_Macro <-
+  function(x,
+    type = c("auto", "micro", "macro"),
+    scale = NULL,
+    ...) {
+    type <- match.arg(type)
+    if (type == "auto")
+      type <- "macro"
+
+    if (type == "macro")
+      w <- get_macroweights(x, ...)
+    else
+      w <- get_microweights(x, ...)
+
+    if (!is.null(scale)) {
+      if (length(unique(w)) == 1L)
+        w <- rep(mean(scale), length(w))
+      else
+        w <- map(w, range = scale, from.range = c(0,
+          max(w, na.rm = TRUE)))
+    }
+
+    w
+  }
+
+#' @rdname DSC_Macro
+#' @param x a `DSC_Macro` object that also contains information about
 #' micro-clusters.
 #' @param micro A vector with micro-cluster ids. If `NULL` then the
 #' assignments for all micro-clusters in `x` are returned.
 #' @return A vector of the same length as `micro` with the macro-cluster
 #' ids.
-#' @author Michael Hahsler
-#' @seealso \code{\link{DSC_Macro}}
-#' @examples
-#'
-#' stream <- DSD_Gaussians(k=3, d=2, noise=0.05, p=c(.2,.4,.6))
-#'
-#' # recluster a micro-clusters
-#' micro <- DSC_DStream(gridsize=0.05)
-#' update(micro, stream, 500)
-#'
-#' macro <- DSC_Kmeans(k=3)
-#' recluster(macro, micro)
-#'
-#' # translate all micro-cluster ids
-#' microToMacro(macro)
-#'
-#' # plot some data points in gray
-#' plot(stream, col="gray", cex=.5, xlim=c(0,1), ylim=c(0,1))
-#' # add micro-clusters and use the macro-cluster ids as color and weights as size
-#' points(get_centers(macro, type="micro"),
-#'   col=microToMacro(macro),
-#'   cex=get_weights(macro, type="micro", scale=c(.5,3)))
-#' # add macro-cluster centers (size is weight)
-#' points(get_centers(macro, type="macro"),
-#'   cex = get_weights(macro, type="macro", scale=c(2,5)),
-#'   pch=3,lwd=3, col=1:3)
-#'
-#' @export microToMacro
-microToMacro <- function(x, micro=NULL) UseMethod("microToMacro")
-microToMacro.default <- function(x, micro=NULL) {
-        stop(gettextf("microToMacro not implemented for class '%s'.",
-		                          paste(class(x), collapse=", ")))
-}
-
-
-get_centers.DSC_Macro <- function(x, type=c("auto", "micro", "macro"), ...) {
-    type <- match.arg(type)
-    if(type=="auto") type <- "macro"
-
-    if(type=="macro") return(get_macroclusters(x, ...))
-    else return(get_microclusters(x, ...))
-}
-
-
-get_weights.DSC_Macro <- function(x, type=c("auto", "micro", "macro"),
-	scale=NULL, ...) {
-    type <- match.arg(type)
-    if(type=="auto") type <- "macro"
-
-    if(type=="macro") w <- get_macroweights(x, ...)
-    else w <- get_microweights(x, ...)
-
-    if(!is.null(scale)) {
-	if(length(unique(w)) ==1) w <- rep(mean(scale), length(w))
-	else w <- map(w, range=scale, from.range=c(0,
-			    max(w, na.rm=TRUE)))
-    }
-
-
-    w
-}
+#' @export
+microToMacro <- function(x, micro = NULL)
+  UseMethod("microToMacro")

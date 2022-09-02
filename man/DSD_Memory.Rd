@@ -8,9 +8,8 @@ DSD_Memory(
   x,
   n,
   k = NA,
+  outofpoints = c("warn", "ignore", "stop"),
   loop = FALSE,
-  class = NULL,
-  outlier = NULL,
   description = NULL
 )
 }
@@ -23,21 +22,20 @@ matrix-like object then \code{n} is ignored.}
 
 \item{k}{Optional: The known number of clusters in the data}
 
+\item{outofpoints}{Action taken if less than \code{n} data points are
+available. The default is to return the available data points with a warning. Other supported actions are:
+\itemize{
+\item \code{warn}: return the available points (maybe an empty data.frame) with a warning.
+\item \code{ignore}: silently return the available points.
+\item \code{stop}: stop with an error.
+}}
+
 \item{loop}{Should the stream start over when it reaches the end?}
-
-\item{class}{Vector with the class/cluster label (only used if \code{x} is
-not a DSD object).}
-
-\item{outlier}{A logical vector with outlier marks (only used if \code{x} is
-not a DSD object). FALSE = the correspnding data instance in the \code{x}
-data frame is not an outlier, TRUE = the corresponding data instance in the
-\code{x} data frame is an outlier.}
 
 \item{description}{character string with a description.}
 }
 \value{
-Returns a \code{DSD_Memory} object (subclass of \code{DSD_R},
-\code{DSD}).
+Returns a \code{DSD_Memory} object (subclass of \link{DSD_R}, \link{DSD}).
 }
 \description{
 This class provides a data stream interface for data stored in memory as
@@ -49,18 +47,20 @@ In addition to regular data.frames other matrix-like objects that provide
 subsetting with the bracket operator can be used. This includes \code{ffdf}
 (large data.frames stored on disk) from package \pkg{ff} and
 \code{big.matrix} from \pkg{bigmemory}.
+
+\strong{Reading the whole stream}
+By using \code{n = -1} in \code{get_points()}, the whole stream is returned.
 }
 \examples{
-
-# store 1000 points from a stream
-stream <- DSD_Gaussians(k=3, d=2)
-replayer <- DSD_Memory(stream, k=3, n=1000)
+# Example 1: store 1000 points from a stream
+stream <- DSD_Gaussians(k = 3, d = 2)
+replayer <- DSD_Memory(stream, k = 3, n = 1000)
 replayer
 plot(replayer)
 
 # creating 2 clusterers of different algorithms
-dsc1 <- DSC_DBSTREAM(r=0.1)
-dsc2 <- DSC_DStream(gridsize=0.1, Cm=1.5)
+dsc1 <- DSC_DBSTREAM(r = 0.1)
+dsc2 <- DSC_DStream(gridsize = 0.1, Cm = 1.5)
 
 # clustering the same data in 2 DSC objects
 reset_stream(replayer) # resetting the replayer to the first position
@@ -70,28 +70,59 @@ update(dsc2, replayer, 500)
 
 # plot the resulting clusterings
 reset_stream(replayer)
-plot(dsc1, replayer, main="DBSTREAM")
+plot(dsc1, replayer, main = "DBSTREAM")
 reset_stream(replayer)
-plot(dsc2, replayer, main="D-Stream")
+plot(dsc2, replayer, main = "D-Stream")
 
-### use a data.frame to create a stream (3rd col. contains the assignment)
-df <- data.frame(x=runif(100), y=runif(100),
-  class=sample(1:3, 100, replace=TRUE))
+
+# Example 2: use a data.frame to create a stream (3rd col. contains the assignment)
+df <- data.frame(x = runif(100), y = runif(100),
+  .class = sample(1:3, 100, replace = TRUE))
+
+# add some outliers
+out <- runif(100) > .95
+df[['.outlier']] <- out
+df[['.class']] <- NA
 head(df)
-### add some outliers
-out <- runif(100) >.95
-### re-assign classes for outliers
-df[which(out),"class"]<-sample(4:(4+sum(out)-1),sum(out),replace=FALSE)
 
-stream <- DSD_Memory(df[,c("x", "y")], class=df[,"class"], outlier=out)
+stream <- DSD_Memory(df)
 stream
-reset_stream(stream)
-plot(stream, n=100)
 
+reset_stream(stream)
+get_points(stream, n = 5)
+
+# get the remaining points
+rest <- get_points(stream, n = -1)
+nrow(rest)
+
+# plot all available points with n = -1
+reset_stream(stream)
+plot(stream, n = -1)
 }
 \seealso{
-\code{\link{DSD}}, \code{\link{reset_stream}}
+Other DSD: 
+\code{\link{DSD_BarsAndGaussians}()},
+\code{\link{DSD_Benchmark}()},
+\code{\link{DSD_Cubes}()},
+\code{\link{DSD_Gaussians}()},
+\code{\link{DSD_MG}()},
+\code{\link{DSD_Mixture}()},
+\code{\link{DSD_NULL}()},
+\code{\link{DSD_ReadDB}()},
+\code{\link{DSD_ReadStream}()},
+\code{\link{DSD_Target}()},
+\code{\link{DSD_UniformNoise}()},
+\code{\link{DSD_mlbenchData}()},
+\code{\link{DSD_mlbenchGenerator}()},
+\code{\link{DSD}()},
+\code{\link{DSF}()},
+\code{\link{animate_data}()},
+\code{\link{close_stream}()},
+\code{\link{get_points}()},
+\code{\link{plot.DSD}()},
+\code{\link{reset_stream}()}
 }
 \author{
-Michael Hahsler, Dalibor Krleža
+Michael Hahsler
 }
+\concept{DSD}

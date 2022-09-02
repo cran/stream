@@ -1,10 +1,43 @@
+# stream 2.0-0 (09/01/22)
+
+## New Features
+* We now support %>% and defining pipelines with the new class DST_Runner.
+* New base class DSF for data stream filters with implementations for 
+  DSF_Downsample, DSF_Convolve, DSF_Func, DSF_dplyr
+* New DST_Multi to run multiple tasks on a stream.
+* New DSD_NULL
+* New DSOutlier: DSOutlier_DBSTREAM, DSOutlier_DStream
+* DSD_ReadCSV gained parameter col.names
+* Added DSD_ReadStream as an alias for DSD_ReadCSV.
+* Added DST_WriteStream to write streams using update().
+* Added DSD_Mixture to combine streams.
+* update() now returns information like cluster assignments as a data.frame.
+* DSC implementations now have a formula argument to decide what variables should be used for 
+  clustering.
+* DSD_ReadDB has now close_stream().
+* DSD_Memory, DSD_ReadDB and DSD_ReadStream have now a parameter called outofpoints to handle 
+  the situation that get_points requests more points than available.
+
+## Changes
+* stream now implements a standard predict function (get_assignment() is now deprecated).
+* class information and extra information is now stored as columns starting with '.' 
+  instead of as attributes. See get_points().
+* DSD_ScaleStream is now DSF_Scale and DSD_ScaleStream is deprecated.
+* DSO is now called DSAggregate.
+* The NAMESPACE is now managed using roxygen.
+* evaluate is now a generic.
+* noise and outliers are now the same concept. DS_Gaussian can make sure that noise points are
+  separated from clusters.
+* evaluate() is now called evaluate_static() and evaluate_cluster is evaluate_stream(), both are now generics.
+* plot for DSC now automatically finds micro and macro-clusters to plot.
+
 # stream 1.5-1 (05/09/22)
 
 ## Changes
 * Removed registry in favor of using R Studio auto-complete.
-* Outlier detector are now in class DSOutlier class.
+* Outlier detectors are now in class DSOutlier class.
 * We use now roxygen2 for man pages.
-* Abstract classes have now constructors.
+* Abstract classes now have constructors.
 
 ## Bug Fixes
 * Fixed typo in BIRCH interface: treshold -> threshold (by dinarior)

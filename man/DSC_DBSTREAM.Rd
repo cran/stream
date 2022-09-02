@@ -6,15 +6,18 @@
 \alias{dbstream}
 \alias{get_shared_density}
 \alias{change_alpha}
-\alias{get_cluster_assignments}
-\title{DBSTREAM clustering algorithm}
+\alias{plot.DSC_DBSTREAM}
+\alias{DSOutlier_DBSTREAM}
+\title{DBSTREAM Clustering Algorithm}
 \usage{
 DSC_DBSTREAM(
+  formula = NULL,
   r,
   lambda = 0.001,
   gaptime = 1000L,
   Cm = 3,
   metric = "Euclidean",
+  noise_multiplier = 1,
   shared_density = FALSE,
   alpha = 0.1,
   k = 0,
@@ -25,9 +28,35 @@ get_shared_density(x, use_alpha = TRUE)
 
 change_alpha(x, alpha)
 
-get_cluster_assignments(x)
+\method{plot}{DSC_DBSTREAM}(
+  x,
+  dsd = NULL,
+  n = 500,
+  col_points = NULL,
+  dim = NULL,
+  method = "pairs",
+  type = c("auto", "micro", "macro", "both", "none"),
+  shared_density = FALSE,
+  use_alpha = TRUE,
+  assignment = FALSE,
+  ...
+)
+
+DSOutlier_DBSTREAM(
+  formula = NULL,
+  r,
+  lambda = 0.001,
+  gaptime = 1000L,
+  Cm = 3,
+  metric = "Euclidean",
+  outlier_multiplier = 2
+)
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{r}{The radius of micro-clusters.}
 
 \item{lambda}{The lambda used in the fading function.}
@@ -39,9 +68,11 @@ removed every \code{gaptime} points.}
 
 \item{metric}{metric used to calculate distances.}
 
+\item{noise_multiplier, outlier_multiplier}{multiplier for radius \code{r} to declare noise or outliers.}
+
 \item{shared_density}{Record shared density information. If set to
 \code{TRUE} then shared density is used for reclustering, otherwise
-reachability is used (overlapping clusters with less than \eqn{r*(1-alpha)}
+reachability is used (overlapping clusters with less than \eqn{r * (1 - alpha)}
 distance are clustered together).}
 
 \item{alpha}{For shared density: The minimum proportion of shared points
@@ -56,10 +87,26 @@ have not to be noise (between 0 and 1).}
 \item{x}{A DSC_DBSTREAM object to get the shared density information from.}
 
 \item{use_alpha}{only return shared density if it exceeds alpha.}
+
+\item{dsd}{a data stream object.}
+
+\item{n}{number of plots taken from the dsd to plot.}
+
+\item{col_points}{color used for plotting.}
+
+\item{dim}{an integer vector with the dimensions to plot. If NULL then for methods "pairs" and "pc" all dimensions are used and for "scatter" the first two dimensions are plotted.}
+
+\item{method}{plot method.}
+
+\item{type}{Plot micro clusters (\code{type="micro"}), macro clusters (\code{type="macro"}), both micro and macro clusters (\code{type="both"}), outliers(\code{type="outliers"}), or everything together (\code{type="all"}). \code{type="auto"} leaves to the class of DSC to decide.}
+
+\item{assignment}{logical; show assignment area of micro-clusters.}
+
+\item{...}{further arguments are passed on to plot or pairs in graphics.}
 }
 \value{
-An object of class \code{DSC_DBSTREAM} (subclass of \code{DSC},
-\code{DSC_R}, \code{DSC_Micro}).
+An object of class \code{DSC_DBSTREAM} (subclass of \link{DSC},
+\link{DSC_R}, \link{DSC_Micro}).
 }
 \description{
 Micro Clusterer with reclustering.
@@ -76,25 +123,30 @@ Otherwise, a new micro-cluster is created to accommodate the new data point.
 Although DSC_DBSTREAM is a micro clustering algorithm, macro clusters and
 weights are available.
 
-\code{get_cluster_assignments()} can be used to extract the MC assignment
-for each data point clustered during the last update operation (note: update
-needs to be called with \code{assignments = TRUE} and the block size needs
-to be large enough). The function returns the MC index (in the current set
-of MCs obtained with, e.g., \code{get_centers()}) and as an attribute the
-permanent MC ids.
+\code{\link[=update]{update()}}  invisibly return the assignment of the data points to clusters.
+The columns are \code{.class} with the index of the strong micro-cluster and \code{.mc_id}
+with the permanent id of the strong micro-cluster.
 
 \code{plot()} for DSC_DBSTREAM has two extra logical parameters called
 \code{assignment} and \code{shared_density} which show the assignment area
 and the shared density graph, respectively.
+
+\code{\link[=predict]{predict()}} can be used to assign new points to clusters. Points are assigned to a micro-cluster if
+they are within its assignment area (distance is less then \code{r} times \code{noise_multiplier}).
+
+\code{DSOutlier_DBSTREAM} classifies points as outlier/noise if they that cannot be assigned to a micro-cluster
+representing a dense region as a outlier/noise. Parameter \code{outlier_multiplier} specifies
+how far a point has to be away from a micro-cluster as a multiplyer for the radius \code{r}.
+A larger value means that outliers have to be farther away from dense
+regions and thus reduce the chance of misclassifying a regular point as an outlier.
 }
 \examples{
+set.seed(1000)
+stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 
-set.seed(0)
-stream <- DSD_Gaussians(k = 3, noise = 0.05)
-
-# create clusterer with r = 0.05
+# create clusterer with r = .05
 dbstream <- DSC_DBSTREAM(r = .05)
-update(dbstream, stream, 1000)
+update(dbstream, stream, 500)
 dbstream
 
 # check micro-clusters
@@ -102,49 +154,50 @@ nclusters(dbstream)
 head(get_centers(dbstream))
 plot(dbstream, stream)
 
-# plot macro-clusters
-plot(dbstream, stream, type = "both")
-
 # plot micro-clusters with assignment area
-plot(dbstream, stream, type = "both", assignment = TRUE)
+plot(dbstream, stream, type = "none", assignment = TRUE)
 
 
 # DBSTREAM with shared density
-dbstream <- DSC_DBSTREAM(r = .05, shared_density = TRUE, Cm=5)
-update(dbstream, stream, 1000)
+dbstream <- DSC_DBSTREAM(r = .05, shared_density = TRUE, Cm = 5)
+update(dbstream, stream, 500)
 dbstream
-plot(dbstream, stream, type = "both")
+
+plot(dbstream, stream)
 # plot the shared density graph (several options)
-plot(dbstream, stream, type = "both", shared_density = TRUE)
 plot(dbstream, stream, type = "micro", shared_density = TRUE)
-plot(dbstream, stream, type = "micro", shared_density = TRUE, assignment = TRUE)
 plot(dbstream, stream, type = "none", shared_density = TRUE, assignment = TRUE)
 
 # see how micro and macro-clusters relate
-# each microcluster has an entry with the macro-cluster id
+# each micro-cluster has an entry with the macro-cluster id
 # Note: unassigned micro-clusters (noise) have an NA
 microToMacro(dbstream)
 
 # do some evaluation
-evaluate(dbstream, stream, measure="purity")
-evaluate(dbstream, stream, measure="cRand", type="macro")
+evaluate_static(dbstream, stream, measure = "purity")
+evaluate_static(dbstream, stream, measure = "cRand", type = "macro")
 
-# use DBSTREAM for conventional clustering (with assignments = TRUE so we can
+# use DBSTREAM also returns the cluster assignment
 # later retrieve the cluster assignments for each point)
 data("iris")
 dbstream <- DSC_DBSTREAM(r = 1)
-update(dbstream, iris[,-5], assignments = TRUE)
+cl <- update(dbstream, iris[,-5], assignments = TRUE)
 dbstream
 
-cl <- get_cluster_assignments(dbstream)
-cl
+head(cl)
 
 # micro-clusters
-plot(iris[,-5], col = cl, pch = cl)
+plot(iris[,-5], col = cl$.class, pch = cl$.class)
 
-# macro-clusters
-plot(iris[,-5], col = microToMacro(dbstream, cl))
+# macro-clusters (2 clusters since reachability cannot separate two of the three species)
+plot(iris[,-5], col = microToMacro(dbstream, cl$.class))
 
+# use DBSTREAM with a formula (cluster all variables but X2)
+stream <- DSD_Gaussians(k = 3, d = 4, noise = 0.05)
+dbstream <- DSC_DBSTREAM(formula = ~ . - X2, r = .2)
+
+update(dbstream, stream, 500)
+get_centers(dbstream)
 }
 \references{
 Michael Hahsler and Matthew Bolanos. Clustering data streams
@@ -152,8 +205,27 @@ based on shared density between micro-clusters. \emph{IEEE Transactions on
 Knowledge and Data Engineering,} 28(6):1449--1461, June 2016
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Micro}}
+Other DSC_Micro: 
+\code{\link{DSC_BICO}()},
+\code{\link{DSC_BIRCH}()},
+\code{\link{DSC_DStream}()},
+\code{\link{DSC_Micro}()},
+\code{\link{DSC_Sample}()},
+\code{\link{DSC_Window}()},
+\code{\link{DSC_evoStream}()}
+
+Other DSC_TwoStage: 
+\code{\link{DSC_DStream}()},
+\code{\link{DSC_TwoStage}()},
+\code{\link{DSC_evoStream}()}
+
+Other DSOutlier: 
+\code{\link{DSC_DStream}()},
+\code{\link{DSOutlier}()}
 }
 \author{
 Michael Hahsler and Matthew Bolanos
 }
+\concept{DSC_Micro}
+\concept{DSC_TwoStage}
+\concept{DSOutlier}

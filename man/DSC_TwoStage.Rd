@@ -8,44 +8,78 @@ DSC_TwoStage(micro, macro)
 }
 \arguments{
 \item{micro}{Clustering algorithm used in the online stage
-(\code{DSC_micro})}
+(\link{DSC_Micro})}
 
 \item{macro}{Clustering algorithm used for reclustering in the offline stage
-(\code{DSC_macro})}
+(\link{DSC_Macro})}
 }
 \value{
-An object of class \code{DSC_TwoStage} (subclass of \code{DSC},
-\code{DSC_Macro}).
+An object of class \code{DSC_TwoStage} (subclass of \link{DSC},
+\link{DSC_Macro}) which is a named list with elements:
+\itemize{
+\item \code{description}: a description of the clustering algorithms.
+\item \code{micro}: The \link{DSD} used for creating micro clusters in the online component.
+\item \code{macro}: The \link{DSD} for offline reclustering.
+\item \code{state}: an environment storing state information needed for reclustering.
+}
+
+with the two clusterers. The names are
+``
 }
 \description{
-Combines a micro and a macro clustering algorithm into a single process.
+Combines an \strong{online clustering component} (\link{DSC_Micro})
+and an \strong{offline reclustering component} (\link{DSC_Macro})
+into a single process.
 }
 \details{
-\code{update()} runs the micro-clustering stage and only when macro cluster
-centers/weights are requested, then the offline stage reclustering is
-automatically performed.
+\code{update()} runs the online micro-clustering stage and only when macro cluster
+centers/weights are requested using \code{\link[=get_centers]{get_centers()}} or \code{\link[=get_weights]{get_weights()}}, then the offline stage
+reclustering is automatically performed.
+
+Available clustering methods can be found in the See Also section below.
 }
 \examples{
-
-stream <- DSD_Gaussians(k=3)
+stream <- DSD_Gaussians(k = 3, d = 2)
 
 # Create a clustering process that uses a window for the online stage and
 # k-means for the offline stage (reclustering)
 win_km <- DSC_TwoStage(
-  micro=DSC_Window(horizon=100),
-  macro=DSC_Kmeans(k=3)
+  micro = DSC_Window(horizon = 100),
+  macro = DSC_Kmeans(k = 3)
   )
 win_km
 
 update(win_km, stream, 200)
 win_km
-plot(win_km, stream, type="both")
-evaluate(win_km, stream, assign="macro")
+win_km$micro
+win_km$macro
 
+plot(win_km, stream)
+evaluate_static(win_km, stream, assign = "macro")
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Macro}}
+Other DSC_TwoStage: 
+\code{\link{DSC_DBSTREAM}()},
+\code{\link{DSC_DStream}()},
+\code{\link{DSC_evoStream}()}
+
+Other DSC: 
+\code{\link{DSC_Macro}()},
+\code{\link{DSC_Micro}()},
+\code{\link{DSC_R}()},
+\code{\link{DSC_Static}()},
+\code{\link{DSC}()},
+\code{\link{animate_cluster}()},
+\code{\link{evaluate.DSC}},
+\code{\link{get_assignment}()},
+\code{\link{plot.DSC}()},
+\code{\link{predict}()},
+\code{\link{prune_clusters}()},
+\code{\link{read_saveDSC}},
+\code{\link{recluster}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC}
+\concept{DSC_TwoStage}

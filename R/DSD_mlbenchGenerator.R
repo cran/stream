@@ -16,88 +16,109 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-
-
-
 #' mlbench Data Stream Generator
-#' 
+#'
 #' A data stream generator class that interfaces data generators found in
-#' mlbench.
-#' 
-#' The \code{DSD_mlbenchGenerator} class is designed to be a wrapper class for
-#' data created by data generators in the mlbench library.
-#' 
-#' Call \code{DSD_mlbenchGenerator} with missing method to get a list of
+#' package `mlbench`.
+#'
+#' The `DSD_mlbenchGenerator` class is designed to be a wrapper class for
+#' data created by data generators in the `mlbench` library.
+#'
+#' Call `DSD_mlbenchGenerator` with missing method to get a list of
 #' available methods.
-#' 
-#' @param method The name of the mlbench data generator.
+#'
+#' @family DSD
+#'
+#' @param method The name of the mlbench data generator. If missing then a list of
+#' all available generators is shown and returned.
 #' @param ... Parameters for the mlbench data generator.
-#' @return Returns a \code{DSD_mlbenchGenerator} object (subclass of
-#' \code{DSD_R}, \code{DSD}) which is a list of the defined parameters. The
-#' parameters are either passed in from the function or created internally.
-#' They include:
-#' 
-#' \item{description}{The name of the class of the DSD object.}
-#' \item{method}{The name of the mlbench data generator.} \item{variables}{The
-#' variables for the mlbench data generator.}
+#' @return Returns a `DSD_mlbenchGenerator` object (subclass of
+#' [DSD_R], [DSD])
 #' @author John Forrest
-#' @seealso \code{\link{DSD}}
 #' @examples
-#' 
-#' stream <- DSD_mlbenchGenerator(method="cassini")
-#' 
-#' plot(stream, n=500)
-#' 
-#' @export DSD_mlbenchGenerator
+#' DSD_mlbenchGenerator()
+#'
+#' stream <- DSD_mlbenchGenerator(method = "cassini")
+#' stream
+#'
+#' get_points(stream, n = 5)
+#'
+#' plot(stream, n = 500)
+#' @export
 DSD_mlbenchGenerator <- function(method, ...) {
-
-  methods <- c("2dnormals","cassini","circle","cuboids","friedman1",
-    "friedman2","friedman3","hypercube", "peak","ringnorm",
-    "shapes","simplex","smiley","spirals","threenorm",
-    "twonorm","waveform","xor")
+  methods <- c(
+    "2dnormals",
+    "cassini",
+    "circle",
+    "cuboids",
+    "friedman1",
+    "friedman2",
+    "friedman3",
+    "hypercube",
+    "peak",
+    "ringnorm",
+    "shapes",
+    "simplex",
+    "smiley",
+    "spirals",
+    "threenorm",
+    "twonorm",
+    "waveform",
+    "xor"
+  )
 
   ### FIXME: It would be nice if we know k and d
 
-  if(missing(method)) {
+  if (missing(method)) {
     cat("Available generators are:\n")
     print(methods)
-    return()
+    return(invisible(methods))
   }
 
   #finds index of partial match in array of methods
   m <- pmatch(tolower(method), methods)
-  if(is.na(m)) stop("DSD_mlbenchGenerator: Invalid data generator")
+  if (is.na(m))
+    stop("DSD_mlbenchGenerator: Invalid data generator")
 
   # creating the DSD object
-  l <- list(description = paste("mlbench:", method),
+  ### TODO: Add k and d to desctiption
+  l <- list(
+    description = paste0("mlbench: ", method),
     method = methods[m],
     variables = list(...)
   )
-  class(l) <- c("DSD_mlbenchGenerator", "DSD_R", "DSD_data.frame", "DSD")
+  class(l) <-
+    c("DSD_mlbenchGenerator", "DSD_R", "DSD")
   l
 }
 
-get_points.DSD_mlbenchGenerator <- function(x, n=1,
-  outofpoints=c("stop", "warn", "ignore"),
-  cluster = FALSE, class = FALSE, outlier=FALSE,...) {
+#' @export
+get_points.DSD_mlbenchGenerator <- function(x,
+  n = 1L,
+  info = TRUE,
+  ...) {
   .nodots(...)
 
-  d <- do.call(paste("mlbench.", x$method,sep=""), c(list(n), x$variables))
-  if(is.null(d$classes)) d$classes <- rep(NA_integer_, times = n)
+  if(n < 1L)
+    stop("n needs to be >= 1.")
 
-  ## the data order needs to be scrambled...
-  if(n > 1) {
+  d <-
+    do.call(paste("mlbench.", x$method, sep = ""), c(list(n), x$variables))
+  if (is.null(d$classes))
+    d$classes <- rep(NA_integer_, times = n)
+
+  ## the data order needs to be scrambled
+  if (n > 1) {
     o <- sample(nrow(d$x))
-    d$x <- d$x[o, , drop=FALSE]
+    d$x <- d$x[o, , drop = FALSE]
     d$classes <- d$classes[o]
   }
 
-  df <- as.data.frame(d$x)
-  names(df) <- paste("V", 1:ncol(df), sep = "")
-  if(cluster) attr(df, "cluster") <- as.integer(d$classes)
-  if(class) df <- cbind(df, class = as.integer(d$classes))
+  dat <- as.data.frame(d$x)
+  colnames(dat) <- paste0("V", 1:ncol(dat))
 
-  df
+  if (info)
+    dat[['.class']] <- as.integer(d$classes)
+
+  dat
 }
-

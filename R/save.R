@@ -19,8 +19,9 @@
 #' Save and Read DSC objects safely (serializes the underlying data structure).
 #' This also works for \pkg{streamMOA} DSC objects.
 #'
-#' @name saveDSC
-#' @aliases save saveDSC readDSC
+#' @family DSC
+#'
+#' @name read_saveDSC
 #' @param object a DSC object.
 #' @param file filename.
 #' @param ... further arguments.
@@ -42,23 +43,26 @@
 #'
 #' ## cleanup
 #' unlink("dbstream.Rds")
-#'
+
+#' @rdname read_saveDSC
+#' @export
 saveDSC <- function(object, file, ...) {
   ### for MOA based objects from streamMOA (rJava)
     if(!is.null(object$javaObj)) rJava::.jcache(object$javaObj)
 
-    if(!is.null(object$micro_dsc$javaObj)) rJava::.jcache(object$micro$javaObj)
-    if(!is.null(object$macro_dsc$javaObj)) rJava::.jcache(object$macro$javaObj)
+    if(!is.null(object$micro$javaObj)) rJava::.jcache(object$micro$javaObj)
+    if(!is.null(object$macro$javaObj)) rJava::.jcache(object$macro$javaObj)
 
   ### for RCpp
     try(object$RObj$cache(), silent = TRUE)
-    try(object$micro_dsc$RObj$cache(), silent = TRUE)
-    try(object$macro_dsc$RObj$cache(), silent = TRUE)
+    try(object$micro$RObj$cache(), silent = TRUE)
+    try(object$macro$RObj$cache(), silent = TRUE)
 
     saveRDS(object, file=file, ...)
 }
 
-#' @rdname saveDSC
+#' @rdname read_saveDSC
+#' @export
 readDSC <- function(file) {
     d <- readRDS(file)
 
@@ -66,8 +70,8 @@ readDSC <- function(file) {
 
     ### for Rcpp
     try(d$RObj$uncache(), silent = TRUE)
-    try(d$micro_dsc$RObj$uncache(), silent = TRUE)
-    try(d$macro_dsc$RObj$uncache(), silent = TRUE)
+    try(d$micro$RObj$uncache(), silent = TRUE)
+    try(d$macro$RObj$uncache(), silent = TRUE)
 
     d
 }

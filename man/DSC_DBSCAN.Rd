@@ -2,11 +2,23 @@
 % Please edit documentation in R/DSC_DBSCAN.R
 \name{DSC_DBSCAN}
 \alias{DSC_DBSCAN}
+\alias{DBSCAN}
+\alias{dbscan}
 \title{DBSCAN Macro-clusterer}
 \usage{
-DSC_DBSCAN(eps, MinPts = 5, weighted = TRUE, description = NULL)
+DSC_DBSCAN(
+  formula = NULL,
+  eps,
+  MinPts = 5,
+  weighted = TRUE,
+  description = NULL
+)
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{eps}{radius of the eps-neighborhood.}
 
 \item{MinPts}{minimum number of points required in the eps-neighborhood.}
@@ -18,8 +30,8 @@ used.}
 method.}
 }
 \value{
-An object of class \code{DSC_DBSCAN} (a subclass of \code{DSC},
-\code{DSC_R}, \code{DSC_Macro}).
+An object of class \code{DSC_DBSCAN} (a subclass of \link{DSC},
+\link{DSC_R}, \link{DSC_Macro}).
 }
 \description{
 Macro Clusterer.
@@ -35,29 +47,25 @@ DBSCAN first finds core points based on the number of other points in its
 eps-neighborhood. Then core points are joined into clusters using
 reachability (overlapping eps-neighborhoods).
 
-Note that this clustering cannot be updated iteratively and every time it is
+\code{\link[=update]{update()}} and \code{\link[=recluster]{recluster()}} invisibly return the assignment of the data points to clusters.
+
+\strong{Note} that this clustering cannot be updated iteratively and every time it is
 used for (re)clustering, the old clustering is deleted.
 }
 \examples{
-
 # 3 clusters with 5\% noise
-stream <- DSD_Gaussians(k=3, d=2, noise=0.05)
+stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 
-# Use DBSCAN to recluster micro clusters (a sample)
-sample <- DSC_Sample(k=101)
-update(sample, stream, 500)
+# Use a moving window for "micro-clusters and recluster with DBSCAN (macro-clusters)
+cl <- DSC_TwoStage(
+  micro = DSC_Window(horizon = 100),
+  macro = DSC_DBSCAN(eps = .05)
+)
 
-dbscan <- DSC_DBSCAN(eps = .05)
-recluster(dbscan, sample)
-plot(dbscan, stream, type="both")
+update(cl, stream, 500)
+cl
 
-# For comparison we can cluster some data with DBSCAN directly
-# Note: DBSCAN is not suitable for data streams since it passes over the data
-# several times.
-dbscan <- DSC_DBSCAN(eps = .05)
-update(dbscan, stream, 500)
-plot(dbscan, stream)
-
+plot(cl, stream)
 }
 \references{
 Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
@@ -67,8 +75,14 @@ databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad.
 Discovery and Data Mining (KDD-96).} AAAI Press. pp. 226-231.
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Macro}}
+Other DSC_Macro: 
+\code{\link{DSC_EA}()},
+\code{\link{DSC_Hierarchical}()},
+\code{\link{DSC_Kmeans}()},
+\code{\link{DSC_Macro}()},
+\code{\link{DSC_Reachability}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC_Macro}

@@ -5,16 +5,21 @@
 \title{Kmeans Macro-clusterer}
 \usage{
 DSC_Kmeans(
+  formula = NULL,
   k,
   weighted = TRUE,
   iter.max = 10,
-  nstart = 1,
+  nstart = 10,
   algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"),
   min_weight = NULL,
   description = NULL
 )
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{k}{either the number of clusters, say k, or a set of initial
 (distinct) cluster centers. If a number, a random set of (distinct) rows in
 x is chosen as the initial centers.}
@@ -34,8 +39,8 @@ ignored for reclustering.}
 method.}
 }
 \value{
-An object of class \code{DSC_Kmeans} (subclass of \code{DSC},
-\code{DSC_R}, \code{DSC_Macro})
+An object of class \code{DSC_Kmeans} (subclass of \link{DSC},
+\link{DSC_R}, \link{DSC_Macro})
 }
 \description{
 Macro Clusterer.
@@ -43,36 +48,39 @@ Class implements the k-means algorithm for reclustering a set of
 micro-clusters.
 }
 \details{
-Please refer to function \code{kmeans} in \pkg{stats} for more details on
+\code{\link[=update]{update()}} and \code{\link[=recluster]{recluster()}} invisibly return the assignment of the data points
+to clusters.
+
+Please refer to function \code{\link[stats:kmeans]{stats::kmeans()}} for more details on
 the algorithm.
 
-Note that this clustering cannot be updated iteratively and every time it is
+\strong{Note} that this clustering cannot be updated iteratively and every time it is
 used for (re)clustering, the old clustering is deleted.
 }
 \examples{
+# 3 clusters with 5\% noise
+stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 
-stream <- DSD_Gaussians(k=3, noise=0)
+# Use a moving window for "micro-clusters and recluster with k-means (macro-clusters)
+cl <- DSC_TwoStage(
+  micro = DSC_Window(horizon = 100),
+  macro = DSC_Kmeans(k = 3)
+)
 
-# create micro-clusters via sampling
-sample <- DSC_Sample(k=20)
-update(sample, stream, 500)
-sample
-  
-# recluster micro-clusters
-kmeans <- DSC_Kmeans(k=3)
-recluster(kmeans, sample)
-plot(kmeans, stream, type="both")
+update(cl, stream, 500)
+cl
 
-# For comparison we use k-means directly to cluster data
-# Note: k-means is not a data stream clustering algorithm
-kmeans <- DSC_Kmeans(k=3)
-update(kmeans, stream, 500)
-plot(kmeans, stream)
-
+plot(cl, stream)
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Macro}}
+Other DSC_Macro: 
+\code{\link{DSC_DBSCAN}()},
+\code{\link{DSC_EA}()},
+\code{\link{DSC_Hierarchical}()},
+\code{\link{DSC_Macro}()},
+\code{\link{DSC_Reachability}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC_Macro}

@@ -4,9 +4,18 @@
 \alias{DSC_Reachability}
 \title{Reachability Micro-Cluster Reclusterer}
 \usage{
-DSC_Reachability(epsilon, min_weight = NULL, description = NULL)
+DSC_Reachability(
+  formula = NULL,
+  epsilon,
+  min_weight = NULL,
+  description = NULL
+)
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{epsilon}{radius of the epsilon-neighborhood.}
 
 \item{min_weight}{micro-clusters with a weight less than this will be
@@ -34,32 +43,28 @@ epsilon). Two micro-clusters are reachable if they are connected by a chain
 of pairwise directly reachable micro-clusters.  All mutually reachable
 micro-clusters are put in the same cluster.
 
-Reachability uses internally \code{DSC_Hierarchical} with single link.
+Reachability uses internally \link{DSC_Hierarchical} with single link.
 
-Note that this clustering cannot be updated iteratively and every time it is
+\code{\link[=update]{update()}} and \code{\link[=recluster]{recluster()}} invisibly return the assignment of the data points
+to clusters.
+
+\strong{Note} that this clustering cannot be updated iteratively and every time it is
 used for (re)clustering, the old clustering is deleted.
 }
 \examples{
+#' # 3 clusters with 5\% noise
+stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 
-stream <- DSD_mlbenchGenerator("cassini")
+# Use a moving window for "micro-clusters and recluster with DBSCAN (macro-clusters)
+cl <- DSC_TwoStage(
+  micro = DSC_Window(horizon = 100),
+  macro = DSC_Reachability(eps = .05)
+)
 
-# Recluster micro-clusters from DSC_Sample with reachability
-sample <- DSC_Sample(k = 200)
-update(sample, stream, 1000)
+update(cl, stream, 500)
+cl
 
-reach <- DSC_Reachability(epsilon=0.3)
-recluster(reach, sample)
-
-plot(reach, stream, type="both")
-
-# For comparison we using reachability clustering directly on data points
-# Note: reachability is not a data stream clustering algorithm taking O(n^2)
-# time and space.
-reach <- DSC_Reachability(epsilon=0.2)
-update(reach, stream, 500)
-reach
-plot(reach, stream)
-
+plot(cl, stream)
 }
 \references{
 Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
@@ -69,8 +74,14 @@ databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad.
 Discovery and Data Mining (KDD-96).} AAAI Press. pp. 226-231.
 }
 \seealso{
-\code{\link{DSC}}, \code{\link{DSC_Macro}}
+Other DSC_Macro: 
+\code{\link{DSC_DBSCAN}()},
+\code{\link{DSC_EA}()},
+\code{\link{DSC_Hierarchical}()},
+\code{\link{DSC_Kmeans}()},
+\code{\link{DSC_Macro}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSC_Macro}

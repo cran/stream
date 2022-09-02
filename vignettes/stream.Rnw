@@ -35,7 +35,7 @@
 \DeclareTextFontCommand{\emph}{\normalfont}
 
 %\usepackage{Sweave}
-%\VignetteIndexEntry{Introduction to stream}
+%\VignetteIndexEntry{stream: Introduction to the package}
 
 %% publication information
 %% NOTE: This needs to filled out ONLY IF THE PAPER WAS ACCEPTED.
@@ -99,7 +99,7 @@ and frequent pattern mining.
 \Plainkeywords{data streams, data mining, clustering}
 
 \Address{Michael Hahsler\\
-Engineering Management, Information, and Systems\\
+Computer Science\\
 Lyle School of Engineering\\
 Southern Methodist University\\
 P.O. Box 750122 \\
@@ -135,7 +135,7 @@ E-mail: \email{jforrest@microsoft.com}
 %\sloppy
 
 
-<<echo=FALSE>>=
+<<options, echo=FALSE>>=
 options(width = 75, digits = 3, prompt = 'R> ', scipen = 3)
 @
 
@@ -673,42 +673,51 @@ simulated data sets to get reproducible results.
 
 \begin{figure}[tb]
 \centering
-\includegraphics[width=.5\linewidth]{stream-initial_example}
+\includegraphics[width=.5\linewidth]{stream-simple_kmeans_reclustering}
 \caption{Data stream clustering result of D-Stream on a simple simulated data set with three random Gaussians. Micro-clusters are shown as circles and macro-clusters are shown as crosses (size represents weight).}
-\label{figure:initial_example}
+\label{figure:simple_kmeans_reclustering}
 \end{figure}
 
 
-<<>>=
+<<init>>=
 library("stream")
 set.seed(1000)
-stream <- DSD_Gaussians(k = 3, d = 2)
+stream_orig <- DSD_Gaussians(k = 3, d = 2)
 @
 
-Next, we create an instance of the density-based
+Next, we apply a filter to transform the stream. Here, we will
+scale the stream to z-scores. We use here a pipe, but \code{DSF_Scale()} can also be called with the
+input stream as its first argument.
+
+<<scale>>=
+stream <- stream_orig %>% DSF_Scale()
+@
+
+Now, we create an instance of the density-based
 data stream clustering algorithm
 D-Stream which uses grid cells as micro-clusters. We
 specify the grid cell size (\code{gridsize}) as .1 and require that the density of a grid cell (\code{Cm}) needs to be at least
 1.2 times the average cell density to become a micro-cluster.
 Then we update the model with the next 500 data points from the stream.
-<<>>=
-dstream <- DSC_DStream(gridsize = .1, Cm = 1.2)
+<<simple_DStream>>=
+dstream <- DSC_DStream(gridsize = .5, Cm = 1.2)
 update(dstream, stream, n = 500)
 @
 
 Finally, we perform reclustering using $k$-means with three clusters
-and plot the resulting micro and macro clusters (see Figure~\ref{figure:initial_example}).
-<<initial_example, fig=TRUE, include=FALSE>>=
+and plot the resulting micro and macro clusters (see Figure~\ref{figure:simple_kmeans_reclustering}).
+<<simple_kmeans_reclustering, fig=TRUE, include=FALSE>>=
 km <- DSC_Kmeans(k = 3)
 recluster(km, dstream)
 plot(km, stream, type = "both")
 @
 
 
-As shown in this example, the \pkg{stream} framework consists of two
+As shown in this example, the \pkg{stream} framework consists of three
 main components:
 \begin{enumerate}
 \item {Data stream data (DSD)} simulates or connects to a data stream.
+\item {Data stream filter (DSF)} one or more filters to transform the stream.
 \item {Data stream task (DST)} performs a data stream mining task.
     In the example above, we performed twice a data stream clustering (DSC)
     task.
@@ -727,7 +736,7 @@ object. DSTs can implement any type of data stream mining task
 
 \begin{figure}[tb]
 \centering
-\includegraphics[width=.7\linewidth]{architecture}
+\includegraphics[width=.9\linewidth]{architecture}
 \caption{A high level view of the \pkg{stream} architecture.}
 \label{figure:workflow}
 \end{figure}
@@ -866,7 +875,7 @@ from the help page for each class. The result of this creator function
 is not a data set but
 an object representing the stream's properties and its current state.
 \item A data generating function \\
-\code{get_points(x, n = 1, outofpoints = c("stop", "warn", "ignore") , ...)}.\\
+\code{get_points(x, n = 1, outofpoints = c("stop", "warn", "ignore") , info = TRUE, ...)}.\\
 This function is used
 to obtain the next data point (or next \code{n} data points) from the
 stream represented by object~\code{x}. Parameter \code{outofpoints}
@@ -909,7 +918,7 @@ necessary for replication.
 %In this example, we focus on implementations of the DSD class to model
 %data streams.
 
-<<>>=
+<<Create_DSD>>=
 library("stream")
 set.seed(1000)
 
@@ -933,26 +942,17 @@ the multivariate Gaussian distribution given by the mean and covariance matrix o
 the cluster. Noise points are generated in a bounding box from a
 $d$-dimensional uniform
 distribution.
-The following instruction requests $n=5$ new data points.
+The following instruction requests $n = 10$ new data points.
 
-<<>>=
-p <- get_points(stream, n = 5)
+<<get_points>>=
+p <- get_points(stream, n = 10)
 p
 @
 
 The result is a data frame containing the data points as rows. For evaluation
 it is often important to know the ground truth, i.e., from which
 cluster each point was created. Many generators also return the ground
-truth (class or cluster label) if they are called with \code{class = TRUE}.
-%The ground truth is returned as an attribute with the name
-%\code{"assignment"} and can be accessed in the following way:
-
-
-<<>>=
-p <- get_points(stream, n = 100, class = TRUE)
-head(p, n = 10)
-@
-
+truth (class or cluster label) and other information as columns starting with `.`.
 Note that the data was created by a generator with 5\% noise. Noise points
 do not belong to any cluster and thus have a class label of \code{NA}.
 
@@ -1095,49 +1095,6 @@ package~\pkg{animation}.
 %To see the life animation, we refer the reader to the example code in
 %the manual page for \code{animate_data}.
 
-\subsection{Example: Outlier generating data streams} \label{examples:outlier_gen}
-
-We can use \code{DSD_Gaussians} to generate and mark outliers as well. We define
-a data stream consisting of 10000 data points.
-<<>>=
-library("stream")
-set.seed(1000)
-stream <- DSD_Gaussians(k = 3, d = 2, outliers = 4,
-                        outlier_options = list(outlier_horizon = 10000),
-                        separation = 0.3, space_limit = c(0,1))
-@
-Next, we plot 10000 points from the data stream, which can be seen in Figure \ref{figure:dsd_outliers}.
-<<out1, fig=TRUE, include=FALSE, echo=FALSE>>=
-plot(stream, 10000, xlim = c(0, 1), ylim = c(0, 1))
-@
-
-\begin{figure}
-\centering
-\includegraphics[width=.4\linewidth]{stream-out1}
-\caption{Plotting 10000 data instances from the data stream comprising outliers.}
-\label{figure:dsd_outliers}
-\end{figure}
-
-We can obtain data points from the stream, asking for the outlier marks.
-<<>>=
-reset_stream(stream)
-p <- get_points(stream, n = 10000, outlier = TRUE)
-head(p)
-@
-
-Outlier marks can be retrieved from the \code{outlier} attribute.
-<<>>=
-out_marks <- attr(p, "outlier")
-sum(out_marks)
-@
-We can see that four data points were marked as outliers. These outliers were generated at positions
-<<>>=
-which(out_marks)
-@
-and can be seen also in Figure \ref{figure:dsd_outliers}. Such data stream generators can
-be used in outlier detector assessment, since they generate the ground truth for the true
-positive outliers.
-
 \subsection{Example: Advanced statistical data streams} \label{examples:advanced_stat}
 
 \code{DSD_Gaussians} has capabilities to generate more complex statistical data streams.
@@ -1150,9 +1107,9 @@ matrices can be limited, which comes together with space limitation to fit clust
 <<>>=
 library("stream")
 set.seed(1000)
-stream1 <- DSD_Gaussians(k = 3, d = 2, variance_limit = 0.2,
+stream1 <- DSD_Gaussians(k = 3, d = 2, variance_limit = c(0, 0.01),
                          space_limit = c(0, 5))
-stream2 <- DSD_Gaussians(k = 3, d = 2, variance_limit = 2,
+stream2 <- DSD_Gaussians(k = 3, d = 2, variance_limit = c(.05, .1),
                          space_limit = c(0, 5))
 @
 Next, we plot 1000 points from the data stream, which can be seen in Figure \ref{figure:dsd_gauss_limits}.
@@ -1164,10 +1121,10 @@ plot(stream2, 1000)
 @
 \begin{figure}
 \begin{minipage}{.48\linewidth} \centering
-\includegraphics[width=\linewidth]{stream-dsd-lim1} \\(a) Maximal variance = 0.2
+\includegraphics[width=\linewidth]{stream-dsd-lim1} \\(a) Variance between 0 and 0.01
 \end{minipage}
 \begin{minipage}{.48\linewidth} \centering
-\includegraphics[width=\linewidth]{stream-dsd-lim2} \\(b) Maximal variance = 2
+\includegraphics[width=\linewidth]{stream-dsd-lim2} \\(b) Variance between .05 and 0.1
 \end{minipage}
 \caption{Data points from \code{DSD\_Gaussians} having maximal variance limit and space limits.}
 \label{figure:dsd_gauss_limits}
@@ -1185,15 +1142,15 @@ on the related covariance matrix. This is the reason why we want do use statisti
 <<>>=
 library("stream")
 set.seed(1000)
-stream1 <- DSD_Gaussians(k = 5, d = 2, variance_limit = 0.2,
+stream1 <- DSD_Gaussians(k = 5, d = 2, variance_limit = c(0.01, 0.03),
                          space_limit = c(0, 7),
                          separation_type = "Mahalanobis",
-                         separation = 4)
+                         separation = 3)
 @
 <<>>=
 set.seed(1000)
-stream2 <- DSD_Gaussians(k = 5, d = 2, variance_limit = 0.2,
-                         space_limit = c(0, 15),
+stream2 <- DSD_Gaussians(k = 5, d = 2, variance_limit = c(0.01, 0.03),
+                         space_limit = c(0, 7),
                          separation_type = "Mahalanobis",
                          separation = 10)
 @
@@ -1206,7 +1163,7 @@ plot(stream2, 1000)
 @
 \begin{figure}
 \begin{minipage}{.48\linewidth} \centering
-\includegraphics[width=\linewidth]{stream-dsd-ms1} \\(a) Mahalanobis separation = 4
+\includegraphics[width=\linewidth]{stream-dsd-ms1} \\(a) Mahalanobis separation = 3
 \end{minipage}
 \begin{minipage}{.48\linewidth} \centering
 \includegraphics[width=\linewidth]{stream-dsd-ms2} \\(b) Mahalanobis separation = 10
@@ -1215,50 +1172,6 @@ plot(stream2, 1000)
 \label{figure:dsd_gauss_mahasep}
 \end{figure}
 
-\subsubsection{Adding outliers}
-
-For assessment of outlier detectors, we want to generate some number of outliers in the data stream.
-Each data point (\code{o} in total) that represents an outlier need to be marked and statistically just enough
-separated from clusters so that outlier detectors could pick this separation. In
-\code{DSD_Gaussians}, a concept of virtual covariance (\cite{krleza2020shc}) is used to
-create a statistically significant free area around outliers. This can be controlled through
-\code{outlier_virtual_variance} parameter.
-<<>>=
-library("stream")
-set.seed(1000)
-stream1 <- DSD_Gaussians(k = 5, d = 2, outliers = 5, variance_limit = 0.2,
-                         space_limit = c(0, 15), separation = 4,
-                         separation_type = "Mahalanobis",
-                         outlier_options = list(
-                             outlier_virtual_variance = 0.3))
-@
-<<>>=
-set.seed(1000)
-stream2 <- DSD_Gaussians(k = 5, d = 2, outliers = 5, variance_limit = 0.2,
-                         space_limit = c(0, 40), separation = 4,
-                         separation_type = "Mahalanobis",
-                         outlier_options = list(
-                             outlier_virtual_variance = 3))
-@
-Plots comprising 1000 points from the data stream can be seen in Figure \ref{figure:dsd_gauss_mahasep}.
-<<dsd-mso1, fig=TRUE, include=FALSE, echo=FALSE>>=
-plot(stream1, 1000)
-@
-<<dsd-mso2, fig=TRUE, include=FALSE, echo=FALSE>>=
-plot(stream2, 1000)
-@
-\begin{figure}
-\begin{minipage}{.48\linewidth} \centering
-\includegraphics[width=\linewidth]{stream-dsd-mso1} \\(a) Outlier virt. variance = 0.3
-\end{minipage}
-\begin{minipage}{.48\linewidth} \centering
-\includegraphics[width=\linewidth]{stream-dsd-mso2} \\(b) Outlier virt. variance = 3
-\end{minipage}
-\caption{Data points from \code{DSD\_Gaussians} having distinct outlier virtual variances.}
-\label{figure:dsd_gauss_outsep}
-\end{figure}
-The separation of outliers is clear when comparing Figures \ref{figure:dsd_gauss_outsep}a and \ref{figure:dsd_gauss_outsep}b.
-\newpage
 \subsection{Example: Reading and writing data streams} \label{examples:disk}
 
 Although data streams are potentially unbounded by definition and thus
@@ -1320,7 +1233,7 @@ directory.
 <<>>=
 file <- system.file("examples", "kddcup10000.data.gz", package = "stream")
 stream_file <- DSD_ReadCSV(gzfile(file),
-  take = c(1, 5, 6, 8:11, 13:20, 23:42), class = 42, k = 7)
+  take = c(1, 5, 6, 8:11, 13:20, 23:41, .class = 42), k = 7)
 stream_file
 @
 
@@ -1399,20 +1312,17 @@ replayer
 
 Note that the stream is now at position 6.
 The stream only has 1854 points left and the following request for more
-than the available number of data points results in
-an error.
+than the available number of data points results in returning all remainin points and a warning.
 
-<<eval=FALSE>>=
-get_points(replayer, n = 2000)
-@
-<<echo=FALSE, results=verbatim>>=
-err <- try(get_points(replayer, n = 2000))
-cat(err)
+<<>>=
+points <- get_points(replayer, n = 2000)
+dim(points)
 @
 
-Note that with the parameter \code{outofpoints} this behavior can be changed to a warning or ignoring the problem.
-
-\code{DSD_Memory} and \code{DSD_ReadCSV} can be created to loop
+Note that this behavior can be changed to an error or ignoring the problem with the parameter \code{outofpoints} when constructing
+table-based data streams like \code{DSD_Memory}, \code{DSD_ReadStream},
+\code{DSD_ReadStream}, and \code{DSD_ReadDB}.
+\code{DSD_Memory} and \code{DSD_ReadCSV} can also be created to loop
 indefinitely, i.e., start over once the last data point is reached.
 This is achieved by passing \code{loop = TRUE} to the creator function.
 The current position in the stream for those
@@ -1654,33 +1564,10 @@ After reclustering the macro-clusters can be inspected (using \code{get_centers(
 the assignment of micro-clusters to macro-clusters is available via
 \code{microToMacro()}.
 
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{interaction_singlepass}
-\caption{Interaction between the DSD and single-pass / outlier detector DSC classes.}
-\label{figure:interaction_singlepass}
-\end{figure}
-
-Figure \ref{figure:interaction_singlepass} shows interaction for single-pass clusterers
-(\code{DSC_SinglePass}) and outlier detectors (\code{DSC_Outlier}). Single-pass clusterers
-not necessarily need to be outlier detectors. The interaction is slightly modified from the
-default interaction in Figure \ref{figure:interaction}. Since single-pass clusterers perform
-model updates for each data point retrieved from the input data stream, using
-\code{update} to update models before classification becomes unnecessary. However, \code{update}
-method can still be used when we do not care about cluster assignments. Usual way of using
-single-pass clusterers is to call \code{get_assignment} method, which updates the clusterer
-model and returns cluster assignments. In outlier detectors (\code{DSC_Outlier}),
-\code{get_assignment} returns outlier marks and identifiers as well. After that, we can use the
-same methods as in Figure \ref{figure:interaction} on the clusterer instance. For outlier detectors
-there are additional methods, such as \code{get_outlier_positions}, which returns outlier
-spatial positions. Anytime after calling \code{update} or \code{get_assignment}, we can re-check
-outlier validity by calling \code{recheck_outlier} method on the outlier detector instance.
-
 The following data stream clustering algorithms
 are currently available:
 
 \begin{itemize}
-
 
 %\item\code{DSC_BIRCH} uses the first pass of the BIRCH (balanced iterative reducing and %clustering using hierarchies) algorithm by \cite{stream_clust:Zhang:1996}. It generates
 %a cluster feature (CF) tree and the leave notes are used as micro-clusters.
@@ -1909,7 +1796,7 @@ is performed in \pkg{stream} via
 
 
 \begin{center}
-\code{evaluate(dsc, dsd, measure, n = 100, type = c("auto", "micro", "macro"),}\\
+\code{evaluate_static(dsc, dsd, measure, n = 100, type = c("auto", "micro", "macro"),}\\
 \code{assign = "micro", assignmentMethod = c("auto", "model", "nn"),}\\
 \code{noise = c("class", "exclude"), ...)},
 \end{center}
@@ -1963,7 +1850,7 @@ which can be found in many text books \citep[e.g.,][]{clust:Jain:1988,Kaufman:19
 or in the documentation supplied with the packages~\pkg{fpc}~\citep{stream:Hennig:2014},
 \pkg{clue}~\citep{stream:Hornik:2013} and
 \pkg{cluster}~\citep{stream:Maechler:2014}.
-Measures currently available for \code{evaluate()}
+Measures currently available for \code{evaluate_static()}
 (method name are under quotation marks and the package that implements the
 evaluation measure is shown in parentheses) include:
 
@@ -2082,7 +1969,7 @@ The F1 measure is the harmonic mean of precision and recall.
 \end{itemize}
 
 
-\code{evaluate()} is appropriate if the data stream does not evolve
+\code{evaluate_static()} is appropriate if the data stream does not evolve
 significantly from the data that is used to learn the clustering to
 the data that is used for evaluation.
 The approach described next might be more appropriate for
@@ -2130,62 +2017,21 @@ Longer horizons have the advantage that evaluation
 can be usually performed more efficiently for larger batches of points.
 
 This prequential evaluation strategy is implemented in \pkg{stream} as function
-\code{evaluate_cluster()}. It shares most parameters with \code{evaluate()}
+\code{evaluate_stream()}. It shares most parameters with \code{evaluate_static()}
 and
 %in addition to the methods sum of squared (\code{"SSQ"}) and purity (\code{"purity"})
-all evaluation measures for \code{evaluate()} described above can be used.
+all evaluation measures for \code{evaluate_static()} described above can be used.
 
 \subsection{Evaluation of clustering done by single-pass clusterers}
 
 The single-pass clusterers and outlier detectors are doing classification and model update
 for every data point retrieved from the input data stream. This makes then more fine-grained.
 Evaluation of single-pass clusterers is a special case of evaluation for dynamic data streams
-having $horizon=1$. For \code{evaluate_cluster(..., horizon=1000, ...)} this means that a
+having $horizon=1$. For \code{evaluate_stream(..., horizon=1000, ...)} this means that a
 single-pass clusterer processes the batch of 1000 data points each data point
 individually, which includes both the model update and returning the assignment. From the caller
 point of view, such evaluation is the same as for all other clustering algorithms in the
 \pkg{stream} package.
-
-\subsection{Evaluation of clustering using callbacks}
-
-While most of the well-known clustering indices are already supported by the \pkg{stream}
-package (or by the \pkg{clue} package), some clusterers have available other performance and memory
-indicators that users can use for assessment and tuning. This implies creation of a custom
-code that can be executed within the evaluation procedures, right after the assessment
-(\code{get_assessment}) of data points retrieved from the input data stream. For this
-purpose there is an abstract class \code{EvalCallback} that can be used to write classes
-that implement ad-hoc evaluation measures. Each evaluation callback object is instantiated
-using classes that inherit \code{EvalCallback}, which must implement the following fields:
-\begin{itemize}
-    \item \code{all_measures} - The vector of measures this callback class contributes to the
-    evaluation procedure.
-    \item \code{internal_measures} - The subset of all measures that are considered for internal
-    measures.
-    \item \code{external_measures} - The subset of all measures that are considered for external
-    measures.
-    \item \code{outlier_measures} - The subset of all measures that are considered for outlier
-    measures.
-\end{itemize}
-and the following method:
-\begin{itemize}
-    \item \code{evaluate_callback(cb_obj, dsc, measure, points, actual, predict,}\\
-    \code{outliers, predict_outliers, predict_outliers_corrid, centers, noise)}\\
-    This is the method that comprises the custom code required to calculate all measures this
-    callback contributes to the evaluation procedure.
-\end{itemize}
-
-Evaluating using additional callback objects can be done through:
-\begin{itemize}
-    \item \code{evaluate_with_callbacks(dsc, dsd, measure, callbacks=NULL,}\\
-    \code{n = 100, type=c("auto", "micro", "macro"), assign="micro",}\\
-    \code{assignmentMethod=c("auto","model", "nn"), noise = c("class", "exclude"),}\\
-    \code{...)}
-    \item \code{evaluate_cluster_with_callbacks(dsc, dsd, measure,}\\
-    \code{callbacks=NULL, n=1000, type=c("auto", "micro", "macro"),}\\
-    \code{assign="micro", assignmentMethod =  c("auto", "model", "nn"),}\\
-    \code{horizon=100, verbose=FALSE,noise = c("class", "exclude"), ...)}
-\end{itemize}
-where \code{callbacks} parameter is a named list of callback objects.
 
 %%% FIXME: CMM
 %%% short overview in Silva:2013
@@ -2233,12 +2079,12 @@ update(dstream, stream, n = 2000)
 @
 
 
-The \code{evaluate()} function takes a DSC object
+The \code{evaluate_static()} function takes a DSC object
 containing a clustering and a DSD object with evaluation data to
 compute several quality measures for clustering.
 
 <<>>=
-evaluate(dstream, stream, n = 100)
+evaluate_static(dstream, stream, n = 100)
 @
 
 The number of points taken from \code{dsd} and used for the evaluation are
@@ -2250,11 +2096,11 @@ since calculating some measures is computational quite expensive.
 Individual measures can be calculated using the measure argument.
 
 <<>>=
-evaluate(dstream, stream, measure = c("purity", "crand"), n = 500)
+evaluate_static(dstream, stream, measure = c("purity", "crand"), n = 500)
 @
 
 Note that
-this second call of \code{evaluate()} uses a new and larger set of
+this second call of \code{evaluate_static()} uses a new and larger set of
 500 evaluation data points from the stream and thus the results may
 vary slightly from the first call.
 Purity of the micro-clusters is high since each micro-cluster only covers points
@@ -2263,7 +2109,7 @@ split the points from each true cluster. We will see in one of the
 following examples that reclustering will improve the corrected Rand index.
 
 To evaluate how well a clustering algorithm can adapt to an evolving
-data stream, \pkg{stream} provides \code{evaluate_cluster()} to
+data stream, \pkg{stream} provides \code{evaluate_stream()} to
 perform prequential evaluation with a given horizon.
 %Following
 %the evaluation scheme developed by
@@ -2295,7 +2141,7 @@ quickly and then perform the evaluation over 5000 data points with a horizon of
 set.seed(1000)
 stream <- DSD_Benchmark(1)
 dstream <- DSC_DStream(gridsize = .05, lambda = .01)
-ev <- evaluate_cluster(dstream, stream,
+ev <- evaluate_stream(dstream, stream,
   measure = c("numMicroClusters", "purity"), n = 5000, horizon = 100)
 head(ev)
 @
@@ -2434,13 +2280,13 @@ This assignment is translated into macro-cluster assignments and
 evaluated using the ground truth provided by the
 data stream generator.
 <<>>=
-evaluate(km, stream, measure = c("purity", "crand", "SSQ"), n = 1000)
+evaluate_static(km, stream, measure = c("purity", "crand", "SSQ"), n = 1000)
 @
 
 Alternatively, the new data points can also be directly assigned to the closest
 macro-cluster.
 <<>>=
-evaluate(km, stream, c(measure = "purity", "crand", "SSQ"), n = 1000,
+evaluate_static(km, stream, c(measure = "purity", "crand", "SSQ"), n = 1000,
   assign = "macro")
 @
 
@@ -2473,7 +2319,7 @@ assignment
 \centering
 \includegraphics[width=.5\linewidth]{stream-silhouette}
 \caption{Silhouette plot for D-Stream clustering with two macro-clusters and
-a cluster ($j=0$) representing the unassigned points.}
+a cluster ($j = 0$) representing the unassigned points.}
 \label{figure:silhouette}
 \end{figure}
 
@@ -2498,58 +2344,6 @@ thus is expected to have a large negative silhouette.
 Cluster $j=2$ comprises the two overlapping real clusters and thus
 has lower silhouette values than cluster $j=1$. Other visual evaluation methods
 can be used in a similar way.
-
-\subsection{Example: Evaluating with callbacks}\label{examples:evaluate_with_callbacks}
-
-For custom evaluation using callbacks, we create a class that inherits \code{EvalCallback}.
-<<>>=
-library("stream")
-CustomCallback <- function() {
-  env <- environment()
-  all_measures <- c("LowestWeightPercentage")
-  internal_measures <- c()
-  external_measures <- all_measures
-  outlier_measures <- c()
-  this <- list(description = "Custom evaluation callback",
-               env = environment())
-  class(this) <- c("CustomCallback", "EvalCallback")
-  this
-}
-@
-
-In the new class, we define all evaluation measures that are contributed. In our case this is
-\code{LowestWeightPercentage}. Next, we define the callback code, i.e., the code that
-performs calculation of our custom evaluation measure.
-
-<<>>=
-evaluate_callback.CustomCallback <- function(cb_obj, dsc, measure, points,
-                                             actual, predict, outliers,
-                                             predict_outliers,
-                                             predict_outliers_corrid,
-                                             centers, noise) {
-    r <- list()
-    if("LowestWeightPercentage" %in% measure)
-        r$LowestWeightPercentage=min(get_weights(dsc))/sum(get_weights(dsc))
-    r
-}
-@
-
-Since \code{DSC_Kmeans} clusterer returns the number of data points assignment to each
-macro-cluster, we use this to calculate population percentage for the minimally populated
-cluster.
-
-We take \code{DSD_Gaussians} data stream generator i and generate 3 clusters, each with his
-own probablity. Distinct probablities direct how many data points is going to be generated
-for each cluster. We expect the smallest cluster to have around 20\% of generated data points.
-
-<<>>=
-stream <- DSD_Gaussians(k = 3, d = 2, p = c(0.2, 0.4, 0.4))
-km <- DSC_Kmeans(3)
-update(km, stream, n=500)
-evaluate_with_callbacks(km, stream, type="macro", n=500,
-                        measure = c("crand","LowestWeightPercentage"),
-                        callbacks = list(cc=CustomCallback()))
-@
 
 %\section{Extending the stream framework} \label{sec:extension}
 %
@@ -2721,7 +2515,7 @@ evaluation.
 <<data_bng, fig=TRUE, include=FALSE>>=
 set.seed(1000)
 library("stream")
-stream <- DSD_Memory(DSD_BarsAndGaussians(noise = .05), n = 1500)
+stream <- DSD_BarsAndGaussians(noise = .05) %>% DSD_Memory(n = 1500)
 stream
 plot(stream)
 @
@@ -2779,7 +2573,7 @@ sample of the original data.
 <<microclusters, fig=TRUE, include=FALSE, width=8, height=9>>=
 op <- par(no.readonly = TRUE)
 layout(mat = matrix(1:length(algorithms), ncol = 2))
-for(a in algorithms) {
+for (a in algorithms) {
   reset_stream(stream)
   plot(a, stream, main = description(a), type = "micro")
 }
@@ -2817,10 +2611,16 @@ We also disable showing micro-cluster weights to make the plot less cluttered.
 <<microclusters_assignment, fig=TRUE, include=FALSE, width=8, height=9>>=
 op <- par(no.readonly = TRUE)
 layout(mat = matrix(1:length(algorithms), ncol = 2))
-for(a in algorithms) {
+for (a in algorithms) {
   reset_stream(stream)
-  plot(a, stream, main = description(a),
-    assignment = TRUE, weight = FALSE, type = "micro")
+  plot(
+    a,
+    stream,
+    main = description(a),
+    assignment = TRUE,
+    weight = FALSE,
+    type = "micro"
+  )
 }
 par(op)
 @
@@ -2849,13 +2649,19 @@ stream to position 1001 since we have used the first 1000 points for learning an
 we want to use data points not seen by the algorithms for evaluation.
 
 <<>>=
-sapply(algorithms, FUN=function(a) {
-  reset_stream(stream, pos = 1001)
-  evaluate(a, stream,
-    measure = c("numMicroClusters", "purity"),
-    type = "micro",
-    n = 500)
-})
+sapply(
+  algorithms,
+  FUN = function(a) {
+    reset_stream(stream, pos = 1001)
+    evaluate_static(
+      a,
+      stream,
+      measure = c("numMicroClusters", "purity"),
+      type = "micro",
+      n = 500
+    )
+  }
+)
 @
 
 We need to be careful with the comparison of these numbers, since they depend
@@ -2877,10 +2683,10 @@ together with weighted $k$-means ($k=4$).
 
 <<macroclusters, fig=TRUE, include=FALSE, width=8, height=9>>=
 op <- par(no.readonly = TRUE)
-layout(mat=matrix(1:length(algorithms), ncol = 2))
-for(a in algorithms) {
+layout(mat = matrix(1:length(algorithms), ncol = 2))
+for (a in algorithms) {
   reset_stream(stream)
-  plot(a, stream, main = description(a), type = "both")
+  plot(a, stream, main = description(a))
 }
 par(op)
 @
@@ -2902,7 +2708,7 @@ correctly, but split the lower density clusters into multiple pieces.
 <<>>=
 sapply(algorithms, FUN = function(a) {
   reset_stream(stream, pos = 1001)
-  evaluate(a, stream, measure = c("numMacroClusters", "purity",
+  evaluate_static(a, stream, measure = c("numMacroClusters", "purity",
       "SSQ", "cRand", "silhouette"),
     n = 500, assign = "micro", type = "macro")
 })
@@ -2941,16 +2747,16 @@ since the clusters in the data stream move very quickly.
 
 <<>>=
 algorithms <- list(
-  'Sample' = DSC_TwoStage(micro = DSC_Sample(k = 100, biased = TRUE),
+  'Sample + k-means' = DSC_TwoStage(micro = DSC_Sample(k = 100, biased = TRUE),
     macro = DSC_Kmeans(k = 2)),
-  'Window' = DSC_TwoStage(micro = DSC_Window(horizon = 100, lambda = .01),
+  'Window + k-means' = DSC_TwoStage(micro = DSC_Window(horizon = 100, lambda = .01),
     macro = DSC_Kmeans(k = 2)),
   'D-Stream' = DSC_DStream(gridsize = .1, lambda = .01),
   'DBSTREAM' = DSC_DBSTREAM(r = .05, lambda = .01)
 )
 @
 
-We apply \code{evaluate_cluster()} to each of the clustering algorithms, and
+We apply \code{evaluate_stream()} to each of the clustering algorithms, and
 we evaluate and
 cluster 5000 data points
 using the prequential evaluation method with a horizon of 250 points.
@@ -2961,7 +2767,7 @@ evaluations for each algorithm.
 <<>>=
 evaluation <- lapply(algorithms, FUN = function(a) {
   reset_stream(stream)
-  evaluate_cluster(a, stream, horizon = 100, n = 5000, measure = "crand",
+  evaluate_stream(a, stream, horizon = 100, n = 5000, measure = "cRand",
     type = "macro", assign = "micro")
 })
 @
@@ -2980,7 +2786,6 @@ corrected Rand index values. Note that the first evaluation values are
 again \code{NA} since we start with empty clusterings.
 
 <<>>=
-Position <- evaluation[[1]][ , "points"]
 cRand <- sapply(evaluation, FUN = function(x) x[ , "cRand"])
 head(cRand)
 @
@@ -2990,9 +2795,10 @@ over the stream as a line plot and we add a boxplot comparing the
 distributions.
 
 <<dynamic, fig=TRUE, include=FALSE, width=10, height=4>>=
-matplot(Position, cRand, type = "l", lwd = 2)
-legend("bottomleft", legend = names(evaluation),
-  col = 1:6, lty = 1:6, bty = "n", lwd = 2)
+pos <- evaluation[[1]][ , "points"]
+matplot(pos, cRand, type = "l", lwd = 1)
+legend("bottomleft",  legend = names(evaluation),
+  col = 1:6, lty = 1:6, lwd = 1)
 @
 % #barplot(colMeans(cRand), las=2)
 <<dynamic_box, fig=TRUE, include=FALSE, width=4, height=4.1, >>=
@@ -3043,12 +2849,12 @@ to center and scale the observations in the data stream in flight.
 <<eval=FALSE>>=
 library("stream")
 con <- gzcon(
-  url(paste("http://archive.ics.uci.edu/ml/machine-learning-databases/",
-    "kddcup99-mld/kddcup.data.gz", sep="")))
+  url(paste0("http://archive.ics.uci.edu/ml/machine-learning-databases/",
+    "kddcup99-mld/kddcup.data.gz")))
 
 stream <- DSD_ReadCSV(con, take=c(1, 5, 6, 8:11, 13:20, 23:42),
-    class=42, k=7)
-stream2 <- DSD_ScaleStream(stream, n=1000)
+    class = 42, k = 7)
+stream2 <- DSD_ScaleStream(stream, n = 1000)
 @
 
 Next, we set up D-Stream with slightly modified values for gaptime (increased number of points after which

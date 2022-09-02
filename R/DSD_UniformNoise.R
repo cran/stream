@@ -17,54 +17,68 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
-
 #' Uniform Noise Data Stream Generator
-#' 
+#'
 #' This generator produces uniform noise in a d-dimensional unit (hyper) cube.
-#' 
-#' 
+#'
+#' @family DSD
+#'
 #' @param d Determines the number of dimensions.
-#' @param range A matrix with two columns and \code{d} rows giving the minimum
+#' @param range A matrix with two columns and `d` rows giving the minimum
 #' and maximum for each dimension. Defaults to the range of \eqn{[0,1]}.
-#' @return Returns a \code{DSD_UniformNoise} object.(subclass of \code{DSD_R},
-#' \code{DSD}).
+#' @return Returns a `DSD_UniformNoise` object.(subclass of `DSD_R`,
+#' `DSD`).
 #' @author Michael Hahsler
-#' @seealso \code{\link{DSD}}
 #' @examples
-#' 
 #' # create data stream with three clusters in 2D
-#' stream <- DSD_UniformNoise(d=2)
-#' plot(stream, n=100)
-#' 
-#' # specify a different range for each dimension 
-#' stream <- DSD_UniformNoise(d=3, range=rbind(c(0,1), c(0,10), c(0,5)))
-#' plot(stream, n=100)
-#' 
-#' @export DSD_UniformNoise
-DSD_UniformNoise <- function(d=2, range=NULL) {
-  if(is.null(range)) range <- matrix(c(0,1), ncol=2, nrow=d, byrow=TRUE)
-  structure(list(description = "Uniform Noise", d = d, range=range),
-    class=c("DSD_UniformNoise", "DSD_R", "DSD_data.frame", "DSD"))
+#' stream <- DSD_UniformNoise(d = 2)
+#' get_points(stream, n = 5)
+#' plot(stream, n = 100)
+#'
+#' # specify a different range for each dimension
+#' stream <- DSD_UniformNoise(d = 3,
+#'   range = rbind(c(0, 1), c(0, 10), c(0, 5)))
+#' plot(stream, n = 100)
+#' @export
+DSD_UniformNoise <- function(d = 2, range = NULL) {
+  if (is.null(range))
+    range <- matrix(c(0, 1),
+      ncol = 2,
+      nrow = d,
+      byrow = TRUE)
+  structure(
+    list(
+      description = paste0("Uniform Noise (d = ", d, ")"),
+      d = d,
+      range = range
+    ),
+    class = c("DSD_UniformNoise", "DSD_R", "DSD")
+  )
 }
 
-get_points.DSD_UniformNoise <- function(x, n=1,
-  outofpoints=c("stop", "warn", "ignore"),
-  cluster=FALSE, class=FALSE, outlier=FALSE,...) {
+#' @export
+get_points.DSD_UniformNoise <- function(x,
+  n = 1L,
+  info = TRUE,
+  ...) {
   .nodots(...)
 
-  # outofpoints is ignored
+  if(n < 1L)
+    stop("n needs to be >= 1.")
 
   data <- t(replicate(n,
-    runif(x$d, min=x$range[,1], max=x$range[,2])))
+    runif(
+      x$d, min = x$range[, 1], max = x$range[, 2]
+    )))
 
   ### handle 1-d case
-  if(x$d == 1) data <- t(data)
+  if (x$d == 1)
+    data <- t(data)
 
   data <- data.frame(data)
 
-  if(cluster) attr(data, "cluster") <- rep(NA_integer_, n)
-  if(class) data <- cbind(data, class = rep(NA_integer_, n))
+  if (info)
+    data[[".class"]] <- NA
 
   data
 }

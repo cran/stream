@@ -5,6 +5,7 @@
 \title{Reclustering using an Evolutionary Algorithm}
 \usage{
 DSC_EA(
+  formula = NULL,
   k,
   generations = 2000,
   crossoverRate = 0.8,
@@ -13,6 +14,10 @@ DSC_EA(
 )
 }
 \arguments{
+\item{formula}{\code{NULL} to use all features in the stream or a model \link{formula} of the form \code{~ X1 + X2}
+to specify the features used for clustering. Only \code{.}, \code{+} and \code{-} are currently
+supported in the formula.}
+
 \item{k}{number of macro-clusters}
 
 \item{generations}{number of EA generations performed during reclustering}
@@ -29,41 +34,41 @@ Macro Clusterer.
 }
 \details{
 Reclustering using an evolutionary algorithm. This approach was designed for
-\code{evoStream} but can also be used for other micro-clustering algorithms.
+\code{evoStream} (see \link{DSC_evoStream}) but can also be used for other micro-clustering algorithms.
 
 The evolutionary algorithm uses existing clustering solutions and creates
-small variations of them by combining and randomly modfiying them. The
+small variations of them by combining and randomly modifying them. The
 modified solutions can yield better partitions and thus can improve the
 clustering over time. The evolutionary algorithm is incremental, which
 allows to improve existing macro-clusters instead of recomputing them every
 time.
 }
 \examples{
-
-stream <- DSD_Memory(DSD_Gaussians(k = 3, d = 2), 1000)
+stream <- DSD_Gaussians(k = 3, d = 2) \%>\% DSD_Memory(n = 1000)
 
 ## online algorithm
-dbstream <- DSC_DBSTREAM(r=0.1)
+dbstream <- DSC_DBSTREAM(r = 0.1)
 
 ## offline algorithm (note: we use a small number of generations
 ##                          to make this run faster.)
-EA <- DSC_EA(k=3, generations=100)
+EA <- DSC_EA(k = 3, generations = 100)
 
 ## create pipeline and insert observations
 two <- DSC_TwoStage(dbstream, EA)
-update(two, stream, n=1000)
+update(two, stream, n = 1000)
+two
 
-## plot resut
+## plot result
 reset_stream(stream)
-plot(two, stream, type="both")
+plot(two, stream)
 
 ## if we have time, evaluate additional generations. This can be
 ## called at any time, also between observations.
-two$macro_dsc$RObj$recluster(100)
+two$macro$RObj$recluster(100)
 
 ## plot improved result
 reset_stream(stream)
-plot(two, stream, type="both")
+plot(two, stream)
 
 
 ## alternatively: do not create twostage but apply directly
@@ -72,12 +77,20 @@ update(dbstream, stream, n = 1000)
 recluster(EA, dbstream)
 reset_stream(stream)
 plot(EA, stream)
-
 }
 \references{
 Carnein M. and Trautmann H. (2018), "evoStream - Evolutionary
 Stream Clustering Utilizing Idle Times", Big Data Research.
 }
+\seealso{
+Other DSC_Macro: 
+\code{\link{DSC_DBSCAN}()},
+\code{\link{DSC_Hierarchical}()},
+\code{\link{DSC_Kmeans}()},
+\code{\link{DSC_Macro}()},
+\code{\link{DSC_Reachability}()}
+}
 \author{
 Matthias Carnein \email{Matthias.Carnein@uni-muenster.de}
 }
+\concept{DSC_Macro}

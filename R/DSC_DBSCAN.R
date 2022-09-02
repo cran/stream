@@ -30,47 +30,50 @@
 #' eps-neighborhood. Then core points are joined into clusters using
 #' reachability (overlapping eps-neighborhoods).
 #'
-#' Note that this clustering cannot be updated iteratively and every time it is
+#' [update()] and [recluster()] invisibly return the assignment of the data points to clusters.
+#'
+#' **Note** that this clustering cannot be updated iteratively and every time it is
 #' used for (re)clustering, the old clustering is deleted.
 #'
+#' @aliases DBSCAN dbscan
+#' @family DSC_Macro
+#'
+#' @param formula `NULL` to use all features in the stream or a model [formula] of the form `~ X1 + X2`
+#'   to specify the features used for clustering. Only `.`, `+` and `-` are currently
+#'   supported in the formula.
 #' @param eps radius of the eps-neighborhood.
 #' @param MinPts minimum number of points required in the eps-neighborhood.
 #' @param weighted logical indicating if a weighted version of DBSCAN should be
 #' used.
 #' @param description optional character string to describe the clustering
 #' method.
-#' @return An object of class \code{DSC_DBSCAN} (a subclass of \code{DSC},
-#' \code{DSC_R}, \code{DSC_Macro}).
+#' @return An object of class `DSC_DBSCAN` (a subclass of [DSC],
+#' [DSC_R], [DSC_Macro]).
 #' @author Michael Hahsler
-#' @seealso \code{\link{DSC}}, \code{\link{DSC_Macro}}
-#' @references Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
+#' @references
+#' Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu
 #' (1996). A density-based algorithm for discovering clusters in large spatial
 #' databases with noise. In Evangelos Simoudis, Jiawei Han, Usama M. Fayyad.
-#' \emph{Proceedings of the Second International Conference on Knowledge
-#' Discovery and Data Mining (KDD-96).} AAAI Press. pp. 226-231.
+#' _Proceedings of the Second International Conference on Knowledge
+#' Discovery and Data Mining (KDD-96)._ AAAI Press. pp. 226-231.
 #' @examples
-#'
 #' # 3 clusters with 5% noise
-#' stream <- DSD_Gaussians(k=3, d=2, noise=0.05)
+#' stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 #'
-#' # Use DBSCAN to recluster micro clusters (a sample)
-#' sample <- DSC_Sample(k=101)
-#' update(sample, stream, 500)
+#' # Use a moving window for "micro-clusters and recluster with DBSCAN (macro-clusters)
+#' cl <- DSC_TwoStage(
+#'   micro = DSC_Window(horizon = 100),
+#'   macro = DSC_DBSCAN(eps = .05)
+#' )
 #'
-#' dbscan <- DSC_DBSCAN(eps = .05)
-#' recluster(dbscan, sample)
-#' plot(dbscan, stream, type="both")
+#' update(cl, stream, 500)
+#' cl
 #'
-#' # For comparison we can cluster some data with DBSCAN directly
-#' # Note: DBSCAN is not suitable for data streams since it passes over the data
-#' # several times.
-#' dbscan <- DSC_DBSCAN(eps = .05)
-#' update(dbscan, stream, 500)
-#' plot(dbscan, stream)
-#'
-#' @export DSC_DBSCAN
+#' plot(cl, stream)
+#' @export
 DSC_DBSCAN <-
-  function(eps,
+  function(formula = NULL,
+    eps,
     MinPts = 5,
     weighted = TRUE,
     description = NULL) {
@@ -84,7 +87,7 @@ DSC_DBSCAN <-
     else
       desc <- "DBSCAN"
 
-    l <- list(description = desc, RObj = DBSCAN)
+    l <- list(description = desc, formula = formula, RObj = DBSCAN)
     class(l) <- c("DSC_DBSCAN", "DSC_Macro", "DSC_R", "DSC")
     l
   }
@@ -101,7 +104,8 @@ DBSCAN <- setRefClass(
     data        = "data.frame",
     weights	    = "numeric",
     clusterCenters = "data.frame",
-    clusterWeights = "numeric"
+    clusterWeights = "numeric",
+    colnames = "ANY"
   ),
 
   methods = list(
@@ -116,6 +120,8 @@ DBSCAN <- setRefClass(
       weights <<- numeric()
       clusterWeights <<- numeric()
       clusterCenters <<- data.frame()
+
+      colnames <<- NULL
 
       .self
     }
@@ -165,6 +171,7 @@ DBSCAN$methods(
           function(i)
             colMeans(data[assignment == i, , drop = FALSE])
       )))
+
       clusterWeights <<- sapply(
         1:k,
         FUN =
@@ -177,6 +184,10 @@ DBSCAN$methods(
       clusterCenters <<- data.frame()
       clusterWeights <<- numeric(0)
     }
+
+    asgn <- DBSCAN$cluster
+    asgn[asgn == 0] <- NA
+    invisible(data.frame(.class = asgn))
   },
 
   get_microclusters = function(...) {

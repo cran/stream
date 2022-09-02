@@ -16,125 +16,137 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-
-
 #' Read a Data Stream from an open DB Query
-#' 
+#'
 #' A DSD class that reads a data stream from an open DB result set from a
 #' relational database with using R's data base interface (DBI).
-#' 
+#'
 #' This class provides a streaming interface for result sets from a data base
-#' with via \pkg{DBI}. You need to connect to the data base and submit a SQL
-#' query using \code{dbGetQuery()} to obtain a result set. Make sure that your
+#' with via [DBI::DBI]. You need to connect to the data base and submit a SQL
+#' query using [DBI::dbGetQuery()] to obtain a result set. Make sure that your
 #' query only includes the columns that should be included in the stream
-#' (including class and outlier marking columns). Do not forget to close the
-#' result set and the data base connection.
-#' 
+#' (including class and outlier marking columns).
+#'
+#' **Closing and resetting the stream**
+#'
+#' Do not forget to clear the
+#' result set and disconnect from the data base connection.
+#' `close_stream()` clears the query result with [DBI::dbClearResult()]
+#' and the disconnects from the database with [DBI::dbDisconnect()]. Disconnecting
+#' can be prevented by calling `close_stream()` with `disconnect = FALSE`.
+#'
+#'  [reset_stream()] is not available for this type of stream.
+#'
+#' **Additional information**
+#'
+#' If additional information is available (e.g., class information), then the SQL
+#' statement needs to make sure that the columns have the appropriate name starting with `.`.
+#' See Examples section below.
+#'
+#' @family DSD
+#'
 #' @param result An open DBI result set.
 #' @param k Number of true clusters, if known.
-#' @param o Number of outliers, if known.
-#' @param class column index for the class/cluster assignment.
-#' @param outlier column index for the outlier mark.
+#' @param outofpoints Action taken if less than `n` data points are
+#'   available. The default is to return the available data points with a warning. Other supported actions are:
+#'    - `warn`: return the available points (maybe an empty data.frame) with a warning.
+#'    - `ignore`: silently return the available points.
+#'    - `stop`: stop with an error.
 #' @param description a character string describing the data.
-#' @return An object of class \code{DSD_ReadDB} (subclass of \code{DSD_R},
-#' \code{DSD}).
-#' @author Michael Hahsler, Dalibor Krleža
-#' @seealso \code{\link{DSD}}, \code{\link[DBI]{dbGetQuery}}
+#' @param dsd a stream.
+#' @return An object of class `DSD_ReadDB` (subclass of  [DSD_R], [DSD]).
+#' @author Michael Hahsler
+#' @seealso [DBI::dbGetQuery()]
 #' @examples
-#' 
 #' ### create a data base with a table with 3 Gaussians
+#' if(require("RSQLite")) {
+#'
 #' library("RSQLite")
 #' con <- dbConnect(RSQLite::SQLite(), ":memory:")
-#' 
-#' points <- get_points(DSD_Gaussians(k=3, d=2, outliers=1,
-#'   outlier_options=list(outlier_horizon=600)), 600,
-#'   class = TRUE, outlier = TRUE)
-#' points <- cbind(points, outlier=attr(points,"outlier"))
+#'
+#' points <- get_points(DSD_Gaussians(k = 3, d = 2), n = 110)
 #' head(points)
-#' 
-#' dbWriteTable(con, "gaussians", points)
-#' 
-#' ### prepare a query result set
-#' res <- dbSendQuery(con, "SELECT X1, X2, class, outlier FROM gaussians")
+#'
+#' dbWriteTable(con, "Gaussians", points)
+#'
+#' ### prepare a query result set. Make sure that the additional information
+#' ### column starts with .
+#' res <- dbSendQuery(con, "SELECT X1, X2, `.class` AS '.class' FROM Gaussians")
 #' res
-#' 
+#'
 #' ### create a stream interface to the result set
-#' stream <- DSD_ReadDB(res, k=3, o=1, class = 3, outlier = 4)
-#' 
+#' stream <- DSD_ReadDB(res, k = 3)
+#' stream
+#'
 #' ### get points
-#' get_points(stream, 5, class = TRUE, outlier=TRUE)
-#' plot(stream)
-#' 
-#' ### clean up
-#' dbClearResult(res)
-#' dbDisconnect(con)
-#' 
-#' @export DSD_ReadDB
-DSD_ReadDB <- function(result, k=NA, o=NA,
-                       class=NULL, outlier=NULL, description=NULL) {
-
-  if(is.na(o) && !is.null(outlier))
-    stop("The outlier column is defined, but the number of outliers is not supplied")
-  if(!is.na(o) && is.null(outlier))
-    stop("The number of outliers is supplied, but the outlier column was not supplied")
+#' get_points(stream, n = 5)
+#'
+#' plot(stream, n = 100)
+#'
+#' close_stream(stream)
+#' }
+#' @export
+DSD_ReadDB <- function(result,
+  k = NA,
+  outofpoints = c("warn", "ignore", "stop"),
+  description = NULL) {
 
   # figure out d
-  d <- length(DBI::dbColumnInfo(result))
-  if(!is.null(class)) d <- d-1L
-  if(!is.null(outlier)) d <- d-1L
+  d <- length(grep('^\\.', DBI::dbColumnInfo(result)[["name"]], invert = TRUE))
+
+  if (is.null(description))
+    description <- paste0('DB Query Stream (d = ', d , 'k = ', k, ')')
+
 
   # creating the DSD object
   l <- list(
-    description = if(is.null(description)) 'DB Query Stream' else description,
+    description = description,
     d = d,
     k = k,
-    o = o,
-    result = result,
-    class = class,
-    outlier = outlier
+    outofpoints = match.arg(outofpoints),
+    result = result
   )
-  class(l) <- c("DSD_ReadDB", "DSD_R", "DSD_data.frame", "DSD")
+  class(l) <- c("DSD_ReadDB", "DSD_R", "DSD")
 
   l
 }
 
-get_points.DSD_ReadDB <- function(x, n=1,
-                                  outofpoints=c("stop", "warn", "ignore"),
-                                  cluster = FALSE, class = FALSE, outlier = FALSE, ...) {
+#' @rdname DSD_ReadDB
+#' @param disconnect logical; disconnect from the database?
+#' @param ... further arguments.
+#' @export
+close_stream.DSD_ReadDB <- function(dsd, disconnect = TRUE, ...) {
+  DBI::dbClearResult(dsd$result)
+
+  if (disconnect)
+    DBI::dbDisconnect(dsd$result@conn)
+}
+
+#' @export
+get_points.DSD_ReadDB <- function(x,
+  n = 1L,
+  outofpoints = NULL,
+  info = TRUE,
+  ...) {
   .nodots(...)
 
-  outofpoints <- match.arg(outofpoints)
+  if (is.null(outofpoints))
+    outofpoints <- x$outofpoints
+
   n <- as.integer(n)
 
   d <- DBI::dbFetch(x$result, n = n)
 
-  if(nrow(d) < n) {
-    if(outofpoints == "stop") {
-      stop("Not enough points in the stream!")
+  if (nrow(d) < n) {
+    if (outofpoints == "stop") {
+      stop("Not enough points in the stream! Lost ", nrow(d), " points.")
     }
-    if(outofpoints == "warn")
-      warning("The stream is at its end returning available points!")
+    if (outofpoints == "warn")
+      warning("Not enough data points left in stream, returning the remaining ", nrow(d), " points!")
   }
 
-  cl <- NULL
-  outs <- rep(FALSE,nrow(d))
-  removal <- c()
-  if(nrow(d) > 0) {
-    if(!is.null(x$class)) {
-      cl <- d[,x$class]
-      removal <- c(x$class)
-    }
-    if(!is.null(x$outlier)) {
-      outs <- d[,x$class]
-      removal <- c(removal, x$outlier)
-    }
-  }
-  d <- d[,-removal,drop=FALSE]
-
-  if(class && !is.null(cl)) d <- cbind(d, class = cl)
-  if(cluster) attr(d, "cluster") <- cl
-  if(outlier) attr(d, "outlier") <- outs
+  if (!info)
+    d <- remove_info(d)
 
   d
 }
