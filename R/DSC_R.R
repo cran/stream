@@ -47,7 +47,8 @@
 #' @param n number of data points taken from the stream.
 #' @param verbose logical; show progress?
 #' @param block process blocks of data to improve speed.
-#' @param assignment logical; return a vector with cluster assignments?
+#' @param return a character string indicating what update returns. The default is `"nothing"`. Other
+#' possible values depend on the `DST`. Examples are `"model"` and `"assignment"`.
 #' @param ... further arguments.
 #' @author Michael Hahsler
 #' @export
@@ -58,8 +59,6 @@ DSC_R <- abstract_class_generator("DSC")
 ### needs to make sure that points are processed sequentially
 ### (make especially BIRCH faster by passing block data points at once)
 
-
-
 #' @rdname DSC_R
 #' @export
 update.DSC_R <- function(object,
@@ -67,48 +66,31 @@ update.DSC_R <- function(object,
   n = 1L,
   verbose = FALSE,
   block = 10000L,
-  assignment = FALSE,
+  return = c("nothing", "assignment", "model"),
   ...) {
   ### object contains an RObj which is a reference object with a cluster method
-
-  ### for data frame/matrix we do it all at once
-  if (is.data.frame(dsd) || is.matrix(dsd)) {
-    dsd <- remove_info(dsd)
-
-    if (!is.null(object$formula)) {
-      if (is.null(object$RObj$colnames)) {
-        trms <- terms(object$formula, data = dsd)
-        if (attr(trms, "response") != 0)
-          stop("formula for clustering cannot have a response variable before '~'!")
-
-        object$RObj$colnames <- colnames(attr(trms, "factors"))
-      }
-
-      dsd <- dsd[, object$RObj$colnames, drop = FALSE]
-    }
-
-    if (verbose)
-      cat("Clustering all data at once for matrix/data.frame.")
-
-    if (is.null(object$RObj$colnames))
-      object$RObj$colnames <- colnames(dsd)
-
-    res <- object$RObj$cluster(dsd, ...)
-
-    if (assignment)
-      return(res)
-    else
-      return(invisible(NULL))
-  }
-
+  return <- match.arg(return)
   n <- as.integer(n)
   block <- as.integer(block)
 
-  if (n == 0L) {
-    if (assignment)
-      return(integer(0))
-    else
-      return(invisible(NULL))
+  if (n == 0L)
+    return(switch(
+      return,
+      nothing = invisible(NULL),
+      assignment = data.frame(`.class` = integer(0)),
+      model = get_model(object)
+    ))
+
+  ### for data frame/matrix we do it all at once. n is ignored!
+  if (is.data.frame(dsd) || is.matrix(dsd)) {
+    if(!is.data.frame(dsd))
+      dsd <- as.data.frame(dsd)
+
+    if (!(n  == 1L || n == -1L || n == nrow(dsd)))
+      warning("n is ignored if dsd is a data.frame. Update uses all points.")
+
+    n <- nrow(dsd)
+    block <- n
   }
 
   ### TODO: Check data
@@ -133,29 +115,30 @@ update.DSC_R <- function(object,
         object$RObj$colnames <- colnames(p)
 
 
-    res <- object$RObj$cluster(p, ...)
+      res <- object$RObj$cluster(p, ...)
 
-    if (verbose) {
-      total <- total + bl
-      cat("Processed",
-        total,
-        "/",
-        n,
-        "points -",
-        nclusters(object),
-        "clusters\n")
-    }
+      if (verbose) {
+        total <- total + nrow(p)
+        cat("Processed",
+          total,
+          "/",
+          n,
+          "points -",
+          nclusters(object),
+          "clusters\n")
+      }
   }
 
-  if (!assignment)
-    return(invisible(NULL))
-
-  # figure out assignment if the algorithm does not provide it
-  if (is.null(res)) {
-    res <- predict(object, p)
-  }
-
-  res
+  return(switch(
+    return,
+    nothing = invisible(NULL),
+    assignment = {
+      if (is.null(res))
+        res <- predict(object, p)
+      res
+    },
+    model = get_model(object)
+  ))
 }
 
 ### accessors

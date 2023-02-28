@@ -13,7 +13,7 @@ DSC_R(...)
   n = 1L,
   verbose = FALSE,
   block = 10000L,
-  assignment = FALSE,
+  return = c("nothing", "assignment", "model"),
   ...
 )
 }
@@ -30,7 +30,8 @@ DSC_R(...)
 
 \item{block}{process blocks of data to improve speed.}
 
-\item{assignment}{logical; return a vector with cluster assignments?}
+\item{return}{a character string indicating what update returns. The default is \code{"nothing"}. Other
+possible values depend on the \code{DST}. Examples are \code{"model"} and \code{"assignment"}.}
 }
 \description{
 Abstract class for implementing R-based clusterers.
@@ -59,6 +60,7 @@ See \link{DSC} for details and parameters.
 Other DSC: 
 \code{\link{DSC_Macro}()},
 \code{\link{DSC_Micro}()},
+\code{\link{DSC_SlidingWindow}()},
 \code{\link{DSC_Static}()},
 \code{\link{DSC_TwoStage}()},
 \code{\link{DSC}()},

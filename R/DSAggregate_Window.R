@@ -39,6 +39,7 @@
 #' @examples
 #' set.seed(1500)
 #'
+#' ## Example 1: Basic use
 #' stream <- DSD_Gaussians(k = 3, d = 2, noise = 0.05)
 #'
 #' window <- DSAggregate_Window(horizon = 10)
@@ -48,9 +49,27 @@
 #' update(window, stream, 2)
 #' get_points(window)
 #'
+#' # get weights and window as a single data.frame
+#' get_model(window)
+#'
 #' # update window
 #' update(window, stream, 100)
 #' get_points(window)
+#'
+#' ## Example 2: Implement a classifier over a sliding window
+#' window <- DSAggregate_Window(horizon = 100)
+#'
+#' update(window, stream, 1000)
+#'
+#' # train the classifier on the window
+#' library(rpart)
+#' tree <- rpart(`.class` ~ ., data = get_points(window))
+#' tree
+#'
+#' # predict the class for new points from the stream
+#' new_points <- get_points(stream, n = 100, info = FALSE)
+#' pred <- predict(tree, new_points)
+#' plot(new_points, col = pred)
 #' @export
 DSAggregate_Window <- function(horizon = 100, lambda = 0)
   structure(
@@ -69,11 +88,21 @@ DSAggregate_Window <- function(horizon = 100, lambda = 0)
 update.DSAggregate_Window <-
   function(object,
     dsd,
-    n = 1,
+    n = 1L,
+    return = c("nothing", "model"),
     verbose = FALSE,
     ...) {
     ### TODO: we do not need to get all points if n is very large!
+
+    return <- match.arg(return)
+
     object$RObj$update(get_points(dsd, n = n, info = TRUE), verbose = verbose, ...)
+
+    return(switch(
+      return,
+      nothing = invisible(NULL),
+      model = get_model(object)
+    ))
   }
 
 #' @export
@@ -106,14 +135,13 @@ WindowDSAggregate <- setRefClass(
 
     update = function(x, ...) {
       ### fist time we get data
-      if (is.null(data))
-        data <<-
-          data.frame(matrix(
-            NA,
-            nrow = horizon,
-            ncol = ncol(x),
-            dimnames = list(NULL, colnames(x))
-          ))
+      if (is.null(data)) {
+        d <- x[1, , drop = FALSE]
+        rownames(d) <- NULL
+        d[1,] <- NA
+        d <- do.call("rbind", replicate(horizon, d, simplify = FALSE))
+        data <<- d
+      }
 
       if (ncol(x) != ncol(data))
         stop("Dimensionality mismatch between window and data!")
@@ -124,7 +152,7 @@ WindowDSAggregate <- setRefClass(
       while (i < n) {
         ## process the next m points: all or to fill the current horizon
         m <- min(horizon - pos + 1L, n - i)
-        data[pos:(pos + m - 1L), ] <<-
+        data[pos:(pos + m - 1L),] <<-
           x[(i + 1L):(i + m), , drop = FALSE]
 
         i <- i + m
@@ -163,20 +191,5 @@ WindowDSAggregate <- setRefClass(
       else
         2 ^ (-lambda * (seq((horizon - 1L), 0)))
     }
-  )
-)
-
-### DSC interface to WindowDSAggregate
-WindowDSC <- setRefClass(
-  "WindowDSC",
-  fields = list(colnames = "ANY"),
-  contains = "WindowDSAggregate",
-  methods = list(
-    cluster = function(x, ...)
-      update(x, ...),
-    get_microclusters = function(...)
-      get_points(infor = FALSE, ...),
-    get_microweights = function(...)
-      get_weights(...)
   )
 )

@@ -1,3 +1,20 @@
+# stream 2.0-1 (02/28/23)
+
+## New Features
+* Added DST_SlidingWindow to call functions on a sliding window.
+* Added DSClassifier_SlidingWindow, DSRegressor_SlidingWindow, and DSC_SlidingWindow.
+* Added get_model() for DST.
+* DSF can now be used with DST interface (update(), etc.).
+* DSD now also provides update().
+
+## Changes
+* transitioned from C++11 to C++17.
+* update() gained parameter return and lost assignment for DSC.
+* DST_WriteStream and write_stream now flush after the write.
+* DST_WriteStream gained close_stream().
+* Added tests for DSD. get_points with n = 0 and n = -1 produce now consistent results.
+* write_stream has now no default for n and accepts n = -1.
+
 # stream 2.0-0 (09/01/22)
 
 ## New Features
@@ -20,7 +37,7 @@
 
 ## Changes
 * stream now implements a standard predict function (get_assignment() is now deprecated).
-* class information and extra information is now stored as columns starting with '.' 
+* class information and extra information are now stored as columns starting with '.' 
   instead of as attributes. See get_points().
 * DSD_ScaleStream is now DSF_Scale and DSD_ScaleStream is deprecated.
 * DSO is now called DSAggregate.

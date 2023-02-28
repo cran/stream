@@ -21,7 +21,7 @@ measures are returned.}
 
 \item{n}{The number of data points being requested.}
 
-\item{...}{Further arguments.}
+\item{...}{Further arguments are passed on to the specific implementation (e.g., see \link{evaluate.DSC})}
 
 \item{horizon}{Evaluation is done using horizon many previous points (see
 detail section).}
@@ -33,11 +33,11 @@ detail section).}
 is a numeric vector of the values of the requested measures.
 }
 \description{
-Calculate evaluation measures for a data stream mining task \link{DST} using
+Generic function to calculate evaluation measures for a data stream mining task \link{DST} on
 a data stream \link{DSD} object.
 }
 \details{
-We provide two evaluation methods:
+We define two generic evaluation functions:
 \itemize{
 \item \code{evaluate_static()} evaluates the current \link{DST} model on new data without updating the model.
 \item \code{evaluate_stream()} evaluates the \link{DST} model using
@@ -47,7 +47,10 @@ they are used for updating the cluster model. A horizon of ` means that each poi
 then used to update the model.
 }
 
-The evaluation measures depend on the task.
+The available evaluation measures depend on the task. Currently available task to evaluate:
+\itemize{
+\item \link{DSC} via \link{evaluate.DSC}
+}
 }
 \references{
 Joao Gama, Raquel Sebastiao, Pedro Pereira Rodrigues (2013). On
@@ -59,12 +62,13 @@ Other DST:
 \code{\link{DSAggregate}()},
 \code{\link{DSClassifier}()},
 \code{\link{DSC}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{DST}()},
 \code{\link{predict}()},
+\code{\link{stream_pipeline}},
 \code{\link{update}()}
 
 Other evaluation: 

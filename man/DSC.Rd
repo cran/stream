@@ -104,11 +104,14 @@ dstream
 # get micro-cluster centers
 get_centers(dstream)
 
+# get the micro-cluster weights
+get_weights(dstream)
+
 # get the number of clusters
 nclusters(dstream)
 
-# get the micro-cluster weights
-get_weights(dstream)
+# get the whole model as a data.frame
+get_model(dstream)
 
 # D-Stream also has macro-clusters
 get_weights(dstream, type = "macro")
@@ -128,19 +131,21 @@ predict(dstream, points, type = "macro")
 Other DST: 
 \code{\link{DSAggregate}()},
 \code{\link{DSClassifier}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{DST}()},
 \code{\link{evaluate}},
 \code{\link{predict}()},
+\code{\link{stream_pipeline}},
 \code{\link{update}()}
 
 Other DSC: 
 \code{\link{DSC_Macro}()},
 \code{\link{DSC_Micro}()},
 \code{\link{DSC_R}()},
+\code{\link{DSC_SlidingWindow}()},
 \code{\link{DSC_Static}()},
 \code{\link{DSC_TwoStage}()},
 \code{\link{animate_cluster}()},

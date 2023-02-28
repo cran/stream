@@ -5,7 +5,7 @@
 \alias{update.DST}
 \title{Update a Data Stream Mining Task Model with Points from a Stream}
 \usage{
-\method{update}{DST}(object, dsd, n = 1L, ...)
+\method{update}{DST}(object, dsd, n = 1L, return = "nothing", ...)
 }
 \arguments{
 \item{object}{The \link{DST} object.}
@@ -13,6 +13,9 @@
 \item{dsd}{A \link{DSD} object with the data stream.}
 
 \item{n}{number of points from \code{dsd} to use for the update. Some DSD \code{dsd} accept \code{n = -1} to update with all remaining points in the stream.}
+
+\item{return}{a character string indicating what update returns. The default is \code{"nothing"}. Other
+possible values depend on the \code{DST}. Examples are \code{"data"}, \code{"model"} and \code{"assignment"}.}
 
 \item{...}{Additional arguments are passed on.}
 }
@@ -27,7 +30,7 @@ set.seed(1500)
 stream <- DSD_Gaussians(k = 3, d = 2, noise = .1)
 
 dbstream <- DSC_DBSTREAM(r = .1)
-assignment <- update(dbstream, stream, n = 100, assignment = TRUE)
+assignment <- update(dbstream, stream, n = 100, return = "assignment")
 plot(dbstream, stream, type = "both")
 
 # DBSTREAM returns cluster assignments (see DSC_DBSTREAM).
@@ -38,13 +41,14 @@ Other DST:
 \code{\link{DSAggregate}()},
 \code{\link{DSClassifier}()},
 \code{\link{DSC}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{DST}()},
 \code{\link{evaluate}},
-\code{\link{predict}()}
+\code{\link{predict}()},
+\code{\link{stream_pipeline}}
 }
 \author{
 Michael Hahsler

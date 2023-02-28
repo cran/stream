@@ -10,8 +10,7 @@ DSClassifier(...)
 \item{...}{Further arguments.}
 }
 \description{
-Abstract class for data stream classifiers. Currently, \pkg{stream} does not
-implement classification algorithms. Implementations can be found in
+Abstract class for data stream classifiers. More implementations can be found in
 package \pkg{streamMOA}.
 }
 \examples{
@@ -21,16 +20,21 @@ DSClassifier()
 Other DST: 
 \code{\link{DSAggregate}()},
 \code{\link{DSC}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{DST}()},
 \code{\link{evaluate}},
 \code{\link{predict}()},
+\code{\link{stream_pipeline}},
 \code{\link{update}()}
+
+Other DSClassifier: 
+\code{\link{DSClassifier_SlidingWindow}()}
 }
 \author{
 Michael Hahsler
 }
+\concept{DSClassifier}
 \concept{DST}

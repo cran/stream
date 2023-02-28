@@ -3,14 +3,14 @@
 \name{DST}
 \alias{DST}
 \alias{description}
-\alias{description.DST}
+\alias{get_model}
 \title{Conceptual Base Class for All Data Stream Mining Tasks}
 \usage{
 DST(...)
 
 description(x, ...)
 
-\method{description}{DST}(x, ...)
+get_model(x, ...)
 }
 \arguments{
 \item{...}{Further arguments.}
@@ -23,26 +23,24 @@ Conceptual base class for all data stream mining tasks.
 \details{
 Base class for data stream mining tasks. Types of \code{DST} are
 \itemize{
-\item \link{DSC} for data stream clustering.
 \item \link{DSAggregate} to aggregate data streams (e.g., with a sliding window).
-\item \link{DSFP} frequent pattern mining for data stream clustering.
+\item \link{DSC} for data stream clustering.
 \item \link{DSClassifier} classification for data streams.
+\item \link{DSRegressor} regression for data streams.
 \item \link{DSOutlier} outlier detection for data streams.
+\item \link{DSFP} frequent pattern mining for data streams.
 }
 
 The common interface for all \link{DST} classes consists of
 \itemize{
-\item \code{\link[=update]{update()}}
-\item \code{\link[=predict]{predict()}}
+\item \code{\link[=update]{update()}} update the DST with data points.
+\item description() a string describing the DST.
+\item get_model() returns the DST's current model (often as a data.frame or a R model object).
+\item \code{\link[=predict]{predict()}} use the learned DST model to make predictions.
 }
 
 and the methods in the Methods Section below.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{description(DST)}: Get a description of the task as a character string.
-
-}}
 \examples{
 DST()
 }
@@ -51,12 +49,13 @@ Other DST:
 \code{\link{DSAggregate}()},
 \code{\link{DSClassifier}()},
 \code{\link{DSC}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{evaluate}},
 \code{\link{predict}()},
+\code{\link{stream_pipeline}},
 \code{\link{update}()}
 }
 \author{

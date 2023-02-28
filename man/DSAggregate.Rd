@@ -9,7 +9,7 @@
 \usage{
 DSAggregate(...)
 
-\method{update}{DSAggregate}(object, dsd, n = 1, ...)
+\method{update}{DSAggregate}(object, dsd, n = 1, return = c("nothing", "model"), ...)
 
 \method{get_points}{DSAggregate}(x, ...)
 
@@ -22,10 +22,13 @@ DSAggregate(...)
 
 \item{n}{the number of data points used for the update.}
 
+\item{return}{a character string indicating what update returns. The default is \code{"nothing"}
+and \code{"model"} returns the aggregated data.}
+
 \item{x, object}{a concrete implementation of \code{DSAggregate}.}
 }
 \description{
-Abstract base classes for all DSAggregate (Data Stream Aggregator) classes to aggregate streams.
+Abstract base classes for all DSAggregate (Data Stream Aggregator) classes to aggregate streams. DSAggreagate is a \link{DST} task.
 }
 \details{
 The \code{DSAggreagate} class cannot be instantiated, but it serve as a base
@@ -42,13 +45,14 @@ DSAggregate()
 Other DST: 
 \code{\link{DSClassifier}()},
 \code{\link{DSC}()},
-\code{\link{DSF_Scale}()},
 \code{\link{DSOutlier}()},
-\code{\link{DST_Runner}()},
+\code{\link{DSRegressor}()},
+\code{\link{DST_SlidingWindow}()},
 \code{\link{DST_WriteStream}()},
 \code{\link{DST}()},
 \code{\link{evaluate}},
 \code{\link{predict}()},
+\code{\link{stream_pipeline}},
 \code{\link{update}()}
 
 Other DSAggregate: 

@@ -19,7 +19,7 @@
 
 #' Data Stream Aggregator Base Classes
 #'
-#' Abstract base classes for all DSAggregate (Data Stream Aggregator) classes to aggregate streams.
+#' Abstract base classes for all DSAggregate (Data Stream Aggregator) classes to aggregate streams. DSAggreagate is a [DST] task.
 #'
 #' The `DSAggreagate` class cannot be instantiated, but it serve as a base
 #' class from which other DSAggregate subclasses inherit.
@@ -34,6 +34,8 @@
 #' @param x,object a concrete implementation of `DSAggregate`.
 #' @param dsd a data stream object.
 #' @param n the number of data points used for the update.
+#' @param return a character string indicating what update returns. The default is `"nothing"`
+#' and `"model"` returns the aggregated data.
 #' @param ... Further arguments.
 #' @author Michael Hahsler
 #' @examples
@@ -43,7 +45,7 @@ DSAggregate <- abstract_class_generator("DSAggregate")
 
 #' @rdname DSAggregate
 #' @export
-update.DSAggregate <- function(object, dsd, n = 1, ...) {
+update.DSAggregate <- function(object, dsd, n = 1, return = c("nothing", "model"), ...) {
   stop("No implementation for update found!")
 }
 
@@ -64,3 +66,7 @@ print.DSAggregate <- function(x, ...) {
   cat(.line_break(paste(x$description)))
   cat("Class:", paste(class(x), collapse=", "), "\n")
 }
+
+#' @export
+get_model.DSAggregate <- function(x, ...)
+  cbind(weight = get_weights(x), get_points(x))

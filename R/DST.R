@@ -21,16 +21,19 @@
 #' Conceptual base class for all data stream mining tasks.
 #'
 #' Base class for data stream mining tasks. Types of `DST` are
-#'   - [DSC] for data stream clustering.
 #'   - [DSAggregate] to aggregate data streams (e.g., with a sliding window).
-#'   - [DSFP] frequent pattern mining for data stream clustering.
+#'   - [DSC] for data stream clustering.
 #'   - [DSClassifier] classification for data streams.
+#'   - [DSRegressor] regression for data streams.
 #'   - [DSOutlier] outlier detection for data streams.
+#'   - [DSFP] frequent pattern mining for data streams.
 #'
 #' The common interface for all [DST] classes consists of
 #'
-#'   - [update()]
-#'   - [predict()]
+#'   - [update()] update the DST with data points.
+#'   - description() a string describing the DST.
+#'   - get_model() returns the DST's current model (often as a data.frame or a R model object).
+#'   - [predict()] use the learned DST model to make predictions.
 #'
 #' and the methods in the Methods Section below.
 #'
@@ -73,7 +76,6 @@ description <- function(x, ...)
     stop("This object does not have a description field!")
 }
 
-#' @describeIn DST Get a description of the task as a character string.
 #' @export
 description.DST <- function(x, ...)
   .desc(x)
@@ -85,3 +87,13 @@ description.DSC <- function(x, ...)
 #' @export
 description.DSD <- function(x, ...)
   .desc(x)
+
+#' @rdname DST
+#' @export
+get_model <- function(x, ...)
+  UseMethod("get_model")
+
+#' @export
+get_model.DST <- function(x, ...)
+  stop(paste("get_model() not implemented for class", paste(class(x), collapse = ", ")))
+

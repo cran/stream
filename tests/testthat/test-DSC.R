@@ -40,10 +40,13 @@ up <- lapply(
     if (interactive())
       cat(paste("update:", short_desc(a)), "\n")
     reset_stream(stream)
-    u <- update(a, stream, n = 1000L, assignment = TRUE)
+    u <- update(a, stream, n = 1000L, return = "assignment")
     expect_true(is.null(u) ||
         (is.data.frame(u) &&
             nrow(u) == 1000L && !is.null(u[[".class"]])))
+    if (interactive())
+      str(u)
+
     u
   }
 )
@@ -53,6 +56,31 @@ if (interactive()) {
   print(algorithms)
   str(up)
 }
+
+context("DSC update -1 and data.frame")
+
+dsc <- DSC_DBSTREAM(r = .1)
+reset_stream(stream)
+
+# n is ignored with a warning for update with a data.frame
+expect_warning(ass <- update(dsc, get_points(stream, n = 10), n = 5, return = "assignment"))
+expect_equal(nrow(ass), 10L)
+
+# update with all points
+ass <- update(dsc, get_points(stream, n = 10), return = "assignment")
+expect_equal(nrow(ass), 10L)
+
+# test 0
+reset_stream(stream)
+ass <- update(dsc, stream, n = 0, return = "assignment")
+expect_equal(nrow(ass), 0L)
+
+# test -1
+reset_stream(stream)
+ass <- update(dsc, stream, n = -1, return = "assignment")
+expect_equal(nrow(ass), 1500L)
+
+
 
 context("DSC evaluate")
 
