@@ -61,7 +61,8 @@
 #' @param formula `NULL` to use all features in the stream or a model [formula] of the form `~ X1 + X2`
 #'   to specify the features used for clustering. Only `.`, `+` and `-` are currently
 #'   supported in the formula.
-#' @param gridsize Size of grid cells.
+#' @param gridsize a single number defining the size of grid cells in each dimension.
+#' For example for 3d data, the cells would be of size `gridsize x gridsize x gridsize`.
 #' @param lambda Fading constant used function to calculate the decay factor
 #' \eqn{2^-lambda}.  (Note: in the paper the authors use lamba to denote the
 #' decay factor and not the fading constant!)
@@ -578,11 +579,13 @@ get_attraction <-
 }
 
 
+#' @export
 get_macroclusters.DSC_DStream <- function(x, ...) {
   .dstream_update_macro(x)
   get_centers(x$macro)
 }
 
+#' @export
 get_macroweights.DSC_DStream <- function(x, ...) {
   .dstream_update_macro(x)
   get_weights(x$macro)
@@ -723,6 +726,10 @@ get_assignment.DSC_DStream <-
     method <- match.arg(method)
 
     points <- remove_info(points)
+
+    ## apply formula
+    if (!is.null(dsc$RObj$colnames))
+      points <- points[, dsc$RObj$colnames, drop = FALSE]
 
     if (method == "auto")
       method <- "model"

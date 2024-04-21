@@ -136,7 +136,7 @@ they are within its assignment area (distance is less then \code{r} times \code{
 
 \code{DSOutlier_DBSTREAM} classifies points as outlier/noise if they that cannot be assigned to a micro-cluster
 representing a dense region as a outlier/noise. Parameter \code{outlier_multiplier} specifies
-how far a point has to be away from a micro-cluster as a multiplyer for the radius \code{r}.
+how far a point has to be away from a micro-cluster as a multiplier for the radius \code{r}.
 A larger value means that outliers have to be farther away from dense
 regions and thus reduce the chance of misclassifying a regular point as an outlier.
 }
@@ -198,6 +198,19 @@ dbstream <- DSC_DBSTREAM(formula = ~ . - X2, r = .2)
 
 update(dbstream, stream, 500)
 get_centers(dbstream)
+
+# use DBSTREAM for outlier detection
+stream <- DSD_Gaussians(k = 3, d = 4, noise = 0.05)
+outlier_detector <- DSOutlier_DBSTREAM(r = .2)
+
+update(outlier_detector, stream, 500)
+outlier_detector
+
+plot(outlier_detector, stream)
+
+points <- get_points(stream, 20)
+points
+which(is.na(predict(outlier_detector, points)))
 }
 \references{
 Michael Hahsler and Matthew Bolanos. Clustering data streams

@@ -1,3 +1,17 @@
+# stream 2.0-2 (04/19/24)
+
+## New Features
+* Added DSF_FeatureSelection.
+
+## Bugfix
+* Fixed exports for get_macroclusters.DSC_DStream, get_macroweights.DSC_DStream
+  and recluster.DSC
+* predict for DSC now honors the formula in the DSC.
+  
+## Changes
+* Improved manual pages
+* proxy is now imported and not attached globally.
+
 # stream 2.0-1 (02/28/23)
 
 ## New Features

@@ -45,7 +45,7 @@
 #'
 #' `DSOutlier_DBSTREAM` classifies points as outlier/noise if they that cannot be assigned to a micro-cluster
 #' representing a dense region as a outlier/noise. Parameter `outlier_multiplier` specifies
-#' how far a point has to be away from a micro-cluster as a multiplyer for the radius `r`.
+#' how far a point has to be away from a micro-cluster as a multiplier for the radius `r`.
 #'  A larger value means that outliers have to be farther away from dense
 #' regions and thus reduce the chance of misclassifying a regular point as an outlier.
 #'
@@ -142,6 +142,19 @@
 #'
 #' update(dbstream, stream, 500)
 #' get_centers(dbstream)
+#'
+#' # use DBSTREAM for outlier detection
+#' stream <- DSD_Gaussians(k = 3, d = 4, noise = 0.05)
+#' outlier_detector <- DSOutlier_DBSTREAM(r = .2)
+#'
+#' update(outlier_detector, stream, 500)
+#' outlier_detector
+#'
+#' plot(outlier_detector, stream)
+#'
+#' points <- get_points(stream, 20)
+#' points
+#' which(is.na(predict(outlier_detector, points)))
 #' @export
 DSC_DBSTREAM <- function(formula = NULL,
   r,
@@ -547,6 +560,10 @@ get_assignment.DSC_DBSTREAM <- function(dsc,
   method <- match.arg(method)
 
   points <- remove_info(points)
+
+  ## apply formula
+  if (!is.null(dsc$RObj$colnames))
+    points <- points[, dsc$RObj$colnames, drop = FALSE]
 
   if (method == "auto")
     method <- "model"
