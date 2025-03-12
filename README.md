@@ -1,12 +1,12 @@
 
 # <img src="man/figures/logo.svg" align="right" height="139" /> R package stream - Infrastructure for Data Stream Mining
 
-[![CRAN
-version](http://www.r-pkg.org/badges/version/stream)](https://CRAN.R-project.org/package=stream)
-[![stream r-universe
+[![r-universe
 status](https://mhahsler.r-universe.dev/badges/stream)](https://mhahsler.r-universe.dev/stream)
+[![Package on
+CRAN](https://www.r-pkg.org/badges/version/stream)](https://CRAN.R-project.org/package=stream)
 [![CRAN RStudio mirror
-downloads](http://cranlogs.r-pkg.org/badges/stream)](https://CRAN.R-project.org/package=stream)
+downloads](https://cranlogs.r-pkg.org/badges/stream)](https://CRAN.R-project.org/package=stream)
 
 ## Introduction
 
@@ -33,6 +33,8 @@ existing infrastructure provided by R. The package provides:
 
 Additional packages in the stream family are:
 
+- [streamConnect](https://github.com/mhahsler/streamConnect): Connect
+  stream mining components using sockets and web services.
 - [streamMOA](https://github.com/mhahsler/streamMOA): Interface to
   clustering algorithms implemented in the
   [MOA](https://moa.cms.waikato.ac.nz/) framework. The package
@@ -76,7 +78,8 @@ install.packages("stream")
 
 ``` r
 install.packages("stream",
-    repos = c("https://mhahsler.r-universe.dev". "https://cloud.r-project.org/"))
+    repos = c("https://mhahsler.r-universe.dev",
+              "https://cloud.r-project.org/"))
 ```
 
 ## Usage
@@ -207,7 +210,7 @@ pipeline$dst
     ## Number of micro-clusters: 160 
     ## Number of macro-clusters: 13
 
-## Acknowledgements
+## Acknowledgments
 
 The development of the stream package was supported in part by NSF
 IIS-0948893, NSF CMMI 1728612, and NIH R21HG005912.

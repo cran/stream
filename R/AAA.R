@@ -47,7 +47,7 @@
     width = 0.9 * getOption("width")) {
     paste0(unlist(
       sapply(
-        strsplit(x, "\n")[[1]],
+        strsplit(x, "\n", fixed = TRUE)[[1]],
         strwrap,
         width = width
       )
@@ -61,13 +61,6 @@
     warning("Unknown arguments: ",
       paste(names(l), "=", l, collapse = ", "))
 }
-
-### installed
-.installed <-
-  function(pkg)
-    ! is(try(utils::installed.packages()[pkg,],
-      silent = TRUE)
-      , "try-error")
 
 abstract_class_generator <- function(prefix) {
   function(...) {

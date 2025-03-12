@@ -43,8 +43,7 @@
 #' @param info logical; does the function also receive and modify the info columns?
 #' @return An object of class `DSF_dplyr` (subclass of [DSF] and [DSD]).
 #' @author Michael Hahsler
-#' @examples
-#' if (require(dplyr)) {
+#' @examplesIf requireNamespace("dplyr", quietly = TRUE)
 #'
 #' library(dplyr)
 #'
@@ -65,7 +64,6 @@
 #' get_points(stream2, n = 10)
 #' plot(stream2, xlim = c(0, 1), ylim = c(0, 1))
 #'
-#' }
 #' @export
 DSF_dplyr <-
   function(dsd = NULL,
@@ -103,7 +101,7 @@ update.DSF_dplyr <- function(object,
   if (is.null(dsd))
     dsd <- object$dsd
   if (is.null(dsd))
-    stop("No dsd specified in ", deparse(substitute(object)), ". Specify a dsd in update().")
+    stop("No dsd specified in ", deparse1(substitute(object)), ". Specify a dsd in update().")
 
   points <-
     get_points(dsd,

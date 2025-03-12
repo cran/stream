@@ -45,7 +45,7 @@ DSF_FeatureSelection <-
     l <- list(
       description = paste0(
         ifelse(!is.null(dsd), dsd$description, "DSF without a specified DSD"),
-        "\n  + Feature Selection (", paste(features, collapse = ", "),")"
+        "\n  + Feature Selection (", toString(features), ")"
       ),
       dsd = dsd,
       features = features
@@ -69,7 +69,7 @@ update.DSF_FeatureSelection <- function(object,
   if (is.null(dsd))
     dsd <- object$dsd
   if (is.null(dsd))
-    stop("No dsd specified in ", deparse(substitute(object)), ". Specify a dsd in update().")
+    stop("No dsd specified in ", deparse1(substitute(object)), ". Specify a dsd in update().")
 
   points <-
     get_points(dsd,
